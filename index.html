@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IED Employee Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0D1B2A;
+  --navy2:#122035;
+  --navy3:#1a2f48;
+  --navy4:#1e3654;
+  --blue:#2563eb;
+  --blue2:#3b82f6;
+  --blue3:#60a5fa;
+  --gold:#D4AF37;
+  --green:#10b981;
+  --red:#ef4444;
+  --orange:#f59e0b;
+  --text:#e8eaf0;
+  --text2:#a0b0c8;
+  --text3:#6b7fa0;
+  --border:rgba(255,255,255,0.08);
+  --card:rgba(255,255,255,0.04);
+  --radius:16px;
+  --sidebar:260px;
+}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--navy);color:var(--text);}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:var(--sidebar);background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.main{flex:1;overflow-y:auto;background:var(--navy);}
+
+/* ── SIDEBAR ── */
+.sidebar-top{padding:20px;border-bottom:1px solid var(--border);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.sidebar-logo img{height:36px;mix-blend-mode:screen;}
+.sidebar-logo-text{font-size:13px;font-weight:700;color:var(--gold);}
+.sidebar-profile{display:flex;align-items:center;gap:12px;}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;}
+.profile-name{font-size:13px;font-weight:600;color:var(--text);}
+.profile-role{font-size:11px;color:var(--text3);}
+
+.nav-section{padding:12px 0;}
+.nav-label{padding:6px 20px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;border-left:3px solid transparent;}
+.nav-item:hover{background:var(--card);color:var(--text);}
+.nav-item.active{background:rgba(37,99,235,0.12);color:var(--blue3);border-left-color:var(--blue2);}
+.nav-item i{width:18px;text-align:center;font-size:14px;}
+.sidebar-bottom{margin-top:auto;padding:16px;border-top:1px solid var(--border);}
+.logout-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all .15s;}
+.logout-btn:hover{background:rgba(239,68,68,0.15);}
+
+/* ── TOPBAR ── */
+.topbar{padding:16px 24px;background:var(--navy2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.topbar-title{font-size:18px;font-weight:700;}
+.topbar-actions{display:flex;align-items:center;gap:12px;}
+.topbar-date{font-size:12px;color:var(--text3);}
+.notif-btn{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);position:relative;}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--orange);}
+
+/* ── PAGE ── */
+.page{display:none;padding:24px;}
+.page.active{display:block;}
+
+/* ── CARDS ── */
+.card{background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.card-sm{background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;}
+
+/* ── GRID ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* ── STAT CARDS ── */
+.stat-card{background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:8px;}
+.stat-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.stat-value{font-size:24px;font-weight:800;}
+.stat-label{font-size:12px;color:var(--text3);}
+
+/* ── ATTENDANCE STATUS CARD ── */
+.att-card{background:linear-gradient(135deg,var(--blue) 0%,#1d4ed8 100%);border-radius:var(--radius);padding:24px;position:relative;overflow:hidden;}
+.att-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.att-card::after{content:'';position:absolute;bottom:-60px;right:20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.att-time{font-size:32px;font-weight:800;letter-spacing:-1px;}
+.att-label{font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:16px;}
+.att-btns{display:flex;gap:10px;position:relative;z-index:1;}
+.att-btn{flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
+.att-btn-in{background:#fff;color:var(--blue);}
+.att-btn-in:hover{background:#f0f7ff;}
+.att-btn-out{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);}
+.att-btn-out:hover{background:rgba(255,255,255,0.25);}
+
+/* ── MODULE GRID ── */
+.module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.module-item{background:var(--navy2);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;}
+.module-item:hover{border-color:var(--blue2);background:rgba(37,99,235,0.08);transform:translateY(-2px);}
+.module-icon{width:48px;height:48px;border-radius:14px;background:rgba(37,99,235,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:20px;color:var(--blue3);}
+.module-label{font-size:12px;font-weight:600;color:var(--text2);}
+
+/* ── ATTENDANCE LIST ── */
+.att-list-item{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);}
+.att-list-item:last-child{border-bottom:none;}
+.att-date-col{width:140px;}
+.att-date{font-size:13px;font-weight:600;}
+.att-day{font-size:11px;color:var(--text3);}
+.att-status-badge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-right:12px;}
+.att-status-P{background:rgba(16,185,129,0.15);color:var(--green);}
+.att-status-A{background:rgba(239,68,68,0.15);color:var(--red);}
+.att-status-W{background:rgba(107,127,160,0.15);color:var(--text3);}
+.att-status-D{background:rgba(245,158,11,0.15);color:var(--orange);}
+.att-time-col{flex:1;display:flex;gap:24px;}
+.att-time-item label{font-size:10px;color:var(--text3);display:block;margin-bottom:2px;}
+.att-time-item span{font-size:13px;font-weight:600;}
+.att-edit-btn{width:32px;height:32px;border-radius:8px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gold);font-size:12px;}
+
+/* ── CALENDAR ── */
+.calendar{width:100%;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-title{font-size:16px;font-weight:700;color:var(--blue3);}
+.cal-nav{width:32px;height:32px;border-radius:8px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-day-label{text-align:center;font-size:11px;font-weight:600;color:var(--text3);padding:6px 0;}
+.cal-day{text-align:center;padding:8px 4px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .15s;position:relative;}
+.cal-day:hover{background:var(--card);}
+.cal-day.today{background:var(--blue);color:#fff;font-weight:700;}
+.cal-day.has-leave::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--green);}
+.cal-day.has-absent::after{background:var(--red);}
+.cal-day.other-month{color:var(--text3);opacity:0.4;}
+.cal-day.weekend{color:var(--text3);}
+
+/* ── LEAVE BALANCE ── */
+.leave-balance-chart{width:160px;height:160px;margin:0 auto;}
+.leave-legend{display:flex;gap:20px;justify-content:center;margin-top:12px;}
+.leave-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+
+/* ── LEAVE LIST ── */
+.leave-item{background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;position:relative;border-left:3px solid var(--green);}
+.leave-item.pending{border-left-color:var(--orange);}
+.leave-item.rejected{border-left-color:var(--red);}
+.leave-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.leave-status.approved{color:var(--green);}
+.leave-status.pending{color:var(--orange);}
+.leave-status.rejected{color:var(--red);}
+.leave-reason{font-size:13px;font-weight:600;margin-bottom:4px;}
+.leave-dates{font-size:11px;color:var(--text3);}
+.leave-meta{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.leave-type-badge{background:rgba(37,99,235,0.12);color:var(--blue3);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+.leave-days{font-size:11px;color:var(--text3);}
+
+/* ── APPLY LEAVE FORM ── */
+.form-group{margin-bottom:16px;}
+.form-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block;}
+.form-label span{color:var(--red);}
+.form-input{width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--blue2);}
+.form-input option{background:var(--navy2);}
+.form-textarea{resize:vertical;min-height:80px;}
+.half-btns{display:flex;gap:8px;margin-top:8px;}
+.half-btn{flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-family:inherit;transition:all .15s;}
+.half-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.day-count{background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:12px 14px;font-size:14px;font-weight:700;color:var(--blue3);}
+
+/* ── RECON FORM ── */
+.recon-tabs{display:flex;gap:8px;margin-bottom:20px;}
+.recon-tab{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-family:inherit;text-align:center;transition:all .15s;}
+.recon-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* ── PROFILE ── */
+.profile-header{background:linear-gradient(135deg,var(--blue) 0%,#1e40af 100%);border-radius:var(--radius);padding:28px;display:flex;align-items:center;gap:20px;margin-bottom:20px;}
+.profile-avatar{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;border:3px solid rgba(255,255,255,0.3);}
+.profile-name-big{font-size:20px;font-weight:800;}
+.profile-desig{font-size:13px;color:rgba(255,255,255,0.7);margin-top:2px;}
+.profile-badge{background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;display:inline-block;margin-top:6px;}
+.profile-tabs{display:flex;gap:4px;background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:20px;}
+.profile-tab{flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;text-align:center;color:var(--text2);transition:all .15s;}
+.profile-tab.active{background:var(--blue);color:#fff;}
+.info-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-icon{width:36px;height:36px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--blue3);flex-shrink:0;}
+.info-label{font-size:11px;color:var(--text3);margin-bottom:2px;}
+.info-value{font-size:13px;font-weight:600;}
+
+/* ── RECON LIST ── */
+.recon-item{background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid var(--green);}
+.recon-badges{display:flex;gap:6px;margin-bottom:6px;}
+.recon-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;}
+.badge-approved{background:rgba(16,185,129,0.12);color:var(--green);}
+.badge-type{background:rgba(37,99,235,0.12);color:var(--blue3);}
+.recon-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.recon-time{font-size:11px;color:var(--text3);}
+
+/* ── BTN ── */
+.btn{padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
+.btn-primary{background:var(--blue);color:#fff;width:100%;}
+.btn-primary:hover{background:#1d4ed8;}
+.btn-sm{padding:8px 14px;font-size:12px;border-radius:8px;}
+.btn-secondary{background:var(--navy3);color:var(--text2);border:1px solid var(--border);}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--navy2);border:1px solid var(--border);border-radius:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:16px;font-weight:700;}
+.modal-close{width:32px;height:32px;border-radius:8px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);}
+.modal-body{padding:24px;}
+
+/* ── MAP PLACEHOLDER ── */
+.map-placeholder{background:var(--navy3);border:1px solid var(--border);border-radius:12px;height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;color:var(--text3);}
+.map-placeholder i{font-size:32px;color:var(--blue3);}
+.location-text{font-size:12px;}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;animation:toastIn .3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+.toast.success{border-left:3px solid var(--green);color:var(--green);}
+.toast.error{border-left:3px solid var(--red);color:var(--red);}
+.toast.info{border-left:3px solid var(--blue2);color:var(--blue3);}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── SECTION TITLE ── */
+.section-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.section-link{font-size:12px;color:var(--blue3);cursor:pointer;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--navy4);border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+  <div class="sidebar-top">
+    <div style="padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:14px;">
+      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8SiEWWv56_p1RnesE1tfdJeF0mUfHuQ4b0QghRw7HZ8dtk_CSWHeaLGlYkD0Dnxfx52sfwkmtzs-giKvAx6u6PIotNTeQGOHu4a6_OqNVYFAksu842PLcslBxpjP_5Z-KQC9IjRfHfu9QXWNl3dXxTWtj_Pp7eprXy9Z4mA6Rw14NW40YO-onABxuCqh9sCx1QFlzeabZw5RFgQzPuVxjG8XxDxiiCSC_WyRKMkL8DvEvAAjI5GnfN1tYI-Ufb1aSG3p2kIoZtIMc" alt="IED" style="height:56px;width:auto;object-fit:contain;mix-blend-mode:screen;display:block;">
+      <div style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:999px;padding:5px 14px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--gold);"></div>
+        <span style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:0.06em;">HR System</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item active" onclick="nav('home')"><i class="fa fa-home"></i> Home</div>
+    <div class="nav-item" onclick="nav('attendance')"><i class="fa fa-fingerprint"></i> Attendance</div>
+    <div class="nav-item" onclick="nav('leave')"><i class="fa fa-calendar-check"></i> Leave</div>
+    <div class="nav-item" onclick="nav('profile')"><i class="fa fa-user"></i> My Profile</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Applications</div>
+    <div class="nav-item" onclick="nav('apply-leave')"><i class="fa fa-plus-circle"></i> Apply for Leave</div>
+    <div class="nav-item" onclick="nav('recon')"><i class="fa fa-clock-rotate-left"></i> Recon. Application</div>
+    <div class="nav-item" onclick="nav('my-leave')"><i class="fa fa-list-check"></i> My Leave Applications</div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;">
+      <div class="avatar" id="sidebarAvatar" style="width:38px;height:38px;font-size:15px;flex-shrink:0;">S</div>
+      <div style="min-width:0;">
+        <div class="profile-name" id="sidebarName" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Samiul Islam Sonet</div>
+        <div class="profile-role" id="sidebarRole" style="font-size:10px;">IT Executive • IED_99</div>
+      </div>
+    </div>
+    <button class="logout-btn"><i class="fa fa-right-from-bracket"></i> Log Out</button>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-title" id="pageTitle">Home</div>
+    <div class="topbar-actions">
+      <div class="topbar-date" id="topbarDate"></div>
+      <div class="notif-btn"><i class="fa fa-bell"></i><div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- ── HOME PAGE ── -->
+  <div class="page active" id="page-home">
+    <div style="margin-bottom:20px;">
+      <div class="att-card">
+        <div style="position:relative;z-index:1;">
+          <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px;">Today's Attendance</div>
+          <div class="att-time" id="homeTime">--:-- --</div>
+          <div class="att-label" id="homeAttLabel">Not checked in yet</div>
+          <div class="att-btns">
+            <button class="att-btn att-btn-in" onclick="openCheckinModal('in')"><i class="fa fa-sign-in-alt" style="margin-right:6px;"></i>Check In</button>
+            <button class="att-btn att-btn-out" onclick="openCheckinModal('out')"><i class="fa fa-sign-out-alt" style="margin-right:6px;"></i>Check Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(16,185,129,0.12);color:var(--green);"><i class="fa fa-check"></i></div>
+        <div class="stat-value" id="statPresent">22</div>
+        <div class="stat-label">Present This Month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(239,68,68,0.12);color:var(--red);"><i class="fa fa-xmark"></i></div>
+        <div class="stat-value" id="statAbsent">1</div>
+        <div class="stat-label">Absent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(37,99,235,0.12);color:var(--blue3);"><i class="fa fa-umbrella-beach"></i></div>
+        <div class="stat-value" id="statLeave">5</div>
+        <div class="stat-label">Leave Remaining</div>
+      </div>
+    </div>
+
+    <!-- Modules -->
+    <div class="section-title">Modules</div>
+    <div class="module-grid" style="margin-bottom:20px;">
+      <div class="module-item" onclick="nav('attendance')">
+        <div class="module-icon"><i class="fa fa-fingerprint"></i></div>
+        <div class="module-label">My Attendance</div>
+      </div>
+      <div class="module-item" onclick="nav('leave')">
+        <div class="module-icon"><i class="fa fa-calendar"></i></div>
+        <div class="module-label">Leave Calendar</div>
+      </div>
+      <div class="module-item" onclick="nav('apply-leave')">
+        <div class="module-icon"><i class="fa fa-paper-plane"></i></div>
+        <div class="module-label">Apply Leave</div>
+      </div>
+      <div class="module-item" onclick="nav('my-leave')">
+        <div class="module-icon"><i class="fa fa-list-check"></i></div>
+        <div class="module-label">Leave Balance</div>
+      </div>
+      <div class="module-item" onclick="nav('recon')">
+        <div class="module-icon"><i class="fa fa-clock-rotate-left"></i></div>
+        <div class="module-label">Recon. App</div>
+      </div>
+      <div class="module-item" onclick="nav('profile')">
+        <div class="module-icon"><i class="fa fa-user"></i></div>
+        <div class="module-label">My Profile</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ATTENDANCE PAGE ── -->
+  <div class="page" id="page-attendance">
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-size:13px;color:var(--text3);">Month</div>
+        <select class="form-input" id="attMonthSel" style="width:160px;padding:6px 10px;" onchange="renderAttList()">
+          <option value="5">June 2026</option>
+          <option value="4">May 2026</option>
+          <option value="3">April 2026</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <div style="flex:1;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:var(--green);">22</div>
+          <div style="font-size:11px;color:var(--text3);">Present</div>
+        </div>
+        <div style="flex:1;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:var(--red);">1</div>
+          <div style="font-size:11px;color:var(--text3);">Absent</div>
+        </div>
+        <div style="flex:1;background:rgba(107,127,160,0.08);border:1px solid rgba(107,127,160,0.2);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:var(--text2);">4</div>
+          <div style="font-size:11px;color:var(--text3);">Weekend</div>
+        </div>
+        <div style="flex:1;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:var(--orange);">1</div>
+          <div style="font-size:11px;color:var(--text3);">Late</div>
+        </div>
+      </div>
+      <div id="attListContainer"></div>
+    </div>
+  </div>
+
+  <!-- ── LEAVE PAGE ── -->
+  <div class="page" id="page-leave">
+    <div class="card" style="margin-bottom:20px;">
+      <div id="calendarWidget"></div>
+    </div>
+    <div class="section-title">Leave
+      <span class="section-link" onclick="nav('apply-leave')">+ Apply Leave</span>
+    </div>
+    <div class="module-grid">
+      <div class="module-item" onclick="nav('leave')">
+        <div class="module-icon"><i class="fa fa-calendar-days"></i></div>
+        <div class="module-label">Leave Calendar</div>
+      </div>
+      <div class="module-item" onclick="nav('my-leave')">
+        <div class="module-icon" style="background:rgba(16,185,129,0.12);color:var(--green);"><i class="fa fa-scale-balanced"></i></div>
+        <div class="module-label">My Leave Balance</div>
+      </div>
+      <div class="module-item" onclick="nav('my-leave')">
+        <div class="module-icon" style="background:rgba(245,158,11,0.12);color:var(--orange);"><i class="fa fa-list"></i></div>
+        <div class="module-label">My Applications</div>
+      </div>
+      <div class="module-item" onclick="nav('apply-leave')">
+        <div class="module-icon" style="background:rgba(239,68,68,0.12);color:var(--red);"><i class="fa fa-paper-plane"></i></div>
+        <div class="module-label">Apply Leave</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── APPLY LEAVE PAGE ── -->
+  <div class="page" id="page-apply-leave">
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">Leave Type <span>*</span></label>
+        <select class="form-input" id="leaveType">
+          <option value="">Select Leave Type</option>
+          <option>Annual Leave</option>
+          <option>Casual Leave</option>
+          <option>Sick Leave</option>
+          <option>Maternity Leave</option>
+          <option>Paternity Leave</option>
+          <option>Unpaid Leave</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Start Date <span>*</span></label>
+        <input type="date" class="form-input" id="leaveStart" onchange="calcDays()">
+        <div class="half-btns">
+          <button class="half-btn active" id="startFirst" onclick="setHalf('start','first')">1st Half</button>
+          <button class="half-btn" id="startSecond" onclick="setHalf('start','second')">2nd Half</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Date <span>*</span></label>
+        <input type="date" class="form-input" id="leaveEnd" onchange="calcDays()">
+        <div class="half-btns">
+          <button class="half-btn" id="endFirst" onclick="setHalf('end','first')">1st Half</button>
+          <button class="half-btn active" id="endSecond" onclick="setHalf('end','second')">2nd Half</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Day Count</label>
+        <div class="day-count" id="dayCount">0.0 Day</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Purpose <span>*</span></label>
+        <textarea class="form-input form-textarea" id="leavePurpose" placeholder="Describe the reason for leave..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="submitLeave()"><i class="fa fa-paper-plane" style="margin-right:8px;"></i>Apply for Leave</button>
+    </div>
+  </div>
+
+  <!-- ── MY LEAVE APPLICATIONS ── -->
+  <div class="page" id="page-my-leave">
+    <!-- Balance Chart -->
+    <div class="card" style="margin-bottom:20px;text-align:center;">
+      <div class="section-title" style="justify-content:center;">My Leave Balance</div>
+      <canvas id="leaveBalanceChart" width="160" height="160" style="max-width:160px;margin:0 auto;display:block;"></canvas>
+      <div class="leave-legend">
+        <div class="leave-legend-item"><div class="legend-dot" style="background:var(--blue2);"></div>Leave taken (5)</div>
+        <div class="leave-legend-item"><div class="legend-dot" style="background:var(--green);"></div>Remaining (22)</div>
+      </div>
+    </div>
+    <!-- Leave History -->
+    <div class="section-title">Leave History</div>
+    <div id="leaveListContainer"></div>
+  </div>
+
+  <!-- ── RECON PAGE ── -->
+  <div class="page" id="page-recon">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:13px;color:var(--text3);">Attendance Reconciliation Applications</div>
+      <button class="btn btn-primary btn-sm" onclick="openReconModal()"><i class="fa fa-plus" style="margin-right:6px;"></i>New</button>
+    </div>
+    <div id="reconListContainer"></div>
+  </div>
+
+  <!-- ── PROFILE PAGE ── -->
+  <div class="page" id="page-profile">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">S</div>
+      <div>
+        <div class="profile-name-big" id="profileName">Md. Samiul Islam Sonet</div>
+        <div class="profile-desig" id="profileDesig">IT Executive</div>
+        <div class="profile-badge" id="profileBadge">IED_99</div>
+      </div>
+    </div>
+    <div class="profile-tabs">
+      <div class="profile-tab active" onclick="profileTab('personal')">Personal</div>
+      <div class="profile-tab" onclick="profileTab('job')">Job Info</div>
+    </div>
+    <div class="card" id="profilePersonal">
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-cake-candles"></i></div>
+        <div><div class="info-label">Date of Birth</div><div class="info-value">04-05-1998</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-id-card"></i></div>
+        <div><div class="info-label">National ID</div><div class="info-value">9582678133</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-flag"></i></div>
+        <div><div class="info-label">Nationality</div><div class="info-value">Bangladeshi</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-envelope"></i></div>
+        <div><div class="info-label">Email</div><div class="info-value">msisonet17@gmail.com</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-phone"></i></div>
+        <div><div class="info-label">Mobile</div><div class="info-value">+880 1XX-XXXXXXX</div></div>
+      </div>
+    </div>
+    <div class="card" id="profileJob" style="display:none;">
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-briefcase"></i></div>
+        <div><div class="info-label">Designation</div><div class="info-value">IT Executive</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-building"></i></div>
+        <div><div class="info-label">Department</div><div class="info-value">IT</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-diagram-project"></i></div>
+        <div><div class="info-label">Project</div><div class="info-value">IED</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-calendar"></i></div>
+        <div><div class="info-label">Joining Date</div><div class="info-value">22-01-2025</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><i class="fa fa-file-contract"></i></div>
+        <div><div class="info-label">Employment Type</div><div class="info-value">Permanent</div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+</div><!-- end app -->
+
+<!-- ── CHECK IN/OUT MODAL ── -->
+<div class="modal-overlay" id="checkinModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="checkinModalTitle">Check In</div>
+      <div class="modal-close" onclick="closeModal('checkinModal')"><i class="fa fa-xmark"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="map-placeholder">
+        <i class="fa fa-location-dot"></i>
+        <div class="location-text" id="locationText">Getting location...</div>
+        <div style="font-size:11px;color:var(--blue3);" id="locationAddr">Dhaka, Bangladesh</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Remarks</label>
+        <textarea class="form-input form-textarea" id="checkinRemarks" placeholder="Optional remarks..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="submitCheckin()"><i class="fa fa-check" style="margin-right:8px;"></i>Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RECON MODAL ── -->
+<div class="modal-overlay" id="reconModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Attendance Reconciliation</div>
+      <div class="modal-close" onclick="closeModal('reconModal')"><i class="fa fa-xmark"></i></div>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px;" id="reconModalDate">Attendance date: --</div>
+      <div class="recon-tabs">
+        <button class="recon-tab active" onclick="setReconTab('in')">In Time</button>
+        <button class="recon-tab" onclick="setReconTab('out')">Out Time</button>
+        <button class="recon-tab" onclick="setReconTab('both')">Both</button>
+      </div>
+      <div id="reconInSection">
+        <div class="form-group">
+          <label class="form-label">In Time Date <span>*</span></label>
+          <input type="date" class="form-input" id="reconInDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">In Time <span>*</span></label>
+          <input type="time" class="form-input" id="reconInTime">
+        </div>
+      </div>
+      <div id="reconOutSection" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Out Time Date <span>*</span></label>
+          <input type="date" class="form-input" id="reconOutDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Out Time <span>*</span></label>
+          <input type="time" class="form-input" id="reconOutTime">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Remarks <span>*</span></label>
+        <textarea class="form-input form-textarea" id="reconRemarks" placeholder="Reason for reconciliation..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="submitRecon()"><i class="fa fa-paper-plane" style="margin-right:8px;"></i>Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ── DATA ──
+const attData = [
+  {date:'2026-06-07',day:'Saturday',status:'W',inTime:'--',outTime:'--'},
+  {date:'2026-06-04',day:'Thursday',status:'D',inTime:'09:31 AM',outTime:'06:20 PM'},
+  {date:'2026-06-03',day:'Wednesday',status:'P',inTime:'09:23 AM',outTime:'06:06 PM'},
+  {date:'2026-06-02',day:'Tuesday',status:'P',inTime:'09:04 AM',outTime:'06:22 PM'},
+  {date:'2026-06-01',day:'Monday',status:'P',inTime:'09:21 AM',outTime:'06:09 PM'},
+  {date:'2026-05-31',day:'Sunday',status:'W',inTime:'--',outTime:'--'},
+  {date:'2026-05-30',day:'Saturday',status:'W',inTime:'--',outTime:'--'},
+  {date:'2026-05-29',day:'Friday',status:'P',inTime:'09:15 AM',outTime:'06:05 PM'},
+  {date:'2026-05-28',day:'Thursday',status:'P',inTime:'09:08 AM',outTime:'06:18 PM'},
+  {date:'2026-05-27',day:'Wednesday',status:'A',inTime:'--',outTime:'--'},
+];
+
+const leaveData = [
+  {status:'approved',reason:'I am feeling high fever, need to leave',fromDate:'Mon, 11-05-2026',toDate:'Tue, 12-05-2026',days:2,type:'Casual Leave',appDate:'11-05-2026'},
+  {status:'approved',reason:'My niece has been admitted to the PICU at Sirajul Islam Medical College',fromDate:'Sun, 26-04-2026',toDate:'Sun, 26-04-2026',days:1,type:'Casual Leave',appDate:'26-04-2026'},
+  {status:'approved',reason:'I had a family program, so I couldn\'t come for those days',fromDate:'Tue, 24-03-2026',toDate:'Wed, 25-03-2026',days:2,type:'Casual Leave',appDate:'29-03-2026'},
+  {status:'approved',reason:'Family issue',fromDate:'Sun, 28-12-2025',toDate:'Sun, 28-12-2025',days:1,type:'Casual Leave',appDate:'27-12-2025'},
+  {status:'pending',reason:'Personal work',fromDate:'Mon, 15-06-2026',toDate:'Mon, 15-06-2026',days:1,type:'Annual Leave',appDate:'07-06-2026'},
+];
+
+const reconData = [
+  {status:'approved',type:'Out Time',date:'Mon, 2 Mar 2026',appDate:'03-03-2026 11:28 AM'},
+  {status:'approved',type:'Out Time',date:'Mon, 26 Jan 2026',appDate:'27-01-2026 11:58 AM'},
+  {status:'approved',type:'Out Time',date:'Thu, 1 Jan 2026',appDate:'04-01-2026 09:43 AM'},
+  {status:'approved',type:'Out Time',date:'Tue, 30 Dec 2025',appDate:'01-01-2026 09:50 AM'},
+];
+
+let currentCheckinType = 'in';
+let reconTab = 'in';
+let startHalf = 'first', endHalf = 'second';
+let checkinTime = null;
+let checkoutTime = null;
+
+// ── NAV ──
+const PAGE_TITLES = {
+  home:'Home', attendance:'My Attendance', leave:'Leave',
+  'apply-leave':'Apply for Leave', 'my-leave':'My Leave Applications',
+  recon:'Recon. Application', profile:'My Profile'
+};
+
+function nav(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')?.includes("'"+page+"'")) n.classList.add('active');
+  });
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[page]||page;
+  if(page==='attendance') renderAttList();
+  if(page==='leave') renderCalendar();
+  if(page==='my-leave'){ renderLeaveList(); renderLeaveChart(); }
+  if(page==='recon') renderReconList();
+}
+
+// ── CLOCK ──
+function updateClock(){
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('topbarDate').textContent = d;
+  if(checkinTime){
+    document.getElementById('homeTime').textContent = t;
+    document.getElementById('homeAttLabel').textContent = 'Checked in at '+checkinTime;
+  }
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// ── ATT LIST ──
+function renderAttList(){
+  const cont = document.getElementById('attListContainer');
+  cont.innerHTML = attData.map(a=>`
+    <div class="att-list-item">
+      <div class="att-date-col">
+        <div class="att-date">${formatDate(a.date)}</div>
+        <div class="att-day">${a.day}</div>
+      </div>
+      <div class="att-status-badge att-status-${a.status}">${a.status}</div>
+      <div class="att-time-col">
+        <div class="att-time-item">
+          <label>In Time</label>
+          <span>${a.inTime}</span>
+        </div>
+        <div class="att-time-item">
+          <label>Out Time</label>
+          <span>${a.outTime}</span>
+        </div>
+      </div>
+      <div class="att-edit-btn" onclick="openReconForDate('${a.date}')"><i class="fa fa-pen"></i></div>
+    </div>
+  `).join('');
+}
+
+function formatDate(d){
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+
+// ── CALENDAR ──
+let calYear=2026, calMonth=5;
+function renderCalendar(){
+  const cont = document.getElementById('calendarWidget');
+  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dayLabels=['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
+  const firstDay = new Date(calYear,calMonth,1).getDay();
+  const offset = (firstDay+1)%7;
+  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  const today = new Date();
+
+  let html = `
+    <div class="cal-header">
+      <div class="cal-nav" onclick="prevMonth()"><i class="fa fa-chevron-left"></i></div>
+      <div class="cal-title">${monthNames[calMonth]} ${calYear}</div>
+      <div class="cal-nav" onclick="nextMonth()"><i class="fa fa-chevron-right"></i></div>
+    </div>
+    <div class="cal-grid">
+      ${dayLabels.map(d=>`<div class="cal-day-label">${d}</div>`).join('')}
+  `;
+
+  for(let i=0;i<offset;i++) html+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday = d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
+    const dayOfWeek = new Date(calYear,calMonth,d).getDay();
+    const isWeekend = dayOfWeek===5||dayOfWeek===6;
+    html+=`<div class="cal-day${isToday?' today':''}${isWeekend&&!isToday?' weekend':''}">${d}</div>`;
+  }
+  html+=`</div>`;
+  cont.innerHTML=html;
+}
+
+function prevMonth(){ if(calMonth===0){calMonth=11;calYear--;} else calMonth--; renderCalendar(); }
+function nextMonth(){ if(calMonth===11){calMonth=0;calYear++;} else calMonth++; renderCalendar(); }
+
+// ── LEAVE LIST ──
+function renderLeaveList(){
+  const cont = document.getElementById('leaveListContainer');
+  cont.innerHTML = leaveData.map(l=>`
+    <div class="leave-item ${l.status}">
+      <div class="leave-status ${l.status}">${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
+      <div class="leave-reason">${l.reason}</div>
+      <div class="leave-dates">${l.fromDate} — ${l.toDate} • ${l.days} Day${l.days>1?'s':''}</div>
+      <div class="leave-meta">
+        <span class="leave-type-badge">${l.type}</span>
+        <span class="leave-days"><i class="fa fa-calendar" style="margin-right:4px;"></i>${l.appDate}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── LEAVE CHART ──
+function renderLeaveChart(){
+  const canvas = document.getElementById('leaveBalanceChart');
+  if(!canvas) return;
+  if(canvas._chart) canvas._chart.destroy();
+  canvas._chart = new Chart(canvas,{
+    type:'doughnut',
+    data:{
+      labels:['Leave Taken','Remaining'],
+      datasets:[{data:[5,22],backgroundColor:['#3b82f6','#10b981'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{
+      cutout:'70%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed} days`}}
+      }
+    }
+  });
+}
+
+// ── RECON LIST ──
+function renderReconList(){
+  const cont = document.getElementById('reconListContainer');
+  cont.innerHTML = reconData.map(r=>`
+    <div class="recon-item">
+      <div class="recon-badges">
+        <span class="recon-badge badge-approved">Approved</span>
+        <span class="recon-badge badge-type">${r.type}</span>
+      </div>
+      <div class="recon-title">Attendance Reconciliation for <span style="color:var(--blue3);">${r.date}</span></div>
+      <div class="recon-time"><i class="fa fa-clock" style="margin-right:4px;"></i>${r.appDate}</div>
+    </div>
+  `).join('');
+}
+
+// ── APPLY LEAVE ──
+function setHalf(which, half){
+  if(which==='start'){
+    startHalf=half;
+    document.getElementById('startFirst').classList.toggle('active',half==='first');
+    document.getElementById('startSecond').classList.toggle('active',half==='second');
+  } else {
+    endHalf=half;
+    document.getElementById('endFirst').classList.toggle('active',half==='first');
+    document.getElementById('endSecond').classList.toggle('active',half==='second');
+  }
+  calcDays();
+}
+
+function calcDays(){
+  const s = document.getElementById('leaveStart').value;
+  const e = document.getElementById('leaveEnd').value;
+  if(!s||!e){ document.getElementById('dayCount').textContent='0.0 Day'; return; }
+  const start = new Date(s), end = new Date(e);
+  let days = 0;
+  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+    const dow=d.getDay();
+    if(dow!==5&&dow!==6) days++;
+  }
+  const halfAdj = (startHalf==='second'?-0.5:0)+(endHalf==='first'?-0.5:0);
+  days = Math.max(0,days+halfAdj);
+  document.getElementById('dayCount').textContent=days.toFixed(1)+' Day'+(days!==1?'s':'');
+}
+
+function submitLeave(){
+  const type=document.getElementById('leaveType').value;
+  const start=document.getElementById('leaveStart').value;
+  const end=document.getElementById('leaveEnd').value;
+  const purpose=document.getElementById('leavePurpose').value;
+  if(!type||!start||!end||!purpose){ toast('Please fill all required fields','error'); return; }
+  toast('Leave application submitted successfully!','success');
+  document.getElementById('leaveType').value='';
+  document.getElementById('leaveStart').value='';
+  document.getElementById('leaveEnd').value='';
+  document.getElementById('leavePurpose').value='';
+  document.getElementById('dayCount').textContent='0.0 Day';
+  setTimeout(()=>nav('my-leave'),1200);
+}
+
+// ── CHECKIN MODAL ──
+function openCheckinModal(type){
+  currentCheckinType=type;
+  document.getElementById('checkinModalTitle').textContent=type==='in'?'Check In':'Check Out';
+  document.getElementById('checkinRemarks').value='';
+  document.getElementById('locationText').textContent='Location detected';
+  document.getElementById('locationAddr').textContent='Dhaka, Bangladesh';
+  openModal('checkinModal');
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      document.getElementById('locationText').textContent=`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+    },()=>{
+      document.getElementById('locationText').textContent='Location unavailable';
+    });
+  }
+}
+
+function submitCheckin(){
+  const now=new Date();
+  const t=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  if(currentCheckinType==='in'){
+    checkinTime=t;
+    document.getElementById('homeTime').textContent=t;
+    document.getElementById('homeAttLabel').textContent='Checked in at '+t+' • 09:00 hr(s)';
+    toast('Checked in at '+t,'success');
+  } else {
+    checkoutTime=t;
+    document.getElementById('homeAttLabel').textContent='Checked in: '+checkinTime+' | Out: '+t;
+    toast('Checked out at '+t,'success');
+  }
+  closeModal('checkinModal');
+}
+
+// ── RECON MODAL ──
+function openReconModal(){
+  document.getElementById('reconModalDate').textContent='Attendance date: '+new Date().toLocaleDateString('en-GB');
+  document.getElementById('reconInDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('reconOutDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('reconRemarks').value='';
+  setReconTab('in');
+  openModal('reconModal');
+}
+
+function openReconForDate(date){
+  document.getElementById('reconModalDate').textContent='Attendance date: '+new Date(date).toLocaleDateString('en-GB');
+  document.getElementById('reconInDate').value=date;
+  document.getElementById('reconOutDate').value=date;
+  document.getElementById('reconRemarks').value='';
+  setReconTab('in');
+  openModal('reconModal');
+}
+
+function setReconTab(tab){
+  reconTab=tab;
+  document.querySelectorAll('.recon-tab').forEach((t,i)=>t.classList.toggle('active',['in','out','both'][i]===tab));
+  document.getElementById('reconInSection').style.display=(tab==='in'||tab==='both')?'block':'none';
+  document.getElementById('reconOutSection').style.display=(tab==='out'||tab==='both')?'block':'none';
+}
+
+function submitRecon(){
+  const remarks=document.getElementById('reconRemarks').value;
+  if(!remarks){ toast('Please enter remarks','error'); return; }
+  toast('Reconciliation application submitted!','success');
+  closeModal('reconModal');
+  renderReconList();
+}
+
+// ── PROFILE TABS ──
+function profileTab(tab){
+  document.querySelectorAll('.profile-tab').forEach((t,i)=>t.classList.toggle('active',['personal','job'][i]===tab));
+  document.getElementById('profilePersonal').style.display=tab==='personal'?'block':'none';
+  document.getElementById('profileJob').style.display=tab==='job'?'block':'none';
+}
+
+// ── MODAL ──
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+// ── TOAST ──
+function toast(msg,type='info'){
+  const wrap=document.getElementById('toastWrap');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  const icons={success:'fa-check-circle',error:'fa-circle-xmark',info:'fa-info-circle'};
+  el.innerHTML=`<i class="fa ${icons[type]}"></i>${msg}`;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+// ── INIT ──
+renderCalendar();
+renderAttList();
+renderLeaveList();
+renderLeaveChart();
+renderReconList();
+</script>
+</body>
+</html>
