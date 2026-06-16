@@ -696,6 +696,23 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   </div>
 </div>
 
+<!-- ── DELETE CONFIRM MODAL ── -->
+<div class="modal-overlay" id="confirmDeleteModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <div class="modal-title">Delete Application?</div>
+      <div class="modal-close" onclick="closeModal('confirmDeleteModal')"><i class="fa fa-xmark"></i></div>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px;">Are you sure you want to delete this leave application? This action cannot be undone.</p>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('confirmDeleteModal')">Cancel</button>
+        <button class="btn" style="flex:1;background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;" onclick="confirmDeleteLeave()"><i class="fa fa-trash" style="margin-right:6px;"></i>Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-wrap" id="toastWrap"></div>
 
@@ -929,11 +946,11 @@ function fmtLeaveDate(iso){
   const wd=d.toLocaleDateString('en-US',{weekday:'short'});
   return `${wd}, ${pad2(d.getDate())}-${pad2(d.getMonth()+1)}-${d.getFullYear()}`;
 }
-// count working days (Fri & Sat treated as weekend, matching the calendar)
+// count working days (Sat & Sun treated as weekend, matching attendance)
 function countWorkdays(s,e){
   const start=new Date(s),end=new Date(e); let days=0;
   for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
-    const dow=d.getDay(); if(dow!==5&&dow!==6) days++;
+    const dow=d.getDay(); if(dow!==0&&dow!==6) days++;
   }
   return Math.max(1,days);
 }
@@ -998,12 +1015,20 @@ function renderLeaveList(){
   }).join('');
 }
 
+let pendingDeleteId=null;
 function deleteLeave(id){
   const item=leaveData.find(l=>l.id===id);
   if(!item || item.status!=='pending'){ toast('Only pending applications can be deleted','error'); return; }
-  leaveData = leaveData.filter(l=>l.id!==id);
+  pendingDeleteId=id;
+  openModal('confirmDeleteModal');
+}
+function confirmDeleteLeave(){
+  if(!pendingDeleteId){ closeModal('confirmDeleteModal'); return; }
+  leaveData = leaveData.filter(l=>l.id!==pendingDeleteId);
   saveStore(LEAVE_KEY, leaveData);
+  pendingDeleteId=null;
   renderLeaveList();
+  closeModal('confirmDeleteModal');
   toast('Leave application deleted','success');
 }
 
@@ -1099,7 +1124,7 @@ function calcDays(){
   let days = 0;
   for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
     const dow=d.getDay();
-    if(dow!==5&&dow!==6) days++;
+    if(dow!==0&&dow!==6) days++;
   }
   const halfAdj = (startHalf==='second'?-0.5:0)+(endHalf==='first'?-0.5:0);
   days = Math.max(0,days+halfAdj);
