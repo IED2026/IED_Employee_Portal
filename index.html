@@ -1431,7 +1431,9 @@ let clkTarget=null, clkMode='h', clkHour=8, clkMin=0, clkAP='AM';
 function openClockPicker(targetId){
   clkTarget=targetId;
   const now=new Date();
-  let h=now.getHours(); clkAP=h>=12?'PM':'AM';
+  let h=now.getHours();
+  // default AM for In time, PM for Out time (user can change)
+  clkAP = targetId==='reconOutTime' ? 'PM' : 'AM';
   clkHour=(h%12)||12; clkMin=0; clkMode='h';
   renderClock();
   openModal('clockModal');
@@ -1455,11 +1457,23 @@ function renderClock(){
     const isSel=(v===sel);
     if(isSel) selAngle=i*30-90;
     const label = clkMode==='m'?pad2(v):v;
-    html+=`<div class="clk-dot${isSel?' sel':''}" style="left:${x}px;top:${y}px;" onclick="pickClock(${v})">${label}</div>`;
+    html+=`<div class="clk-dot${isSel?' sel':''}" style="left:${x}px;top:${y}px;" data-val="${v}">${label}</div>`;
   });
   const handLen=r-17;
   html+=`<div class="clk-hand" style="width:${handLen}px;transform:translateY(-50%) rotate(${selAngle}deg);"></div>`;
   dial.innerHTML=html;
+}
+// map a pointer position on the dial to the nearest hour/minute and update live
+function clkFromPoint(clientX,clientY){
+  const dial=document.getElementById('clkDial');
+  const rect=dial.getBoundingClientRect();
+  const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  let ang=Math.atan2(clientY-cy, clientX-cx)*180/Math.PI; // -180..180, 0=right
+  ang=(ang+90+360)%360; // 0 at top, clockwise
+  const idx=Math.round(ang/30)%12;
+  if(clkMode==='h'){ const hours=[12,1,2,3,4,5,6,7,8,9,10,11]; clkHour=hours[idx]; }
+  else { clkMin=(idx*5)%60; }
+  renderClock();
 }
 function pickClock(v){
   if(clkMode==='h'){ clkHour=v; clkMode='m'; renderClock(); }
@@ -1471,6 +1485,37 @@ function clockOK(){
   }
   closeModal('clockModal');
 }
+// drag / tap handling on the dial
+(function(){
+  let dragging=false;
+  function onDown(e){
+    const dial=document.getElementById('clkDial');
+    if(!dial || !document.getElementById('clockModal').classList.contains('open')) return;
+    if(!dial.contains(e.target) && e.target!==dial) return;
+    dragging=true;
+    const p=e.touches?e.touches[0]:e;
+    clkFromPoint(p.clientX,p.clientY);
+    e.preventDefault();
+  }
+  function onMove(e){
+    if(!dragging) return;
+    const p=e.touches?e.touches[0]:e;
+    clkFromPoint(p.clientX,p.clientY);
+    e.preventDefault();
+  }
+  function onUp(){
+    if(!dragging) return;
+    dragging=false;
+    // after finishing hour selection by drag, advance to minutes
+    if(clkMode==='h'){ clkMode='m'; renderClock(); }
+  }
+  document.addEventListener('mousedown',onDown);
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
+  document.addEventListener('touchstart',onDown,{passive:false});
+  document.addEventListener('touchmove',onMove,{passive:false});
+  document.addEventListener('touchend',onUp);
+})();
 
 // ── MODAL ──
 function openPicker(el){ try{ el.showPicker(); }catch(e){} }
