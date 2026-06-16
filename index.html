@@ -227,6 +227,10 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 .clk-dot.sel{background:var(--blue);color:#fff;}
 .clk-center{position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:var(--blue);transform:translate(-50%,-50%);z-index:1;}
 .clk-hand{position:absolute;left:50%;top:50%;height:2px;background:var(--blue);transform-origin:left center;z-index:1;}
+.period-cell{padding:14px 8px;border-radius:10px;background:var(--navy3);border:1px solid var(--border);text-align:center;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);transition:all .2s;}
+.period-cell:hover{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.45);color:var(--blue3);}
+.period-cell.cur{background:rgba(201,164,77,.12);border-color:rgba(201,164,77,.4);color:var(--gold2);}
+.period-cell.disabled{opacity:.3;pointer-events:none;}
 .recon-title{font-size:13px;font-weight:600;margin-bottom:4px;}
 .recon-time{font-size:11px;color:var(--text3);}
 
@@ -412,13 +416,12 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   <!-- ── ATTENDANCE PAGE ── -->
   <div class="page" id="page-attendance">
     <div class="card" style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <div style="font-size:13px;color:var(--text3);">Month</div>
-        <select class="form-input" id="attMonthSel" style="width:160px;padding:6px 10px;" onchange="renderAttList()">
-          <option value="5">June 2026</option>
-          <option value="4">May 2026</option>
-          <option value="3">April 2026</option>
-        </select>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:13px;color:var(--text3);">Period</div>
+        <div class="form-input" id="attPeriodBtn" style="width:180px;padding:9px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onclick="openPeriodPicker()">
+          <span id="attPeriodLabel">This Month</span>
+          <i class="fa fa-chevron-down" style="font-size:11px;color:var(--text3);"></i>
+        </div>
       </div>
     </div>
     <div class="card">
@@ -723,6 +726,20 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   </div>
 </div>
 
+<!-- ── PERIOD (YEAR→MONTH) PICKER MODAL ── -->
+<div class="modal-overlay" id="periodModal">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-header">
+      <div class="modal-title" id="periodModalTitle">Select Year</div>
+      <div class="modal-close" onclick="closeModal('periodModal')"><i class="fa fa-xmark"></i></div>
+    </div>
+    <div class="modal-body">
+      <div id="periodBack" style="display:none;margin-bottom:14px;"><span style="font-size:12px;color:var(--blue3);cursor:pointer;" onclick="periodStep='year';renderPeriod();"><i class="fa fa-chevron-left" style="margin-right:6px;"></i>Back to year</span></div>
+      <div id="periodGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ── CLOCK PICKER MODAL ── -->
 <div class="modal-overlay" id="clockModal">
   <div class="modal" style="max-width:340px;">
@@ -772,7 +789,27 @@ const attDataHistory = [
 function pad2(n){ return n<10 ? '0'+n : ''+n; }
 function isoDate(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
 
-const RECENT_DAYS = 18;
+const RECENT_DAYS = 45;
+
+// Generates ~12 months of older attendance ending just before the recent window,
+// so every month/year in the past year is selectable and populated.
+function generateHistoryYear(){
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const today=new Date(); today.setHours(0,0,0,0);
+  const out=[];
+  for(let i=RECENT_DAYS;i<=RECENT_DAYS+365;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const dow=d.getDay();
+    if(dow===0||dow===6){ out.push({date:isoDate(d),day:dayNames[dow],status:'W',inTime:'--',outTime:'--'}); }
+    else {
+      const seed=d.getDate()+d.getMonth();
+      const absent=(seed%23===0);
+      if(absent) out.push({date:isoDate(d),day:dayNames[dow],status:'A',inTime:'--',outTime:'--'});
+      else out.push({date:isoDate(d),day:dayNames[dow],status:'P',inTime:`09:${pad2((seed*7)%40)} AM`,outTime:`06:${pad2((seed*13)%45)} PM`});
+    }
+  }
+  return out;
+}
 
 function generateRecentAttendance(){
   const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -821,7 +858,7 @@ function rebuildAttData(){
     }
     return e;
   });
-  const olderHistory = attDataHistory.filter(h=> h.date < earliest);
+  const olderHistory = generateHistoryYear().filter(h=> h.date < earliest);
   attData = [...merged, ...olderHistory];
 }
 rebuildAttData();
@@ -905,36 +942,67 @@ updateClock();
 refreshHomeAttLabel();
 
 // ── ATT LIST ──
-let monthSelInit=false;
-function populateMonthSelector(){
-  const sel=document.getElementById('attMonthSel');
-  if(!sel) return;
-  const seen=new Set(), opts=[];
-  attData.forEach(a=>{
-    const d=new Date(a.date);
-    const key=`${d.getFullYear()}-${d.getMonth()}`;
-    if(!seen.has(key)){ seen.add(key); opts.push({key,label:d.toLocaleDateString('en-US',{month:'long',year:'numeric'})}); }
-  });
-  const prev=sel.value;
-  sel.innerHTML=opts.map(o=>`<option value="${o.key}">${o.label}</option>`).join('');
-  if(!monthSelInit){
-    const now=new Date(); const ck=`${now.getFullYear()}-${now.getMonth()}`;
-    sel.value = opts.some(o=>o.key===ck)?ck:(opts[0]?opts[0].key:'');
-    monthSelInit=true;
-  } else if(prev && opts.some(o=>o.key===prev)){ sel.value=prev; }
+// ── ATT PERIOD PICKER (This Month = last 45 days, or a specific year+month) ──
+// selectedPeriod = null  → This Month (rolling last 45 days incl. today)
+// selectedPeriod = {y,m} → that calendar month
+let selectedPeriod = null;
+let periodStep = 'year';
+let periodPickYear = null;
+
+function availableYears(){
+  const ys=new Set();
+  attData.forEach(a=>ys.add(new Date(a.date).getFullYear()));
+  return [...ys].sort((a,b)=>b-a);
 }
+function monthsForYear(y){
+  const ms=new Set();
+  attData.forEach(a=>{ const d=new Date(a.date); if(d.getFullYear()===y) ms.add(d.getMonth()); });
+  return [...ms].sort((a,b)=>b-a);
+}
+function openPeriodPicker(){
+  periodStep='year'; periodPickYear=null;
+  renderPeriod();
+  openModal('periodModal');
+}
+function renderPeriod(){
+  const grid=document.getElementById('periodGrid');
+  const title=document.getElementById('periodModalTitle');
+  const back=document.getElementById('periodBack');
+  const now=new Date();
+  if(periodStep==='year'){
+    title.textContent='Select Year'; back.style.display='none';
+    let html=`<div class="period-cell${selectedPeriod===null?' cur':''}" style="grid-column:1/-1;" onclick="pickThisMonth()">This Month (last 45 days)</div>`;
+    html+=availableYears().map(y=>`<div class="period-cell" onclick="pickYear(${y})">${y}</div>`).join('');
+    grid.innerHTML=html;
+  } else {
+    title.textContent='Select Month • '+periodPickYear; back.style.display='block';
+    const names=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    grid.innerHTML=monthsForYear(periodPickYear).map(m=>{
+      const cur=(selectedPeriod&&selectedPeriod.y===periodPickYear&&selectedPeriod.m===m)?' cur':'';
+      return `<div class="period-cell${cur}" onclick="pickMonth(${m})">${names[m]}</div>`;
+    }).join('');
+  }
+}
+function pickThisMonth(){ selectedPeriod=null; closeModal('periodModal'); renderAttList(); }
+function pickYear(y){ periodPickYear=y; periodStep='month'; renderPeriod(); }
+function pickMonth(m){ selectedPeriod={y:periodPickYear,m}; closeModal('periodModal'); renderAttList(); }
 
 function renderAttList(){
   rebuildAttData();
-  populateMonthSelector();
-  const sel=document.getElementById('attMonthSel');
-  let rows=attData;
-  if(sel && sel.value){
-    const [y,m]=sel.value.split('-').map(Number);
-    rows=attData.filter(a=>{ const d=new Date(a.date); return d.getFullYear()===y && d.getMonth()===m; });
+  const label=document.getElementById('attPeriodLabel');
+  let rows;
+  if(selectedPeriod===null){
+    // This Month = rolling last 45 days (today included)
+    const cut=new Date(); cut.setHours(0,0,0,0); cut.setDate(cut.getDate()-44);
+    rows=attData.filter(a=>{ const d=new Date(a.date); d.setHours(0,0,0,0); return d>=cut; });
+    if(label) label.textContent='This Month';
+  } else {
+    rows=attData.filter(a=>{ const d=new Date(a.date); return d.getFullYear()===selectedPeriod.y && d.getMonth()===selectedPeriod.m; });
+    const names=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    if(label) label.textContent=`${names[selectedPeriod.m]} ${selectedPeriod.y}`;
   }
   const cont = document.getElementById('attListContainer');
-  if(!rows.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No attendance records for this month.</div>'; return; }
+  if(!rows.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No attendance records for this period.</div>'; return; }
   cont.innerHTML = rows.map(a=>{
     const badge = a.status==='T'
       ? `<div class="att-status-badge att-status-T"><i class="fa fa-clock"></i></div>`
@@ -942,7 +1010,7 @@ function renderAttList(){
     return `
     <div class="att-list-item${a.isToday?' is-today':''}">
       <div class="att-date-col">
-        <div class="att-date">${formatDate(a.date)}${a.isToday?'<span class="today-pill">Today</span>':''}</div>
+        <div class="att-date">${formatDate(a.date)}</div>
         <div class="att-day">${a.day}</div>
       </div>
       ${badge}
