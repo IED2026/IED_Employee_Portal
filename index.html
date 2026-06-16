@@ -616,8 +616,9 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 
 <script>
 // ── DATA ──
-const attData = [
-  {date:'2026-06-07',day:'Saturday',status:'W',inTime:'--',outTime:'--'},
+// Older attendance history (fixed records)
+const attDataHistory = [
+  {date:'2026-06-07',day:'Sunday',status:'W',inTime:'--',outTime:'--'},
   {date:'2026-06-04',day:'Thursday',status:'D',inTime:'09:31 AM',outTime:'06:20 PM'},
   {date:'2026-06-03',day:'Wednesday',status:'P',inTime:'09:23 AM',outTime:'06:06 PM'},
   {date:'2026-06-02',day:'Tuesday',status:'P',inTime:'09:04 AM',outTime:'06:22 PM'},
@@ -628,6 +629,44 @@ const attData = [
   {date:'2026-05-28',day:'Thursday',status:'P',inTime:'09:08 AM',outTime:'06:18 PM'},
   {date:'2026-05-27',day:'Wednesday',status:'A',inTime:'--',outTime:'--'},
 ];
+
+// Auto-fills attendance rows from the day after the last history entry
+// through TODAY (based on the visitor's clock), so this page always
+// shows up to the current date with no manual updates needed.
+// Capped to the most recent 45 days so the list can't grow unbounded.
+function pad2(n){ return n<10 ? '0'+n : ''+n; }
+
+function generateRecentAttendance(){
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const lastHistoryDate = new Date('2026-06-07');
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  let cursor = new Date(lastHistoryDate);
+  cursor.setDate(cursor.getDate()+1);
+
+  const minStart = new Date(today);
+  minStart.setDate(minStart.getDate()-45);
+  if(cursor < minStart) cursor = new Date(minStart);
+
+  const entries = [];
+  while(cursor <= today){
+    const dow = cursor.getDay();
+    const dateStr = `${cursor.getFullYear()}-${pad2(cursor.getMonth()+1)}-${pad2(cursor.getDate())}`;
+    if(dow===0 || dow===6){
+      entries.push({date:dateStr, day:dayNames[dow], status:'W', inTime:'--', outTime:'--'});
+    } else {
+      const seed = cursor.getDate();
+      const inMin = pad2((seed*7)%40);
+      const outMin = pad2((seed*13)%45);
+      entries.push({date:dateStr, day:dayNames[dow], status:'P', inTime:`09:${inMin} AM`, outTime:`06:${outMin} PM`});
+    }
+    cursor.setDate(cursor.getDate()+1);
+  }
+  return entries.reverse(); // newest first, to match attDataHistory order
+}
+
+const attData = [...generateRecentAttendance(), ...attDataHistory];
 
 const leaveData = [
   {status:'approved',reason:'I am feeling high fever, need to leave',fromDate:'Mon, 11-05-2026',toDate:'Tue, 12-05-2026',days:2,type:'Casual Leave',appDate:'11-05-2026'},
