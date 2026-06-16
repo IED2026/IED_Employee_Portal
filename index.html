@@ -156,7 +156,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 .legend-dot{width:10px;height:10px;border-radius:50%;}
 
 /* ── LEAVE LIST ── */
-.leave-item{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0) 50%),var(--navy3);border:1px solid var(--border);border-radius:12px;padding:15px 16px;margin-bottom:10px;position:relative;border-left:3px solid var(--green);box-shadow:var(--shadow-sm);}
+.leave-item{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0) 50%),var(--navy3);border:1px solid var(--border);border-radius:12px;padding:15px 84px 15px 16px;margin-bottom:10px;position:relative;border-left:3px solid var(--green);box-shadow:var(--shadow-sm);}
 .leave-item.pending{border-left-color:var(--orange);}
 .leave-item.rejected{border-left-color:var(--red);}
 .leave-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;}
@@ -168,6 +168,12 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 .leave-meta{display:flex;align-items:center;gap:8px;margin-top:8px;}
 .leave-type-badge{background:rgba(37,99,235,0.12);color:var(--blue3);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
 .leave-days{font-size:11px;color:var(--text3);}
+.leave-actions{position:absolute;top:14px;right:14px;display:flex;gap:8px;}
+.leave-action-btn{width:30px;height:30px;border-radius:8px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--text2);transition:all .2s;position:relative;}
+.leave-action-btn.edit:hover{background:rgba(37,99,235,.12);color:var(--blue3);border-color:rgba(37,99,235,.4);}
+.leave-action-btn.del:hover{background:rgba(239,68,68,.12);color:var(--red);border-color:rgba(239,68,68,.4);}
+.leave-action-btn.locked{cursor:not-allowed;color:var(--text3);opacity:.65;}
+.leave-action-btn.locked::after{content:'';position:absolute;left:50%;top:50%;width:130%;height:2px;background:var(--red);transform:translate(-50%,-50%) rotate(-45deg);border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.25);}
 
 /* ── APPLY LEAVE FORM ── */
 .form-group{margin-bottom:16px;}
@@ -209,6 +215,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 .recon-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;}
 .badge-approved{background:rgba(16,185,129,0.12);color:var(--green);}
 .badge-type{background:rgba(37,99,235,0.12);color:var(--blue3);}
+.badge-pending{background:rgba(245,158,11,0.14);color:var(--orange);}
+.badge-rejected{background:rgba(239,68,68,0.14);color:var(--red);}
 .recon-title{font-size:13px;font-weight:600;margin-bottom:4px;}
 .recon-time{font-size:11px;color:var(--text3);}
 
@@ -463,15 +471,11 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
           <option value="">Select Leave Type</option>
           <option>Annual Leave</option>
           <option>Casual Leave</option>
-          <option>Sick Leave</option>
-          <option>Maternity Leave</option>
-          <option>Paternity Leave</option>
-          <option>Unpaid Leave</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">Start Date <span>*</span></label>
-        <input type="date" class="form-input" id="leaveStart" onchange="calcDays()">
+        <input type="date" class="form-input" id="leaveStart" onchange="calcDays()" onclick="openPicker(this)">
         <div class="half-btns">
           <button class="half-btn active" id="startFirst" onclick="setHalf('start','first')">1st Half</button>
           <button class="half-btn" id="startSecond" onclick="setHalf('start','second')">2nd Half</button>
@@ -479,7 +483,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
       </div>
       <div class="form-group">
         <label class="form-label">End Date <span>*</span></label>
-        <input type="date" class="form-input" id="leaveEnd" onchange="calcDays()">
+        <input type="date" class="form-input" id="leaveEnd" onchange="calcDays()" onclick="openPicker(this)">
         <div class="half-btns">
           <button class="half-btn" id="endFirst" onclick="setHalf('end','first')">1st Half</button>
           <button class="half-btn active" id="endSecond" onclick="setHalf('end','second')">2nd Half</button>
@@ -633,21 +637,21 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
       <div id="reconInSection">
         <div class="form-group">
           <label class="form-label">In Time Date <span>*</span></label>
-          <input type="date" class="form-input" id="reconInDate">
+          <input type="date" class="form-input" id="reconInDate" onclick="openPicker(this)">
         </div>
         <div class="form-group">
           <label class="form-label">In Time <span>*</span></label>
-          <input type="time" class="form-input" id="reconInTime">
+          <input type="time" class="form-input" id="reconInTime" onclick="openPicker(this)">
         </div>
       </div>
       <div id="reconOutSection" style="display:none;">
         <div class="form-group">
           <label class="form-label">Out Time Date <span>*</span></label>
-          <input type="date" class="form-input" id="reconOutDate">
+          <input type="date" class="form-input" id="reconOutDate" onclick="openPicker(this)">
         </div>
         <div class="form-group">
           <label class="form-label">Out Time <span>*</span></label>
-          <input type="time" class="form-input" id="reconOutTime">
+          <input type="time" class="form-input" id="reconOutTime" onclick="openPicker(this)">
         </div>
       </div>
       <div class="form-group">
@@ -655,6 +659,39 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
         <textarea class="form-input form-textarea" id="reconRemarks" placeholder="Reason for reconciliation..."></textarea>
       </div>
       <button class="btn btn-primary" onclick="submitRecon()"><i class="fa fa-paper-plane" style="margin-right:8px;"></i>Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LEAVE EDIT MODAL ── -->
+<div class="modal-overlay" id="leaveEditModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit Leave Application</div>
+      <div class="modal-close" onclick="closeModal('leaveEditModal')"><i class="fa fa-xmark"></i></div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editLeaveId">
+      <div class="form-group">
+        <label class="form-label">Leave Type <span>*</span></label>
+        <select class="form-input" id="editLeaveType">
+          <option>Annual Leave</option>
+          <option>Casual Leave</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Start Date <span>*</span></label>
+        <input type="date" class="form-input" id="editLeaveStart" onclick="openPicker(this)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Date <span>*</span></label>
+        <input type="date" class="form-input" id="editLeaveEnd" onclick="openPicker(this)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Purpose <span>*</span></label>
+        <textarea class="form-input form-textarea" id="editLeavePurpose"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveLeaveEdit()"><i class="fa fa-save" style="margin-right:8px;"></i>Update Application</button>
     </div>
   </div>
 </div>
@@ -739,20 +776,30 @@ function rebuildAttData(){
 }
 rebuildAttData();
 
-const leaveData = [
-  {status:'approved',reason:'I am feeling high fever, need to leave',fromDate:'Mon, 11-05-2026',toDate:'Tue, 12-05-2026',days:2,type:'Casual Leave',appDate:'11-05-2026'},
-  {status:'approved',reason:'My niece has been admitted to the PICU at Sirajul Islam Medical College',fromDate:'Sun, 26-04-2026',toDate:'Sun, 26-04-2026',days:1,type:'Casual Leave',appDate:'26-04-2026'},
-  {status:'approved',reason:'I had a family program, so I couldn\'t come for those days',fromDate:'Tue, 24-03-2026',toDate:'Wed, 25-03-2026',days:2,type:'Casual Leave',appDate:'29-03-2026'},
-  {status:'approved',reason:'Family issue',fromDate:'Sun, 28-12-2025',toDate:'Sun, 28-12-2025',days:1,type:'Casual Leave',appDate:'27-12-2025'},
-  {status:'pending',reason:'Personal work',fromDate:'Mon, 15-06-2026',toDate:'Mon, 15-06-2026',days:1,type:'Annual Leave',appDate:'07-06-2026'},
+const defaultLeaveData = [
+  {id:'L1',status:'approved',reason:'I am feeling high fever, need to leave',fromDate:'Mon, 11-05-2026',toDate:'Tue, 12-05-2026',days:2,type:'Casual Leave',appDate:'11-05-2026'},
+  {id:'L2',status:'approved',reason:'I had a family program, so I couldn\'t come for those days',fromDate:'Tue, 24-03-2026',toDate:'Wed, 25-03-2026',days:2,type:'Casual Leave',appDate:'29-03-2026'},
+  {id:'L3',status:'pending',reason:'Personal work',fromDate:'Mon, 22-06-2026',toDate:'Mon, 22-06-2026',days:1,type:'Annual Leave',appDate:'07-06-2026'},
+  {id:'L4',status:'pending',reason:'Out of town for a wedding',fromDate:'Thu, 25-06-2026',toDate:'Fri, 26-06-2026',days:2,type:'Casual Leave',appDate:'10-06-2026'},
+  {id:'L5',status:'rejected',reason:'Requested leave during project deadline',fromDate:'Wed, 13-05-2026',toDate:'Wed, 13-05-2026',days:1,type:'Annual Leave',appDate:'12-05-2026'},
+  {id:'L6',status:'rejected',reason:'Insufficient leave balance for this request',fromDate:'Mon, 02-02-2026',toDate:'Thu, 05-02-2026',days:4,type:'Annual Leave',appDate:'28-01-2026'},
 ];
 
-const reconData = [
-  {status:'approved',type:'Out Time',date:'Mon, 2 Mar 2026',appDate:'03-03-2026 11:28 AM'},
-  {status:'approved',type:'Out Time',date:'Mon, 26 Jan 2026',appDate:'27-01-2026 11:58 AM'},
-  {status:'approved',type:'Out Time',date:'Thu, 1 Jan 2026',appDate:'04-01-2026 09:43 AM'},
-  {status:'approved',type:'Out Time',date:'Tue, 30 Dec 2025',appDate:'01-01-2026 09:50 AM'},
+const defaultReconData = [
+  {id:'R1',status:'approved',type:'Out Time',date:'Mon, 2 Mar 2026',appDate:'03-03-2026 11:28 AM'},
+  {id:'R2',status:'approved',type:'Out Time',date:'Mon, 26 Jan 2026',appDate:'27-01-2026 11:58 AM'},
+  {id:'R3',status:'approved',type:'In Time',date:'Thu, 1 Jan 2026',appDate:'04-01-2026 09:43 AM'},
 ];
+
+const LEAVE_KEY='ied_leave_data', RECON_KEY='ied_recon_data';
+function loadStore(key, fallback){
+  try{ const v=localStorage.getItem(key); return v?JSON.parse(v):JSON.parse(JSON.stringify(fallback)); }
+  catch(e){ return JSON.parse(JSON.stringify(fallback)); }
+}
+function saveStore(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
+
+let leaveData = loadStore(LEAVE_KEY, defaultLeaveData);
+let reconData = loadStore(RECON_KEY, defaultReconData);
 
 let currentCheckinType = 'in';
 let reconTab = 'in';
@@ -808,10 +855,37 @@ updateClock();
 refreshHomeAttLabel();
 
 // ── ATT LIST ──
+let monthSelInit=false;
+function populateMonthSelector(){
+  const sel=document.getElementById('attMonthSel');
+  if(!sel) return;
+  const seen=new Set(), opts=[];
+  attData.forEach(a=>{
+    const d=new Date(a.date);
+    const key=`${d.getFullYear()}-${d.getMonth()}`;
+    if(!seen.has(key)){ seen.add(key); opts.push({key,label:d.toLocaleDateString('en-US',{month:'long',year:'numeric'})}); }
+  });
+  const prev=sel.value;
+  sel.innerHTML=opts.map(o=>`<option value="${o.key}">${o.label}</option>`).join('');
+  if(!monthSelInit){
+    const now=new Date(); const ck=`${now.getFullYear()}-${now.getMonth()}`;
+    sel.value = opts.some(o=>o.key===ck)?ck:(opts[0]?opts[0].key:'');
+    monthSelInit=true;
+  } else if(prev && opts.some(o=>o.key===prev)){ sel.value=prev; }
+}
+
 function renderAttList(){
   rebuildAttData();
+  populateMonthSelector();
+  const sel=document.getElementById('attMonthSel');
+  let rows=attData;
+  if(sel && sel.value){
+    const [y,m]=sel.value.split('-').map(Number);
+    rows=attData.filter(a=>{ const d=new Date(a.date); return d.getFullYear()===y && d.getMonth()===m; });
+  }
   const cont = document.getElementById('attListContainer');
-  cont.innerHTML = attData.map(a=>{
+  if(!rows.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No attendance records for this month.</div>'; return; }
+  cont.innerHTML = rows.map(a=>{
     const badge = a.status==='T'
       ? `<div class="att-status-badge att-status-T"><i class="fa fa-clock"></i></div>`
       : `<div class="att-status-badge att-status-${a.status}">${a.status}</div>`;
@@ -834,12 +908,34 @@ function renderAttList(){
       </div>
       <div class="att-edit-btn" onclick="openReconForDate('${a.date}')"><i class="fa fa-pen"></i></div>
     </div>`;
-  }).join('') + '';
+  }).join('');
 }
 
 function formatDate(d){
   const dt = new Date(d);
   return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+
+// "Mon, 22-06-2026" → "2026-06-22"
+function toISO(leaveDate){
+  const m=String(leaveDate).replace(/^[A-Za-z]+,\s*/,'').trim(); // strip weekday
+  const p=m.split('-'); // DD-MM-YYYY
+  if(p.length===3) return `${p[2]}-${p[1]}-${p[0]}`;
+  return new Date().toISOString().slice(0,10);
+}
+// "2026-06-22" → "Mon, 22-06-2026"
+function fmtLeaveDate(iso){
+  const d=new Date(iso);
+  const wd=d.toLocaleDateString('en-US',{weekday:'short'});
+  return `${wd}, ${pad2(d.getDate())}-${pad2(d.getMonth()+1)}-${d.getFullYear()}`;
+}
+// count working days (Fri & Sat treated as weekend, matching the calendar)
+function countWorkdays(s,e){
+  const start=new Date(s),end=new Date(e); let days=0;
+  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+    const dow=d.getDay(); if(dow!==5&&dow!==6) days++;
+  }
+  return Math.max(1,days);
 }
 
 // ── CALENDAR ──
@@ -880,8 +976,17 @@ function nextMonth(){ if(calMonth===11){calMonth=0;calYear++;} else calMonth++; 
 // ── LEAVE LIST ──
 function renderLeaveList(){
   const cont = document.getElementById('leaveListContainer');
-  cont.innerHTML = leaveData.map(l=>`
+  if(!leaveData.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No leave applications yet.</div>'; return; }
+  cont.innerHTML = leaveData.map(l=>{
+    const editable = l.status==='pending';
+    const actions = editable
+      ? `<div class="leave-action-btn edit" title="Edit" onclick="editLeave('${l.id}')"><i class="fa fa-pen"></i></div>
+         <div class="leave-action-btn del" title="Delete" onclick="deleteLeave('${l.id}')"><i class="fa fa-trash"></i></div>`
+      : `<div class="leave-action-btn locked" title="Approved/Rejected — cannot modify"><i class="fa fa-pen"></i></div>
+         <div class="leave-action-btn locked" title="Approved/Rejected — cannot modify"><i class="fa fa-trash"></i></div>`;
+    return `
     <div class="leave-item ${l.status}">
+      <div class="leave-actions">${actions}</div>
       <div class="leave-status ${l.status}">${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
       <div class="leave-reason">${l.reason}</div>
       <div class="leave-dates">${l.fromDate} — ${l.toDate} • ${l.days} Day${l.days>1?'s':''}</div>
@@ -889,8 +994,46 @@ function renderLeaveList(){
         <span class="leave-type-badge">${l.type}</span>
         <span class="leave-days"><i class="fa fa-calendar" style="margin-right:4px;"></i>${l.appDate}</span>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+}
+
+function deleteLeave(id){
+  const item=leaveData.find(l=>l.id===id);
+  if(!item || item.status!=='pending'){ toast('Only pending applications can be deleted','error'); return; }
+  leaveData = leaveData.filter(l=>l.id!==id);
+  saveStore(LEAVE_KEY, leaveData);
+  renderLeaveList();
+  toast('Leave application deleted','success');
+}
+
+function editLeave(id){
+  const item=leaveData.find(l=>l.id===id);
+  if(!item || item.status!=='pending'){ toast('Only pending applications can be edited','error'); return; }
+  document.getElementById('editLeaveId').value=id;
+  document.getElementById('editLeaveType').value=item.type;
+  document.getElementById('editLeaveStart').value=toISO(item.fromDate);
+  document.getElementById('editLeaveEnd').value=toISO(item.toDate);
+  document.getElementById('editLeavePurpose').value=item.reason;
+  openModal('leaveEditModal');
+}
+
+function saveLeaveEdit(){
+  const id=document.getElementById('editLeaveId').value;
+  const type=document.getElementById('editLeaveType').value;
+  const s=document.getElementById('editLeaveStart').value;
+  const e=document.getElementById('editLeaveEnd').value;
+  const reason=document.getElementById('editLeavePurpose').value.trim();
+  if(!type||!s||!e||!reason){ toast('Please fill all required fields','error'); return; }
+  const item=leaveData.find(l=>l.id===id);
+  if(!item) return;
+  item.type=type; item.reason=reason;
+  item.fromDate=fmtLeaveDate(s); item.toDate=fmtLeaveDate(e);
+  item.days=countWorkdays(s,e);
+  saveStore(LEAVE_KEY, leaveData);
+  renderLeaveList();
+  closeModal('leaveEditModal');
+  toast('Leave application updated','success');
 }
 
 // ── LEAVE CHART ──
@@ -917,16 +1060,21 @@ function renderLeaveChart(){
 // ── RECON LIST ──
 function renderReconList(){
   const cont = document.getElementById('reconListContainer');
-  cont.innerHTML = reconData.map(r=>`
+  if(!reconData.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No reconciliation applications yet.</div>'; return; }
+  cont.innerHTML = reconData.map(r=>{
+    const st=r.status||'pending';
+    const badgeClass = st==='approved'?'badge-approved':(st==='rejected'?'badge-rejected':'badge-pending');
+    const label = st.charAt(0).toUpperCase()+st.slice(1);
+    return `
     <div class="recon-item">
       <div class="recon-badges">
-        <span class="recon-badge badge-approved">Approved</span>
+        <span class="recon-badge ${badgeClass}">${label}</span>
         <span class="recon-badge badge-type">${r.type}</span>
       </div>
       <div class="recon-title">Attendance Reconciliation for <span style="color:var(--blue3);">${r.date}</span></div>
       <div class="recon-time"><i class="fa fa-clock" style="margin-right:4px;"></i>${r.appDate}</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 // ── APPLY LEAVE ──
@@ -962,15 +1110,29 @@ function submitLeave(){
   const type=document.getElementById('leaveType').value;
   const start=document.getElementById('leaveStart').value;
   const end=document.getElementById('leaveEnd').value;
-  const purpose=document.getElementById('leavePurpose').value;
+  const purpose=document.getElementById('leavePurpose').value.trim();
   if(!type||!start||!end||!purpose){ toast('Please fill all required fields','error'); return; }
-  toast('Leave application submitted successfully!','success');
+  const now=new Date();
+  const entry={
+    id:'L'+Date.now(),
+    status:'pending',
+    reason:purpose,
+    fromDate:fmtLeaveDate(start),
+    toDate:fmtLeaveDate(end),
+    days:countWorkdays(start,end),
+    type:type,
+    appDate:`${pad2(now.getDate())}-${pad2(now.getMonth()+1)}-${now.getFullYear()}`
+  };
+  leaveData.unshift(entry);
+  saveStore(LEAVE_KEY, leaveData);
+  renderLeaveList();
+  toast('Applied successfully!','success');
   document.getElementById('leaveType').value='';
   document.getElementById('leaveStart').value='';
   document.getElementById('leaveEnd').value='';
   document.getElementById('leavePurpose').value='';
   document.getElementById('dayCount').textContent='0.0 Day';
-  setTimeout(()=>nav('my-leave'),1200);
+  setTimeout(()=>nav('my-leave'),900);
 }
 
 // ── CHECKIN MODAL (with live map) ──
@@ -1142,8 +1304,11 @@ function submitCheckin(){
 // ── RECON MODAL ──
 function openReconModal(){
   document.getElementById('reconModalDate').textContent='Attendance date: '+new Date().toLocaleDateString('en-GB');
-  document.getElementById('reconInDate').value=new Date().toISOString().slice(0,10);
-  document.getElementById('reconOutDate').value=new Date().toISOString().slice(0,10);
+  const iso=new Date().toISOString().slice(0,10);
+  document.getElementById('reconInDate').value=iso;
+  document.getElementById('reconOutDate').value=iso;
+  document.getElementById('reconInTime').value='';
+  document.getElementById('reconOutTime').value='';
   document.getElementById('reconRemarks').value='';
   setReconTab('in');
   openModal('reconModal');
@@ -1153,6 +1318,8 @@ function openReconForDate(date){
   document.getElementById('reconModalDate').textContent='Attendance date: '+new Date(date).toLocaleDateString('en-GB');
   document.getElementById('reconInDate').value=date;
   document.getElementById('reconOutDate').value=date;
+  document.getElementById('reconInTime').value='';
+  document.getElementById('reconOutTime').value='';
   document.getElementById('reconRemarks').value='';
   setReconTab('in');
   openModal('reconModal');
@@ -1166,11 +1333,32 @@ function setReconTab(tab){
 }
 
 function submitRecon(){
-  const remarks=document.getElementById('reconRemarks').value;
+  const remarks=document.getElementById('reconRemarks').value.trim();
+  const inDate=document.getElementById('reconInDate').value;
+  const inTime=document.getElementById('reconInTime').value;
+  const outDate=document.getElementById('reconOutDate').value;
+  const outTime=document.getElementById('reconOutTime').value;
+
+  if(reconTab==='in' || reconTab==='both'){
+    if(!inDate||!inTime){ toast('Please fill In Time date & time','error'); return; }
+  }
+  if(reconTab==='out' || reconTab==='both'){
+    if(!outDate||!outTime){ toast('Please fill Out Time date & time','error'); return; }
+  }
   if(!remarks){ toast('Please enter remarks','error'); return; }
-  toast('Reconciliation application submitted!','success');
-  closeModal('reconModal');
+
+  const typeLabel = reconTab==='in'?'In Time':(reconTab==='out'?'Out Time':'Both');
+  const baseISO = (reconTab==='out')?outDate:inDate;
+  const d=new Date(baseISO);
+  const dateStr=d.toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  const now=new Date();
+  const appStr=`${pad2(now.getDate())}-${pad2(now.getMonth()+1)}-${now.getFullYear()} ${fmtTimeShort(now)}`;
+
+  reconData.unshift({ id:'R'+Date.now(), status:'pending', type:typeLabel, date:dateStr, appDate:appStr });
+  saveStore(RECON_KEY, reconData);
   renderReconList();
+  closeModal('reconModal');
+  toast('Reconciliation application submitted!','success');
 }
 
 // ── PROFILE TABS ──
@@ -1181,6 +1369,7 @@ function profileTab(tab){
 }
 
 // ── MODAL ──
+function openPicker(el){ try{ el.showPicker(); }catch(e){} }
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
