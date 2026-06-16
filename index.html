@@ -124,6 +124,9 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 .att-status-A{background:rgba(239,68,68,0.15);color:var(--red);}
 .att-status-W{background:rgba(107,127,160,0.15);color:var(--text3);}
 .att-status-D{background:rgba(245,158,11,0.15);color:var(--orange);}
+.att-status-T{background:rgba(37,99,235,0.18);color:var(--blue3);}
+.att-list-item.is-today{background:linear-gradient(90deg,rgba(201,164,77,.08),rgba(201,164,77,.02));border:1px solid rgba(201,164,77,.24);border-radius:12px;padding:14px 12px;}
+.today-pill{display:inline-block;margin-left:8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#0c1320;background:var(--gold2);padding:2px 8px;border-radius:999px;vertical-align:middle;}
 .att-time-col{flex:1;display:flex;gap:24px;}
 .att-time-item label{font-size:10px;color:var(--text3);display:block;margin-bottom:2px;}
 .att-time-item span{font-size:13px;font-weight:600;}
@@ -328,7 +331,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
     <div style="margin-bottom:20px;">
       <div class="att-card">
         <div style="position:relative;z-index:1;">
-          <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px;">Today's Attendance</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px;">Current Time</div>
           <div class="att-time" id="homeTime">--:-- --</div>
           <div class="att-label" id="homeAttLabel">Not checked in yet</div>
           <div class="att-btns">
@@ -675,43 +678,66 @@ const attDataHistory = [
   {date:'2026-05-27',day:'Wednesday',status:'A',inTime:'--',outTime:'--'},
 ];
 
-// Auto-fills attendance rows from the day after the last history entry
-// through TODAY (based on the visitor's clock), so this page always
-// shows up to the current date with no manual updates needed.
-// Capped to the most recent 45 days so the list can't grow unbounded.
+// Auto-generates attendance rows for the most recent days ending on TODAY
+// (based purely on the visitor's real clock), so the list always reaches
+// the current date regardless of any hardcoded anchor. Today's row reflects
+// the user's real check-in/out (stored in localStorage) once they punch.
 function pad2(n){ return n<10 ? '0'+n : ''+n; }
+function isoDate(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+
+const RECENT_DAYS = 18;
 
 function generateRecentAttendance(){
   const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const lastHistoryDate = new Date('2026-06-07');
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  let cursor = new Date(lastHistoryDate);
-  cursor.setDate(cursor.getDate()+1);
-
-  const minStart = new Date(today);
-  minStart.setDate(minStart.getDate()-45);
-  if(cursor < minStart) cursor = new Date(minStart);
-
-  const entries = [];
-  while(cursor <= today){
-    const dow = cursor.getDay();
-    const dateStr = `${cursor.getFullYear()}-${pad2(cursor.getMonth()+1)}-${pad2(cursor.getDate())}`;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const entries=[];
+  for(let i=0;i<RECENT_DAYS;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const dow=d.getDay();
+    const dateStr=isoDate(d);
+    const isToday=(i===0);
     if(dow===0 || dow===6){
-      entries.push({date:dateStr, day:dayNames[dow], status:'W', inTime:'--', outTime:'--'});
+      entries.push({date:dateStr, day:dayNames[dow], status:'W', inTime:'--', outTime:'--', isToday});
+    } else if(isToday){
+      // Today, a weekday, not yet punched → pending until check-in.
+      entries.push({date:dateStr, day:dayNames[dow], status:'T', inTime:'--', outTime:'--', isToday:true});
     } else {
-      const seed = cursor.getDate();
-      const inMin = pad2((seed*7)%40);
-      const outMin = pad2((seed*13)%45);
-      entries.push({date:dateStr, day:dayNames[dow], status:'P', inTime:`09:${inMin} AM`, outTime:`06:${outMin} PM`});
+      const seed=d.getDate();
+      entries.push({date:dateStr, day:dayNames[dow], status:'P', inTime:`09:${pad2((seed*7)%40)} AM`, outTime:`06:${pad2((seed*13)%45)} PM`, isToday:false});
     }
-    cursor.setDate(cursor.getDate()+1);
   }
-  return entries.reverse(); // newest first, to match attDataHistory order
+  return entries; // already newest-first (i=0 is today)
 }
 
-const attData = [...generateRecentAttendance(), ...attDataHistory];
+// ── PERSISTENT ATTENDANCE LOG (localStorage) ──
+const ATT_LOG_KEY = 'ied_attendance_log';
+function getAttLog(){
+  try{ return JSON.parse(localStorage.getItem(ATT_LOG_KEY)||'{}'); }
+  catch(e){ return {}; }
+}
+function saveAttLog(log){
+  try{ localStorage.setItem(ATT_LOG_KEY, JSON.stringify(log)); }catch(e){}
+}
+function todayKey(){ return isoDate(new Date()); }
+
+// Combined dataset = generated recent days (with real punches overlaid)
+// + the older static history that predates the generated range.
+let attData = [];
+function rebuildAttData(){
+  const recent = generateRecentAttendance();
+  const earliest = recent[recent.length-1].date;
+  const log = getAttLog();
+  const merged = recent.map(e=>{
+    const rec = log[e.date];
+    if(rec && (rec.in || rec.out)){
+      return {...e, status:'P', inTime: rec.in||'--', outTime: rec.out||'--'};
+    }
+    return e;
+  });
+  const olderHistory = attDataHistory.filter(h=> h.date < earliest);
+  attData = [...merged, ...olderHistory];
+}
+rebuildAttData();
 
 const leaveData = [
   {status:'approved',reason:'I am feeling high fever, need to leave',fromDate:'Mon, 11-05-2026',toDate:'Tue, 12-05-2026',days:2,type:'Casual Leave',appDate:'11-05-2026'},
@@ -756,29 +782,46 @@ function nav(page){
 }
 
 // ── CLOCK ──
+function fmtTimeFull(d){ return d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function fmtTimeShort(d){ return d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }
+
 function updateClock(){
   const now = new Date();
-  const t = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const d = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('topbarDate').textContent = d;
-  if(checkinTime){
-    document.getElementById('homeTime').textContent = t;
-    document.getElementById('homeAttLabel').textContent = 'Checked in at '+checkinTime;
-  }
+  document.getElementById('topbarDate').textContent = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  // Home hero always shows the live current time, ticking every second.
+  const ht = document.getElementById('homeTime');
+  if(ht) ht.textContent = fmtTimeFull(now);
 }
+
+// Reflects today's real check-in/out state in the home hero's sub-label.
+function refreshHomeAttLabel(){
+  const label = document.getElementById('homeAttLabel');
+  if(!label) return;
+  const rec = getAttLog()[todayKey()];
+  if(rec && rec.in && rec.out){ label.textContent = 'Checked in: '+rec.in+'  •  Out: '+rec.out; }
+  else if(rec && rec.in){ label.textContent = 'Checked in at '+rec.in; }
+  else { label.textContent = 'Not checked in yet'; }
+}
+
 setInterval(updateClock,1000);
 updateClock();
+refreshHomeAttLabel();
 
 // ── ATT LIST ──
 function renderAttList(){
+  rebuildAttData();
   const cont = document.getElementById('attListContainer');
-  cont.innerHTML = attData.map(a=>`
-    <div class="att-list-item">
+  cont.innerHTML = attData.map(a=>{
+    const badge = a.status==='T'
+      ? `<div class="att-status-badge att-status-T"><i class="fa fa-clock"></i></div>`
+      : `<div class="att-status-badge att-status-${a.status}">${a.status}</div>`;
+    return `
+    <div class="att-list-item${a.isToday?' is-today':''}">
       <div class="att-date-col">
-        <div class="att-date">${formatDate(a.date)}</div>
+        <div class="att-date">${formatDate(a.date)}${a.isToday?'<span class="today-pill">Today</span>':''}</div>
         <div class="att-day">${a.day}</div>
       </div>
-      <div class="att-status-badge att-status-${a.status}">${a.status}</div>
+      ${badge}
       <div class="att-time-col">
         <div class="att-time-item">
           <label>In Time</label>
@@ -790,8 +833,8 @@ function renderAttList(){
         </div>
       </div>
       <div class="att-edit-btn" onclick="openReconForDate('${a.date}')"><i class="fa fa-pen"></i></div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('') + '';
 }
 
 function formatDate(d){
@@ -1060,17 +1103,39 @@ function reverseGeocode(lat,lng){
 
 function submitCheckin(){
   const now=new Date();
-  const t=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  const t=fmtTimeShort(now);
+  const key=todayKey();
+  const log=getAttLog();
+  if(!log[key]) log[key]={};
+
   if(currentCheckinType==='in'){
-    checkinTime=t;
-    document.getElementById('homeTime').textContent=t;
-    document.getElementById('homeAttLabel').textContent='Checked in at '+t+' • 09:00 hr(s)';
+    if(log[key].in){
+      toast('Already checked in at '+log[key].in,'info');
+      closeModal('checkinModal');
+      return;
+    }
+    log[key].in=t;
     toast('Checked in at '+t,'success');
   } else {
-    checkoutTime=t;
-    document.getElementById('homeAttLabel').textContent='Checked in: '+checkinTime+' | Out: '+t;
+    if(!log[key].in){
+      toast('Please check in first','error');
+      closeModal('checkinModal');
+      return;
+    }
+    log[key].out=t;
     toast('Checked out at '+t,'success');
   }
+  saveAttLog(log);
+
+  // keep legacy vars in sync
+  checkinTime=log[key].in||null;
+  checkoutTime=log[key].out||null;
+
+  // Reflect everywhere immediately: home label + attendance page row.
+  refreshHomeAttLabel();
+  rebuildAttData();
+  if(document.getElementById('page-attendance')?.classList.contains('active')) renderAttList();
+
   closeModal('checkinModal');
 }
 
