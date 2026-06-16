@@ -217,6 +217,16 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 .badge-type{background:rgba(37,99,235,0.12);color:var(--blue3);}
 .badge-pending{background:rgba(245,158,11,0.14);color:var(--orange);}
 .badge-rejected{background:rgba(239,68,68,0.14);color:var(--red);}
+.clk-num{min-width:74px;height:64px;border-radius:12px;background:var(--navy3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:700;cursor:pointer;color:var(--text);transition:all .2s;padding:0 8px;}
+.clk-num.active{background:rgba(37,99,235,.18);color:var(--blue3);border-color:rgba(37,99,235,.5);}
+.clk-ap{width:54px;height:30px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);border-radius:8px;transition:all .2s;}
+.clk-ap.active{background:rgba(37,99,235,.18);color:var(--blue3);border-color:rgba(37,99,235,.5);}
+.clk-dial{position:relative;width:250px;height:250px;border-radius:50%;background:var(--navy3);margin:0 auto;}
+.clk-dot{position:absolute;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text2);transform:translate(-50%,-50%);cursor:pointer;transition:background .15s,color .15s;z-index:2;}
+.clk-dot:hover{background:rgba(255,255,255,.06);}
+.clk-dot.sel{background:var(--blue);color:#fff;}
+.clk-center{position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:var(--blue);transform:translate(-50%,-50%);z-index:1;}
+.clk-hand{position:absolute;left:50%;top:50%;height:2px;background:var(--blue);transform-origin:left center;z-index:1;}
 .recon-title{font-size:13px;font-weight:600;margin-bottom:4px;}
 .recon-time{font-size:11px;color:var(--text3);}
 
@@ -641,7 +651,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
         </div>
         <div class="form-group">
           <label class="form-label">In Time <span>*</span></label>
-          <input type="time" class="form-input" id="reconInTime" onclick="openPicker(this)">
+          <input type="text" readonly class="form-input" id="reconInTime" placeholder="-- : -- --" onclick="openClockPicker('reconInTime')" style="cursor:pointer;">
         </div>
       </div>
       <div id="reconOutSection" style="display:none;">
@@ -651,7 +661,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
         </div>
         <div class="form-group">
           <label class="form-label">Out Time <span>*</span></label>
-          <input type="time" class="form-input" id="reconOutTime" onclick="openPicker(this)">
+          <input type="text" readonly class="form-input" id="reconOutTime" placeholder="-- : -- --" onclick="openClockPicker('reconOutTime')" style="cursor:pointer;">
         </div>
       </div>
       <div class="form-group">
@@ -708,6 +718,29 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
       <div style="display:flex;gap:10px;">
         <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('confirmDeleteModal')">Cancel</button>
         <button class="btn" style="flex:1;background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;" onclick="confirmDeleteLeave()"><i class="fa fa-trash" style="margin-right:6px;"></i>Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CLOCK PICKER MODAL ── -->
+<div class="modal-overlay" id="clockModal">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-body" style="padding:20px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Select Time</div>
+      <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:20px;">
+        <div class="clk-num" id="clkHour" onclick="clkMode='h';renderClock();">8</div>
+        <div style="font-size:34px;font-weight:700;color:var(--text2);">:</div>
+        <div class="clk-num" id="clkMin" onclick="clkMode='m';renderClock();">00</div>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-left:8px;">
+          <div class="clk-ap" id="clkAM" onclick="clkAP='AM';renderClock();">AM</div>
+          <div class="clk-ap" id="clkPM" onclick="clkAP='PM';renderClock();">PM</div>
+        </div>
+      </div>
+      <div class="clk-dial" id="clkDial"></div>
+      <div style="display:flex;justify-content:flex-end;gap:18px;margin-top:18px;">
+        <div onclick="closeModal('clockModal')" style="color:var(--text2);font-weight:700;font-size:13px;cursor:pointer;padding:6px 4px;">CANCEL</div>
+        <div onclick="clockOK()" style="color:var(--blue3);font-weight:700;font-size:13px;cursor:pointer;padding:6px 4px;">OK</div>
       </div>
     </div>
   </div>
@@ -1391,6 +1424,52 @@ function profileTab(tab){
   document.querySelectorAll('.profile-tab').forEach((t,i)=>t.classList.toggle('active',['personal','job'][i]===tab));
   document.getElementById('profilePersonal').style.display=tab==='personal'?'block':'none';
   document.getElementById('profileJob').style.display=tab==='job'?'block':'none';
+}
+
+// ── CUSTOM 12H CLOCK PICKER ──
+let clkTarget=null, clkMode='h', clkHour=8, clkMin=0, clkAP='AM';
+function openClockPicker(targetId){
+  clkTarget=targetId;
+  const now=new Date();
+  let h=now.getHours(); clkAP=h>=12?'PM':'AM';
+  clkHour=(h%12)||12; clkMin=0; clkMode='h';
+  renderClock();
+  openModal('clockModal');
+}
+function renderClock(){
+  document.getElementById('clkHour').textContent=clkHour;
+  document.getElementById('clkMin').textContent=pad2(clkMin);
+  document.getElementById('clkHour').classList.toggle('active',clkMode==='h');
+  document.getElementById('clkMin').classList.toggle('active',clkMode==='m');
+  document.getElementById('clkAM').classList.toggle('active',clkAP==='AM');
+  document.getElementById('clkPM').classList.toggle('active',clkAP==='PM');
+  const dial=document.getElementById('clkDial');
+  const R=125, r=98;
+  let html='<div class="clk-center"></div>';
+  const vals = clkMode==='h' ? [12,1,2,3,4,5,6,7,8,9,10,11] : [0,5,10,15,20,25,30,35,40,45,50,55];
+  const sel = clkMode==='h' ? clkHour : clkMin;
+  let selAngle=0;
+  vals.forEach((v,i)=>{
+    const ang=(i*30-90)*Math.PI/180;
+    const x=R+r*Math.cos(ang), y=R+r*Math.sin(ang);
+    const isSel=(v===sel);
+    if(isSel) selAngle=i*30-90;
+    const label = clkMode==='m'?pad2(v):v;
+    html+=`<div class="clk-dot${isSel?' sel':''}" style="left:${x}px;top:${y}px;" onclick="pickClock(${v})">${label}</div>`;
+  });
+  const handLen=r-17;
+  html+=`<div class="clk-hand" style="width:${handLen}px;transform:translateY(-50%) rotate(${selAngle}deg);"></div>`;
+  dial.innerHTML=html;
+}
+function pickClock(v){
+  if(clkMode==='h'){ clkHour=v; clkMode='m'; renderClock(); }
+  else { clkMin=v; renderClock(); }
+}
+function clockOK(){
+  if(clkTarget){
+    document.getElementById(clkTarget).value=`${clkHour}:${pad2(clkMin)} ${clkAP}`;
+  }
+  closeModal('clockModal');
 }
 
 // ── MODAL ──
