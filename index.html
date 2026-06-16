@@ -1123,6 +1123,10 @@ function renderReconList(){
     const st=r.status||'pending';
     const badgeClass = st==='approved'?'badge-approved':(st==='rejected'?'badge-rejected':'badge-pending');
     const label = st.charAt(0).toUpperCase()+st.slice(1);
+    const times=[];
+    if(r.inTime) times.push(`<span style="color:var(--text2);"><i class="fa fa-right-to-bracket" style="margin-right:4px;"></i>In: <b style="color:var(--text);">${r.inTime}</b></span>`);
+    if(r.outTime) times.push(`<span style="color:var(--text2);"><i class="fa fa-right-from-bracket" style="margin-right:4px;"></i>Out: <b style="color:var(--text);">${r.outTime}</b></span>`);
+    const timeRow = times.length?`<div class="recon-time" style="display:flex;gap:16px;margin-bottom:4px;">${times.join('')}</div>`:'';
     return `
     <div class="recon-item">
       <div class="recon-badges">
@@ -1130,6 +1134,7 @@ function renderReconList(){
         <span class="recon-badge badge-type">${r.type}</span>
       </div>
       <div class="recon-title">Attendance Reconciliation for <span style="color:var(--blue3);">${r.date}</span></div>
+      ${timeRow}
       <div class="recon-time"><i class="fa fa-clock" style="margin-right:4px;"></i>${r.appDate}</div>
     </div>`;
   }).join('');
@@ -1412,7 +1417,7 @@ function submitRecon(){
   const now=new Date();
   const appStr=`${pad2(now.getDate())}-${pad2(now.getMonth()+1)}-${now.getFullYear()} ${fmtTimeShort(now)}`;
 
-  reconData.unshift({ id:'R'+Date.now(), status:'pending', type:typeLabel, date:dateStr, appDate:appStr });
+  reconData.unshift({ id:'R'+Date.now(), status:'pending', type:typeLabel, date:dateStr, inTime: (reconTab==='in'||reconTab==='both')?inTime:'', outTime: (reconTab==='out'||reconTab==='both')?outTime:'', appDate:appStr });
   saveStore(RECON_KEY, reconData);
   renderReconList();
   closeModal('reconModal');
