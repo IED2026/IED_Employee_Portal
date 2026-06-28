@@ -2240,12 +2240,12 @@ function renderLeaveBalanceCards(emp, year, targetId){
   const totE = annE+casE, totT = annT+casT, totB = totE-totT;
 
   const card = (label,color,total,taken,left) => `
-    <div style="background:var(--navy3);border:1px solid ${color}44;border-top:3px solid ${color};border-radius:12px;padding:16px;text-align:center;">
-      <div style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">${label}</div>
-      <div style="display:flex;justify-content:space-around;align-items:center;">
-        <div><div style="font-size:22px;font-weight:800;color:var(--text);">${total}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Total</div></div>
-        <div><div style="font-size:22px;font-weight:800;color:#ef4444;">${taken}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Taken</div></div>
-        <div><div style="font-size:22px;font-weight:800;color:#10b981;">${left}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Left</div></div>
+    <div style="background:var(--navy3);border:1px solid ${color}44;border-top:3px solid ${color};border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+      <div style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">${label}</div>
+      <div style="display:flex;justify-content:center;gap:20px;align-items:center;">
+        <div><div style="font-size:26px;font-weight:800;color:var(--text);">${total}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:3px;">Total</div></div>
+        <div><div style="font-size:26px;font-weight:800;color:#ef4444;">${taken}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:3px;">Taken</div></div>
+        <div><div style="font-size:26px;font-weight:800;color:#10b981;">${left}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:3px;">Left</div></div>
       </div>
     </div>`;
 
