@@ -626,38 +626,33 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 </div>
 <!-- ═══════ MODALS ═══════ -->
 
-    <div class="page" id="page-attendance">
-    <div class="card" style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:13px;color:var(--text3);">Period</div>
-        <div class="form-input" id="attPeriodBtn" style="width:180px;padding:9px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onclick="openPeriodPicker()">
-          <span id="attPeriodLabel">This Month</span>
-          <i class="fa fa-chevron-down" style="font-size:11px;color:var(--text3);"></i>
+    <div class="page" id="page-attendance" style="padding:24px;max-width:1200px;margin:0 auto;">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--text);">My Attendance</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;" id="myAttSubtitle">Loading...</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <select id="myAttYear" onchange="renderMyAttendance()" style="background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:8px 14px;color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;"></select>
+          <select id="myAttMonth" onchange="renderMyAttendance()" style="background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:8px 14px;color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;">
+            <option value="-1">Full Year</option>
+            <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+            <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+            <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+            <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+          </select>
         </div>
       </div>
+
+      <!-- KPI Cards -->
+      <div id="myAttKpi" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;"></div>
+
+      <!-- Monthly view or daily list -->
+      <div id="myAttContent"></div>
+
     </div>
-    <div class="card">
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <div style="flex:1;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-size:20px;font-weight:800;color:var(--green);">22</div>
-          <div style="font-size:11px;color:var(--text3);">Present</div>
-        </div>
-        <div style="flex:1;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-size:20px;font-weight:800;color:var(--red);">1</div>
-          <div style="font-size:11px;color:var(--text3);">Absent</div>
-        </div>
-        <div style="flex:1;background:rgba(107,127,160,0.08);border:1px solid rgba(107,127,160,0.2);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-size:20px;font-weight:800;color:var(--text2);">4</div>
-          <div style="font-size:11px;color:var(--text3);">Weekend</div>
-        </div>
-        <div style="flex:1;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-size:20px;font-weight:800;color:var(--orange);">1</div>
-          <div style="font-size:11px;color:var(--text3);">Late</div>
-        </div>
-      </div>
-      <div id="attListContainer"></div>
-    </div>
-  </div>
 
   <!-- ── LEAVE PAGE ── -->
   <div class="page" id="page-leave">
@@ -1122,7 +1117,7 @@ function nav(page){
   });
   document.getElementById('pageTitle').textContent = PAGE_TITLES[page]||page;
   if(page==='dashboard') renderDashboard();
-  if(page==='attendance') renderAttList();
+  if(page==='attendance') initMyAttendance();
   if(page==='leave') renderCalendar();
   if(page==='my-leave'){ renderLeaveList(); renderLeaveChart(); }
   if(page==='recon') renderReconList();
@@ -2463,6 +2458,214 @@ function showCalDayDetail(event, dateStr, status, inTime, outTime, actualDuty, e
     }
     document.addEventListener('click', closeHandler);
   },200);
+}
+
+// ── MY ATTENDANCE ──
+function initMyAttendance(){
+  const emp = _portalEmployee;
+  if(!emp) return;
+  const yearSel = document.getElementById('myAttYear');
+  if(yearSel && !yearSel.options.length){
+    const nowY = new Date().getFullYear();
+    for(let y=2020;y<=nowY+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;yearSel.appendChild(o);}
+    yearSel.value = nowY;
+  }
+  const monthSel = document.getElementById('myAttMonth');
+  if(monthSel) monthSel.value = new Date().getMonth();
+  renderMyAttendance();
+}
+
+function renderMyAttendance(){
+  const emp = _portalEmployee;
+  if(!emp) return;
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MONTH_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const year = parseInt(document.getElementById('myAttYear')?.value)||new Date().getFullYear();
+  const month = parseInt(document.getElementById('myAttMonth')?.value);
+  const attData = (emp.attendance||{})[year]||{};
+  const nowY=new Date().getFullYear(), nowM=new Date().getMonth();
+
+  const sub = document.getElementById('myAttSubtitle');
+  if(sub) sub.textContent = month===-1 ? `Year ${year} — Full Overview` : `${MONTHS[month]} ${year}`;
+
+  // KPI for selected period
+  let totWD=0,totP=0,totL=0,totA=0,totLate=0,totOT=0;
+  const months = month===-1 ? Array.from({length:12},(_,i)=>i) : [month];
+  months.forEach(mi=>{
+    const md=attData[mi]||{};
+    totWD+=parseInt(md.wd)||0; totP+=parseInt(md.present)||0;
+    totL+=parseInt(md.leave)||0; totA+=parseInt(md.absent)||0;
+    totLate+=parseInt(md.late)||0; totOT+=parseFloat(md.ot)||0;
+  });
+  const pct = totWD>0?Math.round(totP/totWD*100):0;
+  const pctClr = pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
+
+  const kpiEl=document.getElementById('myAttKpi');
+  if(kpiEl) kpiEl.innerHTML=`
+    ${kpiCard('📅',totWD,'Working Days','#3b82f6')}
+    ${kpiCard('✅',totP,'Present','#10b981')}
+    ${kpiCard('🌴',totL,'Leave','#f59e0b')}
+    ${kpiCard('❌',totA,'Absent','#ef4444')}
+    ${kpiCard('⏰',totLate,'Late','#f97316')}
+    ${kpiCard('💡',totOT.toFixed(1),'OT Hours','#06b6d4')}
+    <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid ${pctClr}44;border-top:3px solid ${pctClr};border-radius:12px;padding:14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="font-size:28px;font-weight:900;color:${pctClr};">${pct}%</div>
+      <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Attendance</div>
+    </div>`;
+
+  const content=document.getElementById('myAttContent');
+  if(!content) return;
+
+  if(month===-1){
+    // Full year — monthly summary table
+    content.innerHTML=`
+      <div style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);">
+          <span style="font-size:13px;font-weight:700;color:var(--gold);"><i class="fa fa-table"></i> Monthly Summary ${year}</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:rgba(255,255,255,0.03);">
+              <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Month</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:#3b82f6;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">WD</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:#10b981;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Present</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:#f59e0b;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Leave</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:#ef4444;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Absent</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:#f97316;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Late</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:#06b6d4;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">OT Hours</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--gold);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Att %</th>
+            </tr></thead>
+            <tbody>${MONTHS.map((m,mi)=>{
+              const md=attData[mi]||{};
+              const wd=parseInt(md.wd)||0, p=parseInt(md.present)||0;
+              const pct2=wd>0?Math.round(p/wd*100):0;
+              const pc=pct2>=90?'#10b981':pct2>=75?'#f59e0b':'#ef4444';
+              const isFut=(year===nowY&&mi>nowM)||year>nowY;
+              return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);opacity:${isFut?.5:1};cursor:pointer;" onclick="document.getElementById('myAttMonth').value=${mi};renderMyAttendance();">
+                <td style="padding:9px 14px;font-weight:600;color:var(--text);">${m}</td>
+                <td style="padding:9px 8px;text-align:center;">${wd||'—'}</td>
+                <td style="padding:9px 8px;text-align:center;color:#10b981;font-weight:600;">${parseInt(md.present)||'—'}</td>
+                <td style="padding:9px 8px;text-align:center;color:#f59e0b;">${parseInt(md.leave)||'—'}</td>
+                <td style="padding:9px 8px;text-align:center;color:#ef4444;">${parseInt(md.absent)||'—'}</td>
+                <td style="padding:9px 8px;text-align:center;color:#f97316;">${parseInt(md.late)||'—'}</td>
+                <td style="padding:9px 8px;text-align:center;color:#06b6d4;">${parseFloat(md.ot)||'—'}</td>
+                <td style="padding:9px 8px;text-align:center;"><span style="background:${pc}22;color:${pc};padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;">${isFut?'—':pct2+'%'}</span></td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+  } else {
+    // Single month — daily log with input option
+    const md = attData[month]||{};
+    const daily = md.daily||[];
+    const daysInMonth = new Date(year,month+1,0).getDate();
+    const STATUS_MAP={'P':'Present','D':'Late (Delay)','E':'Extreme Late','A':'Absent','L':'Leave','H':'Holiday','W':'Weekend','PW':'Present (Weekend)','PH':'Present (Holiday)'};
+    const STATUS_CLR={'P':'#10b981','D':'#f59e0b','E':'#ef4444','A':'#ef4444','L':'#3b82f6','H':'#818cf8','W':'#475569','PW':'#10b981','PH':'#10b981'};
+    const isFutMon = (year===nowY&&month>nowM)||year>nowY;
+
+    content.innerHTML=`
+      <div style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);margin-bottom:16px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;font-weight:700;color:var(--gold);"><i class="fa fa-calendar-days"></i> ${MONTHS[month]} ${year} — Daily Log</span>
+          <div style="display:flex;gap:8px;font-size:10px;color:var(--text3);">
+            <span style="color:#10b981;">● Present</span>
+            <span style="color:#f59e0b;">● Late</span>
+            <span style="color:#ef4444;">● Absent</span>
+            <span style="color:#3b82f6;">● Leave</span>
+            <span style="color:#818cf8;">● Holiday</span>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:rgba(255,255,255,0.03);">
+              <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Day</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:#06b6d4;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Check-In</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:#8b5cf6;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Check-Out</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--gold);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">OT (h)</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Note</th>
+            </tr></thead>
+            <tbody id="myAttDailyBody"></tbody>
+          </table>
+        </div>
+      </div>
+      ${!isFutMon?`<div style="text-align:center;padding:10px;">
+        <button onclick="saveMyAttendance(${year},${month})" style="background:var(--gold);color:#000;font-weight:700;font-size:13px;padding:10px 28px;border:none;border-radius:10px;cursor:pointer;font-family:inherit;"><i class="fa fa-floppy-disk" style="margin-right:6px;"></i>Save Changes</button>
+      </div>`:''}`;
+
+    const tbody=document.getElementById('myAttDailyBody');
+    if(!tbody) return;
+    const rows=[];
+    for(let d=1;d<=daysInMonth;d++){
+      const dateObj=new Date(year,month,d);
+      const dow=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dateObj.getDay()];
+      const isWeekend=dateObj.getDay()===5||dateObj.getDay()===6;
+      const dayData=typeof daily[d-1]==='object'?daily[d-1]:{s:daily[d-1]||''};
+      const status=dayData.s||'';
+      const isFutDay=(year===nowY&&month===nowM&&d>new Date().getDate())||(year===nowY&&month>nowM)||year>nowY;
+      const clr=STATUS_CLR[status]||'var(--text3)';
+      const label=STATUS_MAP[status]||'—';
+      if(isFutDay){
+        rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.03);opacity:.35;">
+          <td style="padding:8px 14px;font-weight:600;">${d} <span style="color:var(--text3);font-size:10px;">${dow}</span></td>
+          <td colspan="5" style="text-align:center;color:var(--text3);font-size:10px;">—</td>
+        </tr>`);
+      } else {
+        rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+          <td style="padding:8px 14px;font-weight:600;color:${isWeekend?'var(--text3)':'var(--text)'};">${d} <span style="font-size:10px;color:var(--text3);">${dow}</span></td>
+          <td style="padding:8px;text-align:center;"><span style="background:${clr}22;color:${clr};padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">${label||'—'}</span></td>
+          <td style="padding:6px 8px;text-align:center;"><input type="time" value="${dayData.in||''}" style="background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:var(--text);font-size:11px;font-family:inherit;" onchange="updateMyDayData(${year},${month},${d-1},'in',this.value)"></td>
+          <td style="padding:6px 8px;text-align:center;"><input type="time" value="${dayData.out||''}" style="background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:var(--text);font-size:11px;font-family:inherit;" onchange="updateMyDayData(${year},${month},${d-1},'out',this.value)"></td>
+          <td style="padding:6px 8px;text-align:center;"><input type="number" step="0.5" min="0" value="${dayData.ot||''}" placeholder="0" style="background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:var(--text);font-size:11px;width:60px;font-family:inherit;" onchange="updateMyDayData(${year},${month},${d-1},'ot',this.value)"></td>
+          <td style="padding:6px 14px;"><input type="text" value="${(dayData.note||'').replace(/"/g,'&quot;')}" placeholder="Add note..." style="background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:11px;width:100%;font-family:inherit;" onchange="updateMyDayData(${year},${month},${d-1},'note',this.value)"></td>
+        </tr>`);
+      }
+    }
+    tbody.innerHTML=rows.join('');
+  }
+}
+
+function kpiCard(icon,val,label,color){
+  return `<div style="flex:1;min-width:100px;background:var(--navy3);border:1px solid ${color}33;border-top:3px solid ${color};border-radius:12px;padding:14px;text-align:center;">
+    <div style="font-size:18px;margin-bottom:4px;">${icon}</div>
+    <div style="font-size:22px;font-weight:800;color:${color};">${val}</div>
+    <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">${label}</div>
+  </div>`;
+}
+
+function updateMyDayData(year, month, dayIdx, field, val){
+  const emp = _portalEmployee;
+  if(!emp) return;
+  if(!emp.attendance) emp.attendance={};
+  if(!emp.attendance[year]) emp.attendance[year]={};
+  if(!emp.attendance[year][month]) emp.attendance[year][month]={};
+  const md = emp.attendance[year][month];
+  if(!md.daily) md.daily=[];
+  while(md.daily.length<=dayIdx) md.daily.push('');
+  if(typeof md.daily[dayIdx]!=='object') md.daily[dayIdx]={s:md.daily[dayIdx]||''};
+  md.daily[dayIdx][field]=val;
+}
+
+async function saveMyAttendance(year, month){
+  const emp = _portalEmployee;
+  if(!emp) return;
+  try{
+    const {data,error} = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
+    if(error||!data) throw new Error('Failed to load data');
+    const employees = data.value;
+    const idx = employees.findIndex(e=>e.id===emp.id);
+    if(idx===-1) throw new Error('Employee not found');
+    if(!employees[idx].attendance) employees[idx].attendance={};
+    if(!employees[idx].attendance[year]) employees[idx].attendance[year]={};
+    Object.assign(employees[idx].attendance[year][month]||{}, emp.attendance?.[year]?.[month]||{});
+    employees[idx].attendance[year][month] = emp.attendance?.[year]?.[month]||{};
+    const {error:saveErr} = await _portalSupa.from('app_data').update({value:employees,updated_at:new Date().toISOString(),updated_by:emp.name||'portal'}).eq('key','employees');
+    if(saveErr) throw saveErr;
+    toast('Saved ✓','success');
+  }catch(e){
+    toast('Save failed: '+e.message,'error');
+  }
 }
 
 // ── SUPABASE + PORTAL LOGIN ──
