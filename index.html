@@ -391,69 +391,83 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   </div>
 
   <!-- ── HOME PAGE ── -->
-  <div class="page active" id="page-home">
-    <div style="margin-bottom:20px;">
-      <div class="att-card">
-        <div style="position:relative;z-index:1;">
-          <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px;">Current Time</div>
-          <div class="att-time" id="homeTime">--:-- --</div>
-          <div class="att-label" id="homeAttLabel">Not checked in yet</div>
-          <div class="att-btns">
-            <button class="att-btn att-btn-in" onclick="openCheckinModal('in')"><i class="fa fa-sign-in-alt" style="margin-right:6px;"></i>Check In</button>
-            <button class="att-btn att-btn-out" onclick="openCheckinModal('out')"><i class="fa fa-sign-out-alt" style="margin-right:6px;"></i>Check Out</button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="page active" id="page-home" style="padding:0;">
 
-    <!-- Stats -->
-    <div class="grid-3" style="margin-bottom:20px;">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(16,185,129,0.12);color:var(--green);"><i class="fa fa-check"></i></div>
-        <div class="stat-value" id="statPresent">22</div>
-        <div class="stat-label">Present This Month</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(239,68,68,0.12);color:var(--red);"><i class="fa fa-xmark"></i></div>
-        <div class="stat-value" id="statAbsent">1</div>
-        <div class="stat-label">Absent</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(37,99,235,0.12);color:var(--blue3);"><i class="fa fa-umbrella-beach"></i></div>
-        <div class="stat-value" id="statLeave">5</div>
-        <div class="stat-label">Leave Remaining</div>
-      </div>
+  <!-- Hero: Check In/Out -->
+  <div style="background:linear-gradient(135deg,#0a1628 0%,#0f2040 60%,#0a1628 100%);border-bottom:1px solid var(--border);padding:28px 24px 24px;">
+    <div style="margin-bottom:18px;">
+      <div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;" id="homeGreeting">Good morning</div>
+      <div style="font-size:22px;font-weight:800;color:var(--text);margin-top:4px;" id="homeEmpName">—</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;" id="homeEmpMeta">—</div>
     </div>
-
-    <!-- Modules -->
-    <div class="section-title">Modules</div>
-    <div class="module-grid" style="margin-bottom:20px;">
-      <div class="module-item" onclick="nav('attendance')">
-        <div class="module-icon"><i class="fa fa-fingerprint"></i></div>
-        <div class="module-label">My Attendance</div>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(201,162,77,0.18);border-radius:18px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+      <div>
+        <div class="att-time" id="homeTime" style="font-size:38px;font-weight:900;letter-spacing:-1px;color:var(--gold);">--:-- --</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;" id="homeDateStr">—</div>
+        <div style="font-size:12px;color:#10b981;margin-top:8px;font-weight:700;" id="homeAttLabel">—</div>
       </div>
-      <div class="module-item" onclick="nav('leave')">
-        <div class="module-icon"><i class="fa fa-calendar"></i></div>
-        <div class="module-label">Leave Calendar</div>
-      </div>
-      <div class="module-item" onclick="nav('apply-leave')">
-        <div class="module-icon"><i class="fa fa-paper-plane"></i></div>
-        <div class="module-label">Apply Leave</div>
-      </div>
-      <div class="module-item" onclick="nav('my-leave')">
-        <div class="module-icon"><i class="fa fa-list-check"></i></div>
-        <div class="module-label">Leave Balance</div>
-      </div>
-      <div class="module-item" onclick="nav('recon')">
-        <div class="module-icon"><i class="fa fa-clock-rotate-left"></i></div>
-        <div class="module-label">Recon. App</div>
-      </div>
-      <div class="module-item" onclick="nav('profile')">
-        <div class="module-icon"><i class="fa fa-user"></i></div>
-        <div class="module-label">My Profile</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button onclick="openCheckinModal('in')" style="background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:12px;padding:12px 22px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(16,185,129,0.35);letter-spacing:.2px;"><i class="fa fa-sign-in-alt"></i> Check In</button>
+        <button onclick="openCheckinModal('out')" style="background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:12px;padding:12px 22px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(239,68,68,0.35);letter-spacing:.2px;"><i class="fa fa-sign-out-alt"></i> Check Out</button>
       </div>
     </div>
   </div>
+
+  <div style="padding:20px 24px;">
+    <!-- Stats -->
+    <div style="display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:88px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid rgba(16,185,129,0.2);border-top:3px solid #10b981;border-radius:14px;padding:14px 10px;text-align:center;box-shadow:var(--shadow-card);">
+        <div style="font-size:26px;font-weight:900;color:#10b981;" id="statPresent">—</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Present</div>
+      </div>
+      <div style="flex:1;min-width:88px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid rgba(239,68,68,0.2);border-top:3px solid #ef4444;border-radius:14px;padding:14px 10px;text-align:center;box-shadow:var(--shadow-card);">
+        <div style="font-size:26px;font-weight:900;color:#ef4444;" id="statAbsent">—</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Absent</div>
+      </div>
+      <div style="flex:1;min-width:88px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid rgba(245,158,11,0.2);border-top:3px solid #f59e0b;border-radius:14px;padding:14px 10px;text-align:center;box-shadow:var(--shadow-card);">
+        <div style="font-size:26px;font-weight:900;color:#f59e0b;" id="statLeave">—</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Leave Left</div>
+      </div>
+      <div style="flex:1;min-width:88px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid rgba(6,182,212,0.2);border-top:3px solid #06b6d4;border-radius:14px;padding:14px 10px;text-align:center;box-shadow:var(--shadow-card);">
+        <div style="font-size:26px;font-weight:900;color:#06b6d4;" id="statOT">—</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">OT Hours</div>
+      </div>
+      <div style="flex:1;min-width:88px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid rgba(201,162,77,0.2);border-top:3px solid var(--gold);border-radius:14px;padding:14px 10px;text-align:center;box-shadow:var(--shadow-card);">
+        <div style="font-size:26px;font-weight:900;color:var(--gold);" id="statAtt">—</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Att %</div>
+      </div>
+    </div>
+
+    <!-- Quick Access -->
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;">Quick Access</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      <div onclick="nav('dashboard')" style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:var(--shadow-card);" onmouseover="this.style.borderColor='#3b82f655'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:42px;height:42px;border-radius:12px;background:#3b82f618;border:1px solid #3b82f633;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><i class="fa fa-chart-line" style="color:#3b82f6;font-size:17px;"></i></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);">Dashboard</div>
+      </div>
+      <div onclick="nav('attendance')" style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:var(--shadow-card);" onmouseover="this.style.borderColor='#10b98155'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:42px;height:42px;border-radius:12px;background:#10b98118;border:1px solid #10b98133;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><i class="fa fa-fingerprint" style="color:#10b981;font-size:17px;"></i></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);">My Attendance</div>
+      </div>
+      <div onclick="nav('leave')" style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:var(--shadow-card);" onmouseover="this.style.borderColor='#8b5cf655'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:42px;height:42px;border-radius:12px;background:#8b5cf618;border:1px solid #8b5cf633;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><i class="fa fa-calendar-days" style="color:#8b5cf6;font-size:17px;"></i></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);">Leave Calendar</div>
+      </div>
+      <div onclick="nav('apply-leave')" style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:var(--shadow-card);" onmouseover="this.style.borderColor='#f59e0b55'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:42px;height:42px;border-radius:12px;background:#f59e0b18;border:1px solid #f59e0b33;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><i class="fa fa-paper-plane" style="color:#f59e0b;font-size:17px;"></i></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);">Apply Leave</div>
+      </div>
+      <div onclick="nav('recon')" style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:var(--shadow-card);" onmouseover="this.style.borderColor='#06b6d455'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:42px;height:42px;border-radius:12px;background:#06b6d418;border:1px solid #06b6d433;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><i class="fa fa-file-signature" style="color:#06b6d4;font-size:17px;"></i></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);">Recon. App</div>
+      </div>
+      <div onclick="nav('profile')" style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;box-shadow:var(--shadow-card);" onmouseover="this.style.borderColor='#c9a44d55'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:42px;height:42px;border-radius:12px;background:#c9a44d18;border:1px solid #c9a44d33;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><i class="fa fa-user" style="color:#c9a44d;font-size:17px;"></i></div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);">My Profile</div>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- ── ATTENDANCE PAGE ── -->
 <div class="page" id="page-dashboard" style="padding:24px;max-width:1400px;margin:0 auto;">
@@ -1117,6 +1131,7 @@ function nav(page){
   });
   document.getElementById('pageTitle').textContent = PAGE_TITLES[page]||page;
   if(page==='dashboard') renderDashboard();
+  if(page==='home') initHomePage();
   if(page==='attendance') initMyAttendance();
   if(page==='leave') renderCalendar();
   if(page==='my-leave'){ renderLeaveList(); renderLeaveChart(); }
@@ -2460,6 +2475,34 @@ function showCalDayDetail(event, dateStr, status, inTime, outTime, actualDuty, e
   },200);
 }
 
+// ── HOME PAGE ──
+function initHomePage(){
+  const emp = _portalEmployee;
+  const h = new Date().getHours();
+  const greet = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const el = id => document.getElementById(id);
+  if(el('homeGreeting')) el('homeGreeting').textContent = greet;
+  if(el('homeEmpName')) el('homeEmpName').textContent = emp?.name||'';
+  if(el('homeEmpMeta')) el('homeEmpMeta').textContent = (emp?.desig||'')+(emp?.dept?' · '+emp.dept:'')+(emp?.empId?' · ID: '+emp.empId:'');
+  if(el('homeDateStr')) el('homeDateStr').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Stats from current month HR data
+  if(emp){
+    const y=new Date().getFullYear(), m=new Date().getMonth();
+    const md=(emp.attendance||{})[y]?.[m]||{};
+    const lb=(emp.leaveBalance||{})[y]||{};
+    const annB=((lb.annualEntitled||0)-(lb.annualTaken||0));
+    const casB=((lb.casualEntitled||0)-(lb.casualTaken||0));
+    const totP=parseInt(md.present)||0, totA=parseInt(md.absent)||0, totWD=parseInt(md.wd)||0;
+    const pct=totWD>0?Math.round(totP/totWD*100):0;
+    const pctClr=pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
+    if(el('statPresent')) el('statPresent').textContent=totP||'—';
+    if(el('statAbsent')) el('statAbsent').textContent=totA||'—';
+    if(el('statLeave')) el('statLeave').textContent=(annB+casB)||'—';
+    if(el('statOT')) el('statOT').textContent=parseFloat(md.ot)||'—';
+    if(el('statAtt')){ el('statAtt').textContent=pct?pct+'%':'—'; el('statAtt').style.color=pctClr; }
+  }
+}
+
 // ── MY ATTENDANCE ──
 const _MA_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -2671,6 +2714,7 @@ async function doPortalLogin(){
     initPortalUI(emp);
     nav('dashboard');
     setTimeout(renderDashboard, 100);
+    initHomePage();
     errEl.textContent='';
   }catch(e){
     errEl.textContent = e.message||'Login failed. Try again.';
@@ -2718,6 +2762,7 @@ window.addEventListener('load', ()=>{
             initPortalUI(emp);
             nav('dashboard');
             setTimeout(renderDashboard, 100);
+            initHomePage();
             return;
           }
         }
