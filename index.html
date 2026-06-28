@@ -354,6 +354,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   <div class="nav-section">
     <div class="nav-label">Main</div>
     <div class="nav-item active" onclick="nav('home')"><i class="fa fa-home"></i> Home</div>
+    <div class="nav-item" onclick="nav('dashboard')"><i class="fa fa-chart-line"></i> Dashboard</div>
     <div class="nav-item" onclick="nav('attendance')"><i class="fa fa-fingerprint"></i> Attendance</div>
     <div class="nav-item" onclick="nav('leave')"><i class="fa fa-calendar-check"></i> Leave</div>
     <div class="nav-item" onclick="nav('profile')"><i class="fa fa-user"></i> My Profile</div>
@@ -455,7 +456,206 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   </div>
 
   <!-- ── ATTENDANCE PAGE ── -->
-  <div class="page" id="page-attendance">
+<div class="page" id="page-dashboard">
+  <!-- Employee Info Bar -->
+  <div id="attEmpBar" style="display:none;background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+    <div style="width:40px;height:40px;border-radius:50%;background:var(--gold2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#0a1020;" id="attEmpInitial">-</div>
+    <div>
+      <div style="font-weight:700;font-size:14px;" id="attEmpName">-</div>
+      <div style="font-size:12px;color:var(--text2);" id="attEmpInfo">-</div>
+    </div>
+  </div>
+
+  <!-- No employee selected -->
+  <div id="attNoEmp" style="text-align:center;padding:60px;color:var(--text3);">
+    <i class="fa fa-user-circle" style="font-size:48px;margin-bottom:16px;display:block;"></i>
+    <div style="font-size:15px;font-weight:600;margin-bottom:8px;">Select an Employee</div>
+    <div style="font-size:13px;">Choose an employee from the dropdown above</div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="attMainContent" style="display:none;">
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="attKpi" style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
+
+    <!-- Charts -->
+    <div id="attChartSection" style="margin-bottom:16px;"></div>
+
+    <!-- Monthly Attendance Table -->
+    <div style="margin-bottom:16px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+      <div style="padding:14px 20px;background:linear-gradient(135deg,#0f1e30,#162840);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:0.05em;"><i class="fa fa-calendar-check" style="margin-right:8px;"></i>Monthly Attendance Record</span>
+        <span style="font-size:11px;color:var(--text3);">✏️ click to edit row</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;min-width:1100px;border-collapse:collapse;">
+          <thead>
+            <tr style="background:rgba(255,255,255,0.04);">
+              <th style="padding:6px 12px;text-align:left;font-size:10px;font-weight:700;color:#5b7fa6;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.04);">Month</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#5b8fa6;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(37,99,235,0.4);border-right:1px solid rgba(255,255,255,0.04);">Working Days</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#10b981;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(16,185,129,0.5);border-right:1px solid rgba(255,255,255,0.04);">Present</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#3b82f6;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(59,130,246,0.5);border-right:1px solid rgba(255,255,255,0.04);">Leave</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#ef4444;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(239,68,68,0.5);border-right:1px solid rgba(255,255,255,0.04);">Absent</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#818cf8;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(129,140,248,0.5);border-right:1px solid rgba(255,255,255,0.04);">Holiday</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,0.5);border-right:1px solid rgba(255,255,255,0.04);">Late</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(167,139,250,0.5);border-right:1px solid rgba(255,255,255,0.04);">Half Day</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(6,182,212,0.5);border-right:1px solid rgba(255,255,255,0.04);">OT Hours</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(34,211,238,0.5);border-right:1px solid rgba(255,255,255,0.04);">AOT(H)</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#8b5cf6;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(139,92,246,0.5);border-right:1px solid rgba(255,255,255,0.04);">E/L OT(h)</th>
+              <th style="padding:6px 6px;text-align:center;font-size:10px;font-weight:700;color:#d4af37;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(212,175,55,0.5);border-right:1px solid rgba(255,255,255,0.04);">Attendance %</th>
+              <th style="padding:6px 12px;text-align:left;font-size:10px;font-weight:700;color:#5b7fa6;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid rgba(255,255,255,0.06);">Notes</th>
+            </tr>
+          </thead>
+          <tbody id="attTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Yearly Attendance Status -->
+    <div id="attYearlyCalSection" style="margin-bottom:16px;"></div>
+
+    <!-- Leave Records -->
+    <div class="form-section" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="form-section-title" style="margin:0;"><i class="fa fa-umbrella-beach"></i> Leave Records</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary btn-sm" id="leaveEditBtn" onclick="toggleLeaveEdit()"><i class="fa fa-pen"></i> Edit</button>
+          <button class="btn btn-primary btn-sm" onclick="addLeavePageRecord()"><i class="fa fa-plus"></i> Add Leave</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;" id="attLeaveBalance"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Leave Type</th><th>From</th><th>To</th>
+            <th>Days</th><th>Reason</th><th>Status</th><th>Approved By</th><th>Action</th>
+          </tr></thead>
+          <tbody id="attLeaveBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add Leave Form -->
+    <div class="form-section" id="attAddLeaveForm" style="display:none;">
+      <div class="form-section-title"><i class="fa fa-plus"></i> New Leave Application</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Leave Type</label>
+          <select class="form-control" id="attLeaveType">
+            <option value="Annual">Annual Leave</option>
+            <option value="Sick">Sick Leave</option>
+            <option value="Casual">Casual Leave</option>
+            <option value="Maternity">Maternity Leave</option>
+            <option value="Paternity">Paternity Leave</option>
+            <option value="Emergency">Emergency Leave</option>
+            <option value="Unpaid">Unpaid Leave</option>
+            <option value="Compensatory">Compensatory Leave</option>
+          </select>
+        </div>
+        <div class="form-group"><label>From Date</label><input class="form-control" id="attLeaveFrom" type="date"></div>
+        <div class="form-group"><label>To Date</label><input class="form-control" id="attLeaveTo" type="date"></div>
+        <div class="form-group"><label>Status</label>
+          <select class="form-control" id="attLeaveStatus">
+            <option value="Approved">Approved</option>
+            <option value="Pending">Pending</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Approved By</label><input class="form-control" id="attLeaveApprover" placeholder="Approver name"></div>
+        <div class="form-group"><label>Reason</label><input class="form-control" id="attLeaveReason" placeholder="Reason for leave..."></div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-success btn-sm" onclick="saveLeavePageRecord()"><i class="fa fa-floppy-disk"></i> Save Leave</button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('attAddLeaveForm').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-emphistory">
+  <div class="page-hdr">
+    <h2>🕐 Employee History</h2>
+    <div class="page-hdr-actions">
+      <button class="btn btn-secondary btn-sm" onclick="printEmpHistoryPage()"><i class="fa fa-print"></i> Print</button>
+      <button class="btn btn-success btn-sm" onclick="exportEhHistoryExcel()"><i class="fa fa-file-excel"></i> Export Excel</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px;padding:14px;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+      <div class="form-group" style="margin:0;flex:2;min-width:200px;">
+        <label style="font-size:11px;font-weight:600;">🔍 Search Employee</label>
+        <input type="text" class="form-control" id="ehSearch"
+          placeholder="Type name, ID, designation, department..."
+          oninput="renderEmpHistorySearch()"
+          onkeydown="if(event.key==='Enter')renderEmpHistorySearch()"
+          style="font-size:13px;">
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:11px;font-weight:600;">Project</label>
+        <select class="form-control" id="ehProjFilter" onchange="renderEmpHistorySearch()">
+          <option value="">All Projects</option>
+          <option value="IED">IED</option><option value="BIWTA">BIWTA</option>
+          <option value="NBR">NBR</option><option value="PGCL">PGCL</option>
+          <option value="BCIC">BCIC</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:11px;font-weight:600;">Status</label>
+        <select class="form-control" id="ehStatusFilter" onchange="renderEmpHistorySearch()">
+          <option value="">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Exited</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:11px;font-weight:600;">Department</label>
+        <select class="form-control" id="ehDeptFilter" onchange="renderEmpHistorySearch()">
+          <option value="">All Departments</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:16px;">
+        <button class="btn btn-primary" onclick="renderEmpHistorySearch()"><i class="fa fa-search"></i> Search</button>
+        <button class="btn btn-secondary" onclick="clearEhSearch()"><i class="fa fa-rotate-left"></i> Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px;" id="ehPickCard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span id="ehPickCount" style="font-size:12px;color:var(--text2);">Loading employees...</span>
+      <span style="font-size:11px;color:var(--text3);">Click any row to view full history</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Photo</th><th>Emp ID</th><th>Name</th>
+          <th>Department</th><th>Designation</th><th>Project</th>
+          <th>Status</th><th>Join Date</th><th>Service</th><th>Gross</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="ehPickTableBody">
+          <tr><td colspan="12" style="text-align:center;color:var(--text2);padding:20px;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div id="ehHistoryDisplay" style="display:none;">
+    <div class="card" style="margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <div style="font-size:15px;font-weight:700;" id="ehEmpNameHeader">—</div>
+        <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('ehHistoryDisplay').style.display='none';window.scrollTo(0,0)">
+            <i class="fa fa-times"></i> Close
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="editFromEhPage()"><i class="fa fa-edit"></i> Edit Profile</button>
+          <button class="btn btn-secondary btn-sm" onclick="printEmpHistoryPage()"><i class="fa fa-print"></i> Print</button>
+          <button class="btn btn-success btn-sm" onclick="exportEhHistoryExcel()"><i class="fa fa-file-excel"></i> Excel</button>
+        </div>
+      </div>
+      <div id="ehFullHistoryContent"></div>
+    </div>
+  </div>
+</div>
+<!-- ═══════ MODALS ═══════ -->
+
+    <div class="page" id="page-attendance">
     <div class="card" style="margin-bottom:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:13px;color:var(--text3);">Period</div>
@@ -937,7 +1137,7 @@ let checkoutTime = null;
 
 // ── NAV ──
 const PAGE_TITLES = {
-  home:'Home', attendance:'My Attendance', leave:'Leave',
+  home:'Home', dashboard:'Dashboard', attendance:'My Attendance', leave:'Leave',
   'apply-leave':'Apply for Leave', 'my-leave':'My Leave Applications',
   recon:'Recon. Application', profile:'My Profile'
 };
@@ -950,6 +1150,7 @@ function nav(page){
     if(n.getAttribute('onclick')?.includes("'"+page+"'")) n.classList.add('active');
   });
   document.getElementById('pageTitle').textContent = PAGE_TITLES[page]||page;
+  if(page==='dashboard') renderDashboard();
   if(page==='attendance') renderAttList();
   if(page==='leave') renderCalendar();
   if(page==='my-leave'){ renderLeaveList(); renderLeaveChart(); }
@@ -1666,6 +1867,805 @@ renderReconList();
 </div><!-- end mainApp -->
 
 <script>
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTH_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let _charts={}; let leaveEditMode=false; let attPageEditRow=null;
+let employees=[];
+function saveState(){return Promise.resolve();}
+function getEidBonus(){return 0;}
+function getEmpGrossForMonth(){return 0;}
+function toast(m,t){}
+
+function bdt(n){
+  const x=Math.round(parseFloat(n)||0);
+  if(x<0) return '('+Math.abs(x).toLocaleString('en-IN')+')';
+  return x.toLocaleString('en-IN');
+}
+
+function calcSalary(gross){
+  const g=Math.round(parseFloat(gross)||0);
+  const basic=Math.round(g*0.60);
+  const houseRent=Math.round(g*0.30);
+  const medical=Math.round(g*0.06);
+  const conveyance=g-basic-houseRent-medical; // 4%
+  const pf=Math.round(g*0.05);
+  const ait=Math.round(g*0.005);
+  const deductions=pf+ait;
+  const net=g-deductions;
+  return {gross:g,basic,houseRent,medical,conveyance,pf,ait,deductions,net};
+}
+
+function getEmpGrossForMonth(emp,year,month){
+  // Check career history for salary at that point in time
+  const hist=(emp.careerHistory||[]).filter(e=>e.type==='increment'||e.type==='promotion');
+  const ym=year*100+month;
+  let gross=emp.gross;
+  // find most recent event before or at this month
+  let relevant=hist.filter(e=>{
+    if(!e.date) return false;
+    const d=new Date(e.date);
+    const eym=d.getFullYear()*100+(d.getMonth());
+    return eym<=ym && e.newGross;
+  }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  // Use original gross from history if available
+  // Actually, we look forward: what was gross AT that time?
+  // Start from original, apply increments in order
+  // Simpler: find last increment BEFORE that month
+  if(relevant.length>0 && relevant[0].newGross){
+    // find the FIRST event and work forward
+    const allEvents=hist.filter(e=>e.newGross).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    gross=emp.originalGross||emp.gross;
+    for(const ev of allEvents){
+      const d=new Date(ev.date);
+      const eym=d.getFullYear()*100+d.getMonth();
+      if(eym<=ym) gross=ev.newGross;
+      else break;
+    }
+  }
+  return gross;
+}
+
+function destroyChart(id){
+  if(_charts[id]){try{_charts[id].destroy();}catch(e){}delete _charts[id];}
+}
+
+function renderDashboard(){
+  // portal: emp from login
+
+  // Init year dropdown
+  const ySel = document.getElementById('dashYear');
+  if(ySel && !ySel.options.length){
+    for(let y=2020;y<=2030;y++){const o=document.createElement('option');o.value=y;o.textContent=y;ySel.appendChild(o);}
+    ySel.value=new Date().getFullYear();
+  }
+
+  const year = parseInt(ySel?.value)||new Date().getFullYear();
+  const emp = _portalEmployee;
+  if(!emp) return;
+  document.getElementById('attMainContent').style.display='block';
+  document.getElementById('attEmpBar').style.display='flex';
+  document.getElementById('attEmpInitial').textContent=(emp.name||'?')[0].toUpperCase();
+  document.getElementById('attEmpName').textContent=emp.name||'-';
+  document.getElementById('attEmpInfo').textContent=(emp.desig||'-')+' | '+(emp.dept||'-')+' | '+(emp.project||'-');
+
+  // Render attendance table
+  const attData=(emp.attendance||{})[year]||{};
+  const nowYear2=new Date().getFullYear();
+  const isFutureYear = year > nowYear2;
+  const nowM = nowYear2===year ? new Date().getMonth() : (isFutureYear ? -1 : 11);
+  let totalPresent=0,totalLeave=0,totalAbsent=0,totalLate=0,totalOT=0,totalWDSoFar=0;
+  let totalOnTime=0,totalDelay=0,totalExDelay=0;
+  const barLabels=[],barWD=[],barPresent=[],barLeaveAbsent=[];
+  const rows=MONTHS.map((m,i)=>{
+    const nowYear=new Date().getFullYear(), nowMonth=new Date().getMonth(), nowDay=new Date().getDate();
+    const isFuture = (year===nowYear && i>nowMonth) || year>nowYear;
+    const isCurMonth = year===nowYear && i===nowMonth;
+    const isFutureOrCurrent = isFuture; // used for locked state
+    const rawData = attData[i]||{};
+    let mData;
+    if(isFuture){
+      mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',note:rawData.note||''};
+    } else if(isCurMonth){
+      const _daily=rawData.daily||[];
+      if(_daily.length>0){
+        let _wd=0,_p=0,_a=0,_l=0,_late=0,_h=0;
+        _daily.slice(0,nowDay-1).forEach(d=>{
+          const s=typeof d==='object'?d.s:d;
+          if(s==='P'||s==='P(L)'){ _p++; _wd++; }
+          else if(s==='D'){ _p++; _wd++; _late++; }
+          else if(s==='E'){ _p++; _wd++; _late++; }
+          else if(s==='A'){ _a++; _wd++; }
+          else if(s==='L'){ _l++; _wd++; }
+          else if(s==='H'){ _h++; }
+          else if(s==='P(W)'||s==='P(H)'){ _p++; _wd++; }
+        });
+        mData={...rawData,wd:_wd,present:_p,absent:_a,leave:_l,late:_late,holiday:_h,half:rawData.half||0,ot:rawData.ot||0};
+      } else {
+        mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',note:rawData.note||'',...rawData};
+      }
+    } else {
+      mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',...rawData,wd:rawData.wd||0};
+    }
+    const present=parseInt(mData.present)||0;
+    const leave=parseInt(mData.leave)||0;
+    const half=parseInt(mData.half)||0;
+    const absent=parseInt(mData.absent)||0;
+    const wd=parseInt(mData.wd)||0;
+    const leaveEquiv = leave + (half/2);
+    const effectiveWD = wd > 0 ? wd : 0;
+    const pct2 = effectiveWD>0 ? Math.round(present/effectiveWD*100) : 0;
+    const pctColor2 = pct2>=90?'#10b981':pct2>=75?'#f59e0b':'#ef4444';
+    const pctBg = pct2>=90?'rgba(16,185,129,0.1)':pct2>=75?'rgba(245,158,11,0.1)':'rgba(239,68,68,0.1)';
+    // Count P/D/E from daily array
+    const daily=mData.daily||[];
+    let mOnTime=0,mDelay=0,mExDelay=0;
+    daily.forEach(d=>{
+      const s=typeof d==='object'?(d.s||''):d;
+      if(s==='P'||s==='P(W)'||s==='P(H)'||s==='P(L)') mOnTime++;
+      else if(s==='D') mDelay++;
+      else if(s==='E') mExDelay++;
+    });
+    totalPresent+=present;
+    totalLeave+=leave;
+    totalAbsent+=absent;
+    totalLate+=parseInt(mData.late)||0;
+    totalOT+=parseFloat(mData.ot)||0;
+    totalOnTime+=mOnTime;
+    totalDelay+=mDelay;
+    totalExDelay+=mExDelay;
+    // Only count months up to current for overall %
+    if(i<=nowM){ totalWDSoFar+=wd; }
+    // Bar chart - only up to current month
+    if(i<=nowM){
+      barLabels.push(m.slice(0,3));
+      barWD.push(wd);
+      barPresent.push(present);
+      barLeaveAbsent.push(Math.round(leaveEquiv+absent));
+    }
+    const locked = !attPageEditRow || attPageEditRow !== `${year}_${i}`;
+    const inputStyle = locked
+      ? 'width:52px;font-size:12px;color:var(--text);font-weight:600;background:transparent;border:none;pointer-events:none;text-align:center;height:22px;'
+      : 'width:52px;font-size:12px;color:#111;font-weight:700;text-align:center;background:#fff;border:1.5px solid var(--gold);border-radius:4px;height:22px;';
+    const noteStyle = locked
+      ? 'width:90px;font-size:11px;background:transparent;border:none;pointer-events:none;color:var(--text3);height:22px;'
+      : 'width:90px;font-size:11px;color:#111;background:#fff;border:2px solid var(--gold);border-radius:6px;';
+    const rowBg = locked ? '' : 'background:rgba(212,175,55,0.04);';
+    const rowBorder = 'border-bottom:1px solid rgba(255,255,255,0.04);';
+    const colBorder = 'border-right:1px solid rgba(255,255,255,0.04);';
+    const tdStyle = 'padding:2px 4px;text-align:center;'+rowBorder+colBorder;
+    const tdLeft = 'padding:2px 8px;'+rowBorder+colBorder;
+    return `<tr style="${rowBg}transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='${locked?'':'rgba(212,175,55,0.04)'}'">
+      <td style="${tdLeft}font-weight:700;font-size:13px;color:var(--text);">${m}</td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.wd||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'wd',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.present||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'present',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.leave||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'leave',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.absent||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'absent',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.holiday||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'holiday',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.late||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'late',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.half||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'half',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle.replace('width:52px','width:75px')}" step="0.5" value="${mData.ot||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'ot',this.value)"></td>
+      <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#22d3ee;">${present>0?(mData.ot/present).toFixed(2):'—'}</span></td>
+      <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#8b5cf6;">${mData.elOt||'—'}</span></td>
+      <td style="${tdStyle}">
+        <span style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${pct2}%</span>
+      </td>
+      <td style="${tdLeft}display:flex;align-items:center;gap:6px;">
+        <input class="form-control" style="${noteStyle}" value="${mData.note||''}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'note',this.value)" placeholder="—">
+        <button onclick="toggleAttEdit(${year},${i})" title="${locked?'Edit':'Save'}" style="width:28px;height:28px;border-radius:7px;border:1px solid ${locked?'rgba(255,255,255,0.1)':'var(--gold)'};background:${locked?'transparent':'rgba(212,175,55,0.12)'};color:${locked?'var(--text3)':'var(--gold)'};cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
+          <i class="fa ${locked?'fa-pen':'fa-check'}"></i>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+  const tbody=document.getElementById('attTableBody');
+  if(tbody) tbody.innerHTML=rows;
+
+  // Overall attendance = average of monthly attendance % (past months only)
+  let monthPctSum = 0, monthPctCount = 0;
+  for(let mi=0; mi<nowM; mi++){
+    const md = attData[mi]||{};
+    const mwd = parseInt(md.wd)||0;
+    const mp = parseInt(md.present)||0;
+    if(mwd>0){ monthPctSum += Math.round(mp/mwd*100); monthPctCount++; }
+  }
+  const overallPct = monthPctCount>0 ? Math.round(monthPctSum/monthPctCount) : 0;
+  const overallClr = overallPct>=90?'#10b981':overallPct>=75?'#f59e0b':'#ef4444';
+  const kpiEl=document.getElementById('attKpi');
+  if(kpiEl) kpiEl.innerHTML=`
+    <div class="kpi-card blue" style="flex:1;min-width:110px;padding:0;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div style="font-size:18px;opacity:.85;">📅</div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:var(--text1);">${totalWDSoFar}</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Working Days</div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;">
+        <div style="font-size:18px;opacity:.85;">✅</div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:#10b981;">${totalPresent}</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Days Present</div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card red" style="flex:1;min-width:110px;padding:0;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div style="font-size:18px;opacity:.85;">🌴</div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:#f59e0b;">${totalLeave}</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Days Leave</div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;">
+        <div style="font-size:18px;opacity:.85;">❌</div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:#ef4444;">${totalAbsent}</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Days Absent</div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card blue" style="flex:1;min-width:110px;padding:14px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+        <div style="font-size:16px;">⏱</div>
+        <div style="font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:.5px;text-transform:uppercase;">Duty Hours</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Expected</div>
+          <div style="font-size:15px;font-weight:800;color:var(--text2);letter-spacing:.5px;">${emp?.yearSummary?.[year]?.expectedDuty||'—'}</div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Actual</div>
+          <div style="font-size:15px;font-weight:800;color:#10b981;letter-spacing:.5px;">${emp?.yearSummary?.[year]?.actualDuty||'—'}</div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:8px;">
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Extra / Less</div>
+          <div style="font-size:15px;font-weight:800;letter-spacing:.5px;color:${(emp?.yearSummary?.[year]?.elOtTotal||'').startsWith('-')?'#ef4444':'#8b5cf6'};">${ (()=>{ const v=emp?.yearSummary?.[year]?.elOtTotal; return v?(v.startsWith('-')?v:'+'+v):'—'; })() }</div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card orange" style="flex:1.5;min-width:150px;padding:14px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:10px;letter-spacing:.5px;">Present Status</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <span style="font-size:11px;font-weight:600;color:var(--text1);background:var(--navy3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;">On Time</span>
+        <span style="font-size:16px;font-weight:700;color:#10b981;">${totalOnTime}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <span style="font-size:11px;font-weight:600;color:var(--text1);background:var(--navy3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;">Delay</span>
+        <span style="font-size:16px;font-weight:700;color:#f59e0b;">${totalDelay}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:11px;font-weight:600;color:var(--text1);background:var(--navy3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;">Extreme Delay</span>
+        <span style="font-size:16px;font-weight:700;color:#ef4444;">${totalExDelay}</span>
+      </div>
+    </div>
+    <div class="kpi-card" style="flex:1;min-width:110px;border-top:2px solid ${overallClr};"><div class="kpi-icon">📊</div><div class="kpi-val" style="color:${overallClr}">${overallPct}%</div><div class="kpi-label">Overall Attendance</div></div>
+    <div style="display:flex;gap:8px;flex:3;min-width:300px;">
+    <div class="kpi-card" style="border-top:2px solid var(--gold);padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div style="font-size:11px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:6px;"><i class="fa fa-file-excel"></i> Quick Data Import</div>
+      <div id="attDropZoneKpi" onclick="document.getElementById('attFileInput').click()" 
+        style="border:1.5px dashed var(--border);border-radius:8px;padding:8px;text-align:center;cursor:pointer;flex:1;"
+        ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+        ondragleave="this.style.borderColor='var(--border)'"
+        ondrop="handleAttFileDrop(event)">
+        <i class="fa fa-file-excel" style="color:#10b981;font-size:16px;"></i>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;" id="attFileNameKpi">Click or drag Excel</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button id="attFillBtnKpi" onclick="openAttImportDropdown()" disabled style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--gold);background:rgba(212,175,55,0.1);color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;opacity:0.5;font-family:inherit;">
+          <i class="fa fa-wand-magic-sparkles"></i> Fill
+        </button>
+        <button onclick="clearAttFileData()" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text3);font-size:11px;cursor:pointer;font-family:inherit;">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+      <div id="attAiStatusKpi" style="font-size:10px;color:var(--text3);text-align:center;min-height:14px;"></div>
+      <div id="attImportDropdown" style="display:none;">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">Select month:</div>
+        <div id="attMonthOptions" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+    </div>
+
+    <!-- PIHR Data Import Card -->
+    <div class="kpi-card" style="border-top:2px solid #10b981;padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div style="font-size:11px;font-weight:700;color:#10b981;display:flex;align-items:center;gap:6px;"><i class="fa fa-database"></i> PIHR Data Import</div>
+      <div id="pihrDropZoneKpi" onclick="document.getElementById('pihrFileInput').click()"
+        style="border:1.5px dashed rgba(16,185,129,0.4);border-radius:8px;padding:8px;text-align:center;cursor:pointer;flex:1;"
+        ondragover="event.preventDefault();this.style.borderColor='#10b981'"
+        ondragleave="this.style.borderColor='rgba(16,185,129,0.4)'"
+        ondrop="handlePihrFileDrop(event)">
+        <i class="fa fa-file-import" style="color:#10b981;font-size:16px;"></i>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;" id="pihrFileNameKpi">Click or drag file</div>
+      </div>
+      <input type="file" id="pihrFileInput" accept=".xlsx,.xls,.csv,.pdf" style="display:none;" onchange="handlePihrFileSelect(event)">
+      <div style="display:flex;gap:6px;">
+        <button id="pihrFillBtnKpi" onclick="openPihrImportDropdown()" disabled style="flex:1;padding:6px;border-radius:6px;border:1px solid #10b981;background:rgba(16,185,129,0.1);color:#10b981;font-size:11px;font-weight:600;cursor:pointer;opacity:0.5;font-family:inherit;">
+          <i class="fa fa-wand-magic-sparkles"></i> Fill
+        </button>
+        <button onclick="clearPihrFileData()" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text3);font-size:11px;cursor:pointer;font-family:inherit;">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+      <div id="pihrStatusKpi" style="font-size:10px;color:var(--text3);text-align:center;min-height:14px;">Upload file to begin</div>
+      <div style="text-align:center;"><button onclick="openPihrMappingManager()" style="background:none;border:none;color:var(--text3);font-size:9px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:0;"><i class="fa fa-gear"></i> Manage saved mappings</button></div>
+      <div id="pihrImportDropdown" style="display:none;">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">Select month:</div>
+        <div id="pihrMonthOptions" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+    </div>
+
+    <!-- AI Data Import Card -->
+    <div class="kpi-card" style="border-top:2px solid #3b82f6;padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div style="font-size:11px;font-weight:700;color:#3b82f6;display:flex;align-items:center;gap:6px;"><i class="fa fa-robot"></i> AI Data Import</div>
+      <div id="aiDropZoneKpi" onclick="document.getElementById('aiFileInput').click()"
+        style="border:1.5px dashed rgba(59,130,246,0.4);border-radius:8px;padding:8px;text-align:center;cursor:pointer;flex:1;"
+        ondragover="event.preventDefault();this.style.borderColor='#3b82f6'"
+        ondragleave="this.style.borderColor='rgba(59,130,246,0.4)'"
+        ondrop="handleAiFileDrop(event)">
+        <i class="fa fa-brain" style="color:#3b82f6;font-size:16px;"></i>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;" id="aiFileNameKpi">Click or drag Excel</div>
+      </div>
+      <input type="file" id="aiFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleAiFileSelect(event)">
+      <div style="display:flex;gap:6px;">
+        <button id="aiFillBtnKpi" onclick="openAiImportDropdown()" disabled style="flex:1;padding:6px;border-radius:6px;border:1px solid #3b82f6;background:rgba(59,130,246,0.1);color:#3b82f6;font-size:11px;font-weight:600;cursor:pointer;opacity:0.5;font-family:inherit;">
+          <i class="fa fa-wand-magic-sparkles"></i> Fill
+        </button>
+        <button onclick="clearAiFileData()" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text3);font-size:11px;cursor:pointer;font-family:inherit;">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+      <div id="aiStatusKpi" style="font-size:10px;color:var(--text3);text-align:center;min-height:14px;">Coming soon...</div>
+      <div id="aiImportDropdown" style="display:none;">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">Select month:</div>
+        <div id="aiMonthOptions" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+    </div>
+    </div>
+  `;
+  // Sync file input
+  if(!document.getElementById('attFileInput')){
+    const inp=document.createElement('input');
+    inp.type='file';inp.id='attFileInput';inp.accept='.xlsx,.xls,.csv';inp.style.display='none';
+    inp.onchange=handleAttFileSelect;
+    document.body.appendChild(inp);
+  }
+
+  // ── YEARLY CALENDAR ──
+  renderYearlyAttCalendar(emp, year, attData);
+
+  // ── RESTORE FILE STATE after render ──
+  if(attImportedData){
+    setTimeout(()=>{
+      const fb=document.getElementById('attFillBtnKpi');
+      const st=document.getElementById('attAiStatusKpi');
+      const fn=document.getElementById('attFileNameKpi');
+      if(fb){fb.disabled=false;fb.style.opacity='1';fb.style.cursor='pointer';}
+      if(st && !st.innerHTML.includes('check-circle')) st.innerHTML='<i class="fa fa-check-circle" style="color:var(--green)"></i> '+attImportedData.length+' month(s) ready!';
+      if(fn && fn.textContent==='Click or drag Excel') fn.textContent='File loaded ✓';
+    },50);
+  }
+  if(pihrExtractedData){
+    setTimeout(()=>{
+      const fb=document.getElementById('pihrFillBtnKpi');
+      const fn=document.getElementById('pihrFileNameKpi');
+      const st=document.getElementById('pihrStatusKpi');
+      if(fb){fb.disabled=false;fb.style.opacity='1';fb.style.cursor='pointer';}
+      if(fn && fn.textContent==='Click or drag file') fn.textContent='File loaded \u2713';
+      const empCount=Object.keys(pihrExtractedData).length;
+      const monthSet=new Set();
+      Object.values(pihrExtractedData).forEach(e=>Object.keys(e.months).forEach(m=>monthSet.add(m)));
+      const mNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const monthsFound=[...monthSet].sort().map(m=>mNames[parseInt(m)-1]).join(', ');
+      if(st) st.innerHTML='<i class="fa fa-check-circle" style="color:var(--green)"></i> '+empCount+' employees \xb7 '+monthSet.size+' months ('+monthsFound+')';
+    },50);
+  }
+
+  // ── CHARTS ──
+  const attChartWrap = document.getElementById('attChartSection');
+  if(attChartWrap){
+    attChartWrap.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="card" style="padding:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px;"><i class="fa fa-chart-bar"></i> Monthly Overview ${year}</div>
+          <div style="position:relative;height:200px;"><canvas id="attBarChart"></canvas></div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px;"><i class="fa fa-chart-pie"></i> Attendance Breakdown</div>
+          <div style="position:relative;height:200px;"><canvas id="attPieChart"></canvas></div>
+        </div>
+      </div>`;
+
+    setTimeout(()=>{
+      // Bar Chart
+      const barCtx = document.getElementById('attBarChart');
+      if(barCtx){
+        if(window._attBarChart) window._attBarChart.destroy();
+        window._attBarChart = new Chart(barCtx,{
+          type:'bar',
+          data:{
+            labels: barLabels,
+            datasets:[
+              {label:'Working Days',data:barWD,backgroundColor:'rgba(37,99,235,0.35)',borderColor:'#2563eb',borderWidth:1,borderRadius:4},
+              {label:'Present',data:barPresent,backgroundColor:'rgba(16,185,129,0.75)',borderColor:'#10b981',borderWidth:1,borderRadius:4},
+              {label:'Leave/Absent',data:barLeaveAbsent,backgroundColor:'rgba(239,68,68,0.65)',borderColor:'#ef4444',borderWidth:1,borderRadius:4}
+            ]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{labels:{color:'#a0b0c8',font:{size:11}}}},
+            scales:{
+              x:{ticks:{color:'#a0b0c8',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+              y:{ticks:{color:'#a0b0c8',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true}
+            }
+          }
+        });
+      }
+      // Pie Chart
+      const pieCtx = document.getElementById('attPieChart');
+      if(pieCtx){
+        if(window._attPieChart) window._attPieChart.destroy();
+        const pieTotal = (totalPresent+totalLeave+totalAbsent)||1;
+        window._attPieChart = new Chart(pieCtx,{
+          type:'doughnut',
+          data:{
+            labels:[
+              'Present ('+Math.round(totalPresent/pieTotal*100)+'%)',
+              'Leave ('+Math.round(totalLeave/pieTotal*100)+'%)',
+              'Absent ('+Math.round(totalAbsent/pieTotal*100)+'%)'
+            ],
+            datasets:[{
+              data:[totalPresent,totalLeave,totalAbsent],
+              backgroundColor:['#10b981','#3b82f6','#ef4444'],
+              borderWidth:0,hoverOffset:6
+            }]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,cutout:'62%',
+            plugins:{legend:{position:'bottom',labels:{color:'#a0b0c8',font:{size:11},padding:10}}}
+          }
+        });
+      }
+    },150);
+  }
+
+  // Render leave records
+  // Render leave balance cards
+  renderLeaveBalanceCards(emp, year);
+  leaveEditMode = false; // reset edit mode on employee change
+
+  const leaves=(emp.leaveRecords||[]).filter(l=>{
+    if(!year) return true;
+    return l.from && new Date(l.from).getFullYear()===year;
+  }).sort((a,b)=>new Date(b.from)-new Date(a.from));
+
+  const leaveTbody=document.getElementById('attLeaveBody');
+  if(leaveTbody) leaveTbody.innerHTML=leaves.length?leaves.map((l,i)=>{
+    const stClr={Approved:'var(--green)',Pending:'var(--orange)',Rejected:'var(--red)'}[l.status]||'var(--text2)';
+    return `<tr>
+      <td><span style="font-weight:600">${l.type}</span></td>
+      <td style="font-size:11px">${l.from||'—'}</td>
+      <td style="font-size:11px">${l.to||'—'}</td>
+      <td style="font-weight:700">${l.days||'—'}</td>
+      <td style="font-size:11px">${l.reason||'—'}</td>
+      <td><span style="color:${stClr};font-weight:600">${l.status}</span></td>
+      <td style="font-size:11px">${l.approver||'—'}</td>
+      <td><button class="btn btn-danger btn-xs" onclick="deleteLeavePageRecord(${i})"><i class="fa fa-trash"></i></button></td>
+    </tr>`;
+  }).join(''):
+  '<tr><td colspan="8" style="text-align:center;font-size:12px;color:var(--text2);padding:10px;">No leave records for this year.</td></tr>';
+}
+
+function toggleLeaveEdit(){
+  leaveEditMode = !leaveEditMode;
+  const btn = document.getElementById('leaveEditBtn');
+  if(btn){
+    btn.innerHTML = leaveEditMode ? '<i class="fa fa-check"></i> Done' : '<i class="fa fa-pen"></i> Edit';
+    btn.style.background = leaveEditMode ? 'rgba(16,185,129,0.15)' : '';
+    btn.style.borderColor = leaveEditMode ? 'var(--green)' : '';
+    btn.style.color = leaveEditMode ? 'var(--green)' : '';
+  }
+  // Re-render to show/hide inputs
+  const empId = parseInt(document.getElementById('attEmpSelect').value)||null;
+  const year = parseInt(document.getElementById('dashYear').value)||new Date().getFullYear();
+  const emp = employees.find(e=>e.id===empId);
+  if(emp) renderLeaveBalanceCards(emp, year);
+}
+
+function renderLeaveBalanceCards(emp, year, targetId){
+  targetId = targetId || 'attLeaveBalance';
+  const attData = (emp.attendance||{})[year]||{};
+  let totalLeaveTaken = 0;
+  for(let mi=0; mi<12; mi++){
+    const md = attData[mi]||{};
+    totalLeaveTaken += parseInt(md.leave)||0;
+    totalLeaveTaken += (parseInt(md.half)||0)/2;
+  }
+  totalLeaveTaken = Math.round(totalLeaveTaken);
+
+  const lb = (emp.leaveBalance||{})[year]||{};
+  const annE = lb.annualEntitled||14, annT = lb.annualTaken||0;
+  const annB = annE - annT;
+  const casE = lb.casualEntitled||13, casT = lb.casualTaken||0;
+  const casB = casE - casT;
+  const totE = lb.totalEntitled||(annE+casE);
+  const totalTaken = annT + casT;
+  const totalLeaveRemaining = Math.max(0, totE - totalTaken);
+
+  const balCards = document.getElementById(targetId);
+  if(!balCards) return;
+
+  const inStyle = 'width:50px;font-size:14px;font-weight:800;text-align:center;background:rgba(255,255,255,0.08);border:1px solid var(--gold);border-radius:6px;color:var(--text);padding:2px 4px;';
+  const roStyle = 'font-size:22px;font-weight:800;';
+
+  const valOrInput = (val, key, color) => leaveEditMode
+    ? `<input type="number" style="${inStyle}color:${color};" value="${val}" onchange="updateLeaveBalance(${emp.id},${year},'${key}',this.value,'${targetId}')">`
+    : `<div style="${roStyle}color:${color};">${val}</div>`;
+
+  balCards.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;width:100%;">
+      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px 20px;border-top:3px solid #d4af37;">
+        <div style="font-size:12px;font-weight:700;color:#d4af37;margin-bottom:14px;">Total Leave</div>
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 6px;">
+            ${valOrInput(totE,'totalEntitled','var(--text)')}
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Total</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 6px;">
+            ${valOrInput(annE,'annualEntitled','var(--orange)')}
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Annual</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 6px;">
+            ${valOrInput(casE,'casualEntitled','#10b981')}
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Casual</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--border);padding-top:8px;">
+          <div style="flex:1;text-align:center;background:rgba(239,68,68,0.06);border-radius:8px;padding:8px 6px;">
+            ${valOrInput(totalTaken,'totalTaken','#ef4444')}
+            <div style="font-size:10px;color:var(--text3);margin-top:3px;">Total Taken</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(16,185,129,0.06);border-radius:8px;padding:8px 6px;">
+            <div style="font-size:18px;font-weight:800;color:#10b981;">${totalLeaveRemaining}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:3px;">Remaining</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px 20px;border-top:3px solid #10b981;">
+        <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:14px;">Annual Leave</div>
+        <div style="display:flex;justify-content:space-between;gap:8px;">
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 6px;">
+            ${valOrInput(annE,'annualEntitled','var(--text)')}
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Entitled</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 6px;">
+            ${valOrInput(annT,'annualTaken','var(--orange)')}
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Taken</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(16,185,129,0.06);border-radius:8px;padding:10px 6px;">
+            <div style="font-size:22px;font-weight:800;color:#10b981;">${annB}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Remaining</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px 20px;border-top:3px solid #3b82f6;">
+        <div style="font-size:12px;font-weight:700;color:#3b82f6;margin-bottom:14px;">Casual Leave</div>
+        <div style="display:flex;justify-content:space-between;gap:8px;">
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 6px;">
+            ${valOrInput(casE,'casualEntitled','var(--text)')}
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Entitled</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 6px;">
+            ${valOrInput(casT,'casualTaken','var(--orange)')}
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Taken</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(59,130,246,0.06);border-radius:8px;padding:10px 6px;">
+            <div style="font-size:22px;font-weight:800;color:#3b82f6;">${casB}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Remaining</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${targetId==='attLeaveBalanceTab' ? '' : `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;width:100%;">
+      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:12px;">Leave Balance Overview</div>
+        <div style="display:flex;align-items:center;justify-content:space-around;gap:16px;">
+          <div style="position:relative;width:140px;height:140px;flex-shrink:0;">
+            <canvas id="leaveDonutChart" width="140" height="140"></canvas>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90px;">
+              <div style="font-size:13px;font-weight:800;color:var(--text);">${totalLeaveTaken}</div>
+              <div style="font-size:9px;color:var(--text3);">Leave taken</div>
+              <div style="font-size:13px;font-weight:800;color:#10b981;margin-top:2px;">${totalLeaveRemaining}</div>
+              <div style="font-size:9px;color:var(--text3);">Remaining</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;">${totalLeaveTaken} Leave taken</div>
+            <div style="font-size:13px;font-weight:600;color:#10b981;white-space:nowrap;">${totalLeaveRemaining} Leave remaining</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);margin-top:4px;white-space:nowrap;"><div style="width:10px;height:10px;border-radius:50%;background:#10b981;flex-shrink:0;"></div>Leave remaining</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);white-space:nowrap;"><div style="width:10px;height:10px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></div>Leave taken</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:4px;">Leave Balances</div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:12px;display:flex;gap:12px;">
+          <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;margin-right:4px;"></span>Remaining</span>
+          <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-right:4px;"></span>Taken</span>
+        </div>
+        <div style="position:relative;height:160px;"><canvas id="leaveBarChart"></canvas></div>
+      </div>
+    </div>`}`;
+
+  setTimeout(()=>{
+    const dCtx = document.getElementById('leaveDonutChart');
+    if(dCtx){
+      if(window._leaveDonutChart) window._leaveDonutChart.destroy();
+      window._leaveDonutChart = new Chart(dCtx,{
+        type:'doughnut',
+        data:{labels:['Leave Remaining','Leave Taken'],datasets:[{data:[totalLeaveRemaining,totalLeaveTaken],backgroundColor:['#10b981','#3b82f6'],borderWidth:0,hoverOffset:4}]},
+        options:{cutout:'68%',responsive:false,plugins:{legend:{display:false}}}
+      });
+    }
+    const bCtx = document.getElementById('leaveBarChart');
+    if(bCtx){
+      if(window._leaveBarChart) window._leaveBarChart.destroy();
+      window._leaveBarChart = new Chart(bCtx,{
+        type:'bar',
+        data:{labels:['Annual Leave','Casual Leave'],datasets:[
+          {label:'Remaining',data:[annB,casB],backgroundColor:'#10b981',borderRadius:4},
+          {label:'Taken',data:[annT,casT],backgroundColor:'#3b82f6',borderRadius:4}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#a0b0c8',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#a0b0c8',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}
+      });
+    }
+  },300);
+}
+
+function renderYearlyAttCalendar(emp, year, attData){
+  const section = document.getElementById('attYearlyCalSection');
+  if(!section) return;
+
+  const nowYear3=new Date().getFullYear();
+  const isFutureYear3 = year > nowYear3;
+  const nowM = nowYear3===year ? new Date().getMonth() : (isFutureYear3 ? -1 : 11);
+  const mNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dayLabels = ['S','M','T','W','T','F','S'];
+
+  let html = `
+    <div style="border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+      <div style="padding:14px 20px;background:linear-gradient(135deg,#0f1e30,#162840);border-bottom:1px solid rgba(255,255,255,0.08);">
+        <span style="font-size:13px;font-weight:700;color:var(--gold);">📅 Yearly Attendance Status: ${emp.name||''}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px;background:var(--navy2);">`;
+
+  mNames.forEach((mName, mIdx) => {
+    const isPast = isFutureYear3 ? false : (year < new Date().getFullYear() ? true : mIdx < nowM);
+    const isCurrent = isFutureYear3 ? false : (mIdx === nowM && new Date().getFullYear()===year);
+    const isFuture = isFutureYear3 ? true : (mIdx > nowM);
+    const mData = attData[mIdx]||{wd:0,present:0,absent:0,leave:0,late:0};
+
+    const borderClr = isPast ? '#2563eb' : isCurrent ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)';
+    const titleClr = isPast ? '#60a5fa' : isCurrent ? 'var(--gold)' : '#475569';
+    const bgClr = isPast ? 'rgba(37,99,235,0.05)' : isCurrent ? 'rgba(212,175,55,0.03)' : 'rgba(255,255,255,0.02)';
+
+    // Build mini calendar with daily colors
+    const firstDay = new Date(year, mIdx, 1).getDay();
+    const daysInMonth = new Date(year, mIdx+1, 0).getDate();
+    const daily = mData.daily || [];
+
+    let calGrid = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:6px;">`;
+    dayLabels.forEach(d => {
+      calGrid += `<div style="text-align:center;font-size:8px;color:${isPast?'#64748b':'#334155'};padding:1px 0;font-weight:600;">${d}</div>`;
+    });
+
+    for(let i=0; i<firstDay; i++){
+      calGrid += `<div></div>`;
+    }
+
+    const nowD = new Date().getDate(); // today's date number
+    for(let d=1; d<=daysInMonth; d++){
+      const _raw = daily[d-1] || '';
+      const status = typeof _raw==='object' ? (_raw.s||'') : _raw;
+      const _detail = typeof _raw==='object' ? _raw : null;
+      // isPast for this specific day
+      const isDayPast = isPast || (isCurrent && d < nowD);
+      const isDayToday = isCurrent && d === nowD;
+      const isDayFuture = isFuture || (isCurrent && d > nowD);
+      let dayClr, bgDay, fontW;
+      if(isDayFuture){
+        dayClr='rgba(255,255,255,0.15)'; bgDay='transparent'; fontW='400';
+      } else if(isDayToday){
+        dayClr='#fff'; bgDay='rgba(212,175,55,0.5)'; fontW='800'; // gold for today
+      } else if(status==='A'){
+        dayClr='#fff'; bgDay='rgba(239,68,68,0.75)'; fontW='800';
+      } else if(status==='L'){
+        dayClr='#fff'; bgDay='rgba(239,68,68,0.55)'; fontW='800';
+      } else if(status==='P'||status==='D'||status==='E'||status==='P(W)'||status==='P(H)'||status==='P(L)'){
+        dayClr='rgba(255,255,255,0.75)'; bgDay='transparent'; fontW='500';
+      } else if(status==='H'){
+        dayClr='#ef4444'; bgDay='transparent'; fontW='700';
+      } else if(status==='W'){
+        dayClr='#ef4444'; bgDay='transparent'; fontW='500';
+      } else {
+        dayClr='rgba(255,255,255,0.25)'; bgDay='transparent'; fontW='400';
+      }
+      const _ds=`${String(d).padStart(2,'0')}-${String(mIdx+1).padStart(2,'0')}-${year}`;
+      const _di=_detail?(_detail.i||''):'';
+      const _do=_detail?(_detail.o||''):'';
+      const _dt=_detail?(_detail.t||''):'';
+      const _de=_detail?(_detail.e||''):'';
+      const _clickable = isDayPast || isDayToday;
+      calGrid += `<div onclick="${_clickable?`showCalDayDetail(event,'${_ds}','${status}','${_di.replace(/'/g,'')}','${_do.replace(/'/g,'')}','${_dt.replace(/'/g,'')}','${_de.replace(/'/g,'')}')`:'return false'}" style="text-align:center;font-size:8px;color:${dayClr};background:${bgDay};border-radius:3px;padding:2px 1px;font-weight:${fontW};cursor:${_clickable?'pointer':'default'};transition:filter .1s;" ${_clickable?`onmouseover="this.style.filter='brightness(1.8)'" onmouseout="this.style.filter=''"`:''}>${d}</div>`;
+    }
+    calGrid += `</div>`;
+
+    // Stats for past months
+    let stats = '';
+    if(isPast){
+      const pct = mData.wd>0 ? Math.round((mData.present||0)/mData.wd*100) : 0;
+      const pctClr = pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
+      stats = `<div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);">
+        <span style="font-size:9px;color:#10b981;">P:${mData.present||0}</span>
+        <span style="font-size:9px;color:#3b82f6;">L:${mData.leave||0}</span>
+        <span style="font-size:9px;color:#ef4444;">A:${mData.absent||0}</span>
+        <span style="font-size:9px;color:${pctClr};font-weight:700;">${pct}%</span>
+      </div>`;
+    }
+
+    html += `
+      <div style="border:1.5px solid ${borderClr};border-radius:10px;padding:10px;background:${bgClr};opacity:${isFuture?'0.4':'1'};">
+        <div style="font-size:11px;font-weight:700;color:${titleClr};margin-bottom:2px;">${mName} ${year}</div>
+        ${calGrid}
+        ${stats}
+      </div>`;
+  });
+
+  html += `</div></div>`;
+  section.innerHTML = html;
+}
+
+function toggleAttEdit(year, month){
+  const key = `${year}_${month}`;
+  if(attPageEditRow === key){
+    attPageEditRow = null;
+  } else {
+    attPageEditRow = key;
+  }
+  renderAttendancePage();
+}
+
+function updateAttPage(year, month, field, val){
+  const empId=parseInt(document.getElementById('attEmpSelect').value)||null;
+  if(!empId) return;
+  const emp=employees.find(e=>e.id===empId);
+  if(!emp.attendance) emp.attendance={};
+  if(!emp.attendance[year]) emp.attendance[year]={};
+  if(!emp.attendance[year][month]) emp.attendance[year][month]={wd:26,present:0,absent:0,late:0,half:0,ot:0,note:''};
+  emp.attendance[year][month][field]=val;
+}
+
+function saveAttPage(){/* read-only */}
+
+function addLeavePageRecord(){/* read-only */}
+
+function saveLeavePageRecord(){/* read-only */}
+
+function deleteLeavePageRecord(idx){
+  const empId=parseInt(document.getElementById('attEmpSelect').value)||null;
+  if(!empId) return;
+  const emp=employees.find(e=>e.id===empId);
+  if(!confirm('Delete this leave record?')) return;
+  emp.leaveRecords.splice(idx,1);
+  saveState();
+  renderAttendancePage();
+  toast('Leave record deleted','info');
+}
+
+
 // ── SUPABASE + PORTAL LOGIN ──
 const PORTAL_SUPABASE_URL  = 'https://jtdpvydgbmtrbaapswys.supabase.co';
 const PORTAL_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0ZHB2eWRnYm10cmJhYXBzd3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNTQ1MzYsImV4cCI6MjA5NTkzMDUzNn0.SoANGN_Qmp5ihhmA62Ojb4aqHZU9HLUxu08f3xm51U4';
@@ -1699,6 +2699,7 @@ async function doPortalLogin(){
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').style.display='';
     initPortalUI(emp);
+    nav('dashboard');
     errEl.textContent='';
   }catch(e){
     errEl.textContent = e.message||'Login failed. Try again.';
@@ -1744,6 +2745,7 @@ window.addEventListener('load', ()=>{
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').style.display='';
             initPortalUI(emp);
+            nav('dashboard');
             return;
           }
         }
