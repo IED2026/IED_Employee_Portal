@@ -319,8 +319,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
     <h2>Employee Portal</h2>
     <p>Login with your Employee ID and Portal Password</p>
     <div class="login-field">
-      <label>Employee ID</label>
-      <input type="text" id="loginEmpId" placeholder="e.g. IED001" autocomplete="username">
+      <label>Employee ID or Email</label>
+      <input type="text" id="loginEmpId" placeholder="e.g. IED001 or email@company.com" autocomplete="username">
     </div>
     <div class="login-field">
       <label>Password</label>
@@ -1689,7 +1689,7 @@ async function doPortalLogin(){
     const emp = employees.find(e=>{
       const normalize = s => (s||'').toString().toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^(IED)?0*/,'');
       const inputNorm = normalize(empId);
-      return normalize(e.empId)===inputNorm || normalize(e.id)===inputNorm || (e.empId||'').toString().toUpperCase()===empId.toUpperCase();
+      return normalize(e.empId)===inputNorm || normalize(e.id)===inputNorm || (e.empId||'').toString().toUpperCase()===empId.toUpperCase() || (e.email||'').toLowerCase()===(empId||'').toLowerCase();
     });
     if(!emp){ errEl.textContent='Employee ID not found.'; return; }
     if(!emp.portalPassword){ errEl.textContent='No portal password set. Contact HR.'; return; }
