@@ -2417,6 +2417,54 @@ function deleteLeavePageRecord(idx){
 }
 
 
+
+function showCalDayDetail(event, dateStr, status, inTime, outTime, actualDuty, elDuty){
+  event.stopPropagation();
+  document.getElementById('calDayPopup')?.remove();
+  const STATUS_LABEL={'P':'Present','D':'Delay','E':'Extreme Delay','A':'Absent','L':'Leave','H':'Holiday','W':'Weekend','P(W)':'Present (Weekend)','P(H)':'Present (Holiday)','P(L)':'Present (Leave)'};
+  const STATUS_COLOR={'P':'#10b981','D':'#f59e0b','E':'#f97316','A':'#ef4444','L':'#8b5cf6','H':'#64748b','W':'#94a3b8','P(W)':'#06b6d4','P(H)':'#6366f1','P(L)':'#10b981'};
+  const sc=STATUS_COLOR[status]||'var(--text2)';
+  const sl=STATUS_LABEL[status]||status;
+  const row=(label,val,color)=>val?`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:11px;color:var(--text3);">${label}</span><span style="font-size:12px;font-weight:600;color:${color};">${val}</span></div>`:'';
+  const elColor=elDuty&&elDuty.startsWith('-')?'#ef4444':'#10b981';
+
+  const popup=document.createElement('div');
+  popup.id='calDayPopup';
+  popup.style.cssText='position:fixed;z-index:9999;';
+  popup.innerHTML=`
+    <div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:220px;box-shadow:0 12px 40px rgba(0,0,0,0.6);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text1);">${dateStr}</div>
+          <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:3px;">${sl}</span>
+        </div>
+        <button onclick="document.getElementById('calDayPopup').remove()" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;line-height:1;"><i class="fa fa-xmark"></i></button>
+      </div>
+      ${row('In Time', inTime, '#10b981')}
+      ${row('Out Time', outTime, '#ef4444')}
+      ${row('Actual Duty (h)', actualDuty, '#3b82f6')}
+      ${row('Extra/Less Duty (h)', elDuty, elColor)}
+      ${!inTime&&!outTime?'<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0;">No time data</div>':''}
+    </div>`;
+  document.body.appendChild(popup);
+
+  // Position near click, stay within viewport
+  const x=event.clientX, y=event.clientY;
+  const pw=240, ph=200;
+  popup.style.left=Math.min(x+12, window.innerWidth-pw-10)+'px';
+  popup.style.top=(y+12+ph>window.innerHeight?y-ph-10:y+12)+'px';
+
+  // Close on outside click
+  setTimeout(()=>{
+    function closeHandler(e){
+      document.removeEventListener('click', closeHandler);
+      const popup=document.getElementById('calDayPopup');
+      if(popup && !popup.contains(e.target)) popup.remove();
+    }
+    document.addEventListener('click', closeHandler);
+  },200);
+}
+
 // ── SUPABASE + PORTAL LOGIN ──
 const PORTAL_SUPABASE_URL  = 'https://jtdpvydgbmtrbaapswys.supabase.co';
 const PORTAL_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0ZHB2eWRnYm10cmJhYXBzd3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNTQ1MzYsImV4cCI6MjA5NTkzMDUzNn0.SoANGN_Qmp5ihhmA62Ojb4aqHZU9HLUxu08f3xm51U4';
