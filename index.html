@@ -2580,12 +2580,14 @@ function renderMyAttendance(){
       const st=dayObj.s||'';
       const clr=S_CLR[st]||'var(--text3)';
       const bg=S_BG[st]||'rgba(255,255,255,0.03)';
-      rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}${isWknd?'opacity:.55;':''}">
-        <td style="padding:10px 14px;min-width:160px;">
+      rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}">
+        <td style="padding:10px 14px;min-width:180px;">
           <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${DAY_FULL[dowIdx]}</div>
-          <div style="font-size:13px;font-weight:700;color:${isWknd?'var(--text3)':isToday?'var(--gold)':'var(--text)'};margin-top:1px;">${d} ${MONTH_S[month]} ${year}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+            <div style="font-size:13px;font-weight:700;color:${isToday?'var(--gold)':'var(--text)'};">${d} ${MONTH_S[month]} ${year}</div>
+            ${st?`<span style="display:inline-block;background:${bg};color:${clr};border:1px solid ${clr}55;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.3px;">${st}</span>`:''}
+          </div>
         </td>
-        <td style="padding:10px 8px;text-align:center;">${st?`<span style="display:inline-block;min-width:30px;background:${bg};color:${clr};border:1px solid ${clr}55;padding:4px 10px;border-radius:7px;font-size:11px;font-weight:800;">${st}</span>`:'<span style="color:rgba(255,255,255,.15);font-size:11px;">—</span>'}</td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#06b6d4;">${dayObj.i||dayObj.in||'—'}</td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#8b5cf6;">${dayObj.o||dayObj.out||'—'}</td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;color:#22d3ee;">${dayObj.t||dayObj.ot||'—'}</td>
@@ -2611,7 +2613,6 @@ function renderMyAttendance(){
         <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">
           <thead><tr style="background:rgba(255,255,255,0.02);">
             <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Date</th>
-            <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Status</th>
             <th style="padding:10px 8px;text-align:center;font-size:10px;color:#06b6d4;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">In Time</th>
             <th style="padding:10px 8px;text-align:center;font-size:10px;color:#8b5cf6;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Out Time</th>
             <th style="padding:10px 8px;text-align:center;font-size:10px;color:#22d3ee;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">OT(H)</th>
