@@ -1687,9 +1687,9 @@ async function doPortalLogin(){
     if(error||!data) throw new Error('Could not connect to HR database.');
     const employees = data.value;
     const emp = employees.find(e=>{
-      const eid = (e.empId||'').toUpperCase().replace(/^IED_?0*/,'');
-      const input = empId.replace(/^IED_?0*/,'');
-      return eid===input || (e.empId||'').toUpperCase()===empId;
+      const normalize = s => (s||'').toString().toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^(IED)?0*/,'');
+      const inputNorm = normalize(empId);
+      return normalize(e.empId)===inputNorm || normalize(e.id)===inputNorm || (e.empId||'').toString().toUpperCase()===empId.toUpperCase();
     });
     if(!emp){ errEl.textContent='Employee ID not found.'; return; }
     if(!emp.portalPassword){ errEl.textContent='No portal password set. Contact HR.'; return; }
