@@ -1390,6 +1390,7 @@ function renderLeaveChart(){
 // ── RECON LIST ──
 function renderReconList(){
   const cont = document.getElementById('reconListContainer');
+  reconData = (_portalEmployee?.reconRequests||[]).slice().reverse();
   if(!reconData.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No reconciliation applications yet.</div>'; return; }
   cont.innerHTML = reconData.map(r=>{
     const st=r.status||'pending';
@@ -1689,11 +1690,21 @@ function submitRecon(){
   const now=new Date();
   const appStr=`${pad2(now.getDate())}-${pad2(now.getMonth()+1)}-${now.getFullYear()} ${fmtTimeShort(now)}`;
 
-  reconData.unshift({ id:'R'+Date.now(), status:'pending', type:typeLabel, date:dateStr, inTime: (reconTab==='in'||reconTab==='both')?inTime:'', outTime: (reconTab==='out'||reconTab==='both')?outTime:'', appDate:appStr });
-  saveStore(RECON_KEY, reconData);
+  const newRecon = { id:'R'+Date.now(), status:'pending', type:typeLabel, date:dateStr, inTime: (reconTab==='in'||reconTab==='both')?inTime:'', outTime: (reconTab==='out'||reconTab==='both')?outTime:'', appDate:appStr };
+  if(!_portalEmployee.reconRequests) _portalEmployee.reconRequests=[];
+  _portalEmployee.reconRequests.push(newRecon);
   renderReconList();
   closeModal('reconModal');
-  toast('Reconciliation application submitted!','success');
+  toast('Submitting...','success');
+  _portalSupa.from('app_data').select('value').eq('key','employees').single().then(({data})=>{
+    if(!data) return;
+    const emps=data.value;
+    const idx=emps.findIndex(e=>e.id===_portalEmployee.id);
+    if(idx!==-1){ emps[idx].reconRequests=_portalEmployee.reconRequests; }
+    _portalSupa.from('app_data').update({value:emps,updated_at:new Date().toISOString(),updated_by:_portalEmployee.name}).eq('key','employees')
+      .then(()=>toast('Reconciliation submitted ✓','success'))
+      .catch(e=>toast('Sync failed: '+e.message,'error'));
+  });
 }
 
 // ── PROFILE TABS ──
