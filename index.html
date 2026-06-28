@@ -1093,11 +1093,7 @@ const defaultLeaveData = [
   {id:'L6',status:'rejected',reason:'Insufficient leave balance for this request',fromDate:'Mon, 02-02-2026',toDate:'Thu, 05-02-2026',days:4,type:'Annual Leave',appDate:'28-01-2026'},
 ];
 
-const defaultReconData = [
-  {id:'R1',status:'approved',type:'Out Time',date:'Mon, 2 Mar 2026',appDate:'03-03-2026 11:28 AM'},
-  {id:'R2',status:'approved',type:'Out Time',date:'Mon, 26 Jan 2026',appDate:'27-01-2026 11:58 AM'},
-  {id:'R3',status:'approved',type:'In Time',date:'Thu, 1 Jan 2026',appDate:'04-01-2026 09:43 AM'},
-];
+const defaultReconData = [];
 
 const LEAVE_KEY='ied_leave_data', RECON_KEY='ied_recon_data';
 function loadStore(key, fallback){
