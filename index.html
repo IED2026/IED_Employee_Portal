@@ -2299,9 +2299,9 @@ function renderYearlyAttCalendar(emp, year, attData){
     const isFuture = isFutureYear3 ? true : (mIdx > nowM);
     const mData = attData[mIdx]||{wd:0,present:0,absent:0,leave:0,late:0};
 
-    const borderClr = isFuture ? 'rgba(139,92,246,0.25)' : isPast ? '#2563eb' : isCurrent ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)';
-    const titleClr = isFuture ? '#6d5b8a' : isPast ? '#60a5fa' : isCurrent ? 'var(--gold)' : '#475569';
-    const bgClr = isFuture ? 'rgba(139,92,246,0.03)' : isPast ? 'rgba(37,99,235,0.05)' : isCurrent ? 'rgba(212,175,55,0.03)' : 'rgba(255,255,255,0.02)';
+    const borderClr = isFuture ? 'rgba(200,210,220,0.2)' : isPast ? '#2563eb' : isCurrent ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)';
+    const titleClr = isFuture ? '#6b7a8d' : isPast ? '#60a5fa' : isCurrent ? 'var(--gold)' : '#475569';
+    const bgClr = isFuture ? 'rgba(255,255,255,0.015)' : isPast ? 'rgba(37,99,235,0.05)' : isCurrent ? 'rgba(212,175,55,0.03)' : 'rgba(255,255,255,0.02)';
 
     // Build mini calendar with daily colors
     const firstDay = new Date(year, mIdx, 1).getDay();
@@ -2369,10 +2369,7 @@ function renderYearlyAttCalendar(emp, year, attData){
 
     html += `
       <div style="border:${isFuture?'1.5px dashed':'1.5px solid'} ${borderClr};border-radius:10px;padding:10px;background:${bgClr};opacity:${isFuture?'0.55':'1'};">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-          <div style="font-size:11px;font-weight:700;color:${titleClr};">${mName} ${year}</div>
-          ${isFuture?`<span style="font-size:8px;background:rgba(139,92,246,0.15);color:#8b5cf6;border-radius:4px;padding:1px 5px;font-weight:600;">Upcoming</span>`:''}
-        </div>
+        <div style="font-size:11px;font-weight:700;color:${titleClr};margin-bottom:2px;">${mName} ${year}</div>
         ${calGrid}
         ${stats}
       </div>`;
