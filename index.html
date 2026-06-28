@@ -2557,15 +2557,17 @@ function renderMyAttendance(){
     const md=attData[month]||{};
     const daily=md.daily||[];
     const dim=new Date(year,month+1,0).getDate();
-    const DAY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const DAY_FULL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTH_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const S_CLR={'P':'#10b981','D':'#f59e0b','E':'#ef4444','A':'#ef4444','L':'#3b82f6','H':'#818cf8','W':'#374151','PW':'#10b981','PH':'#10b981','':''};
     const S_BG={'P':'rgba(16,185,129,0.12)','D':'rgba(245,158,11,0.12)','E':'rgba(239,68,68,0.12)','A':'rgba(239,68,68,0.12)','L':'rgba(59,130,246,0.12)','H':'rgba(129,140,248,0.12)','W':'rgba(55,65,81,0.2)','PW':'rgba(16,185,129,0.12)','PH':'rgba(16,185,129,0.12)','':''};
 
     const rows=[];
-    for(let d=1;d<=dim;d++){
+    for(let d=dim;d>=1;d--){
       const dt=new Date(year,month,d);
-      const dow=DAY[dt.getDay()];
-      const isWknd=dt.getDay()===5||dt.getDay()===6;
+      const dowIdx=dt.getDay();
+      const dowFull=DAY_FULL[dowIdx];
+      const isWknd=dowIdx===5||dowIdx===6;
       const dayRaw=daily[d-1];
       const dayObj=typeof dayRaw==='object'?dayRaw:{s:dayRaw||''};
       const st=dayObj.s||'';
@@ -2575,14 +2577,17 @@ function renderMyAttendance(){
 
       if(isFut){
         rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.025);opacity:.3;">
-          <td style="padding:9px 14px;font-weight:600;color:var(--text3);font-size:12px;">${d}<span style="color:var(--text3);font-size:9px;margin-left:5px;">${dow}</span></td>
+          <td style="padding:9px 14px;">
+            <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${dowFull}</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text3);margin-top:1px;">${d} ${MONTH_S[month]} ${year}</div>
+          </td>
           <td colspan="5" style="text-align:center;font-size:10px;color:var(--text3);">—</td>
         </tr>`);
       } else {
         rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.04);${isWknd?'opacity:.55;':''}">
           <td style="padding:9px 14px;">
-            <span style="font-size:13px;font-weight:700;color:${isWknd?'var(--text3)':'var(--text)'};">${d}</span>
-            <span style="font-size:9px;color:var(--text3);margin-left:5px;">${dow}</span>
+            <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${dowFull}</div>
+            <div style="font-size:12px;font-weight:700;color:${isWknd?'var(--text3)':'var(--text)'};margin-top:1px;">${d} ${MONTH_S[month]} ${year}</div>
           </td>
           <td style="padding:9px 8px;text-align:center;">
             ${st?`<span style="display:inline-block;min-width:28px;background:${bg};color:${clr};border:1px solid ${clr}44;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.3px;">${st}</span>`:'<span style="color:var(--text3);font-size:11px;">—</span>'}
