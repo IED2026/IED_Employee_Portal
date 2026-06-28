@@ -2632,51 +2632,9 @@ function changeMonth(y,m){
 }
 
 function openReconModal(year, month, day){
-  const emp=_portalEmployee; if(!emp) return;
-  const attData=(emp.attendance||{})[year]||{};
-  const md=attData[month]||{};
-  const daily=md.daily||[];
-  const dayObj=typeof daily[day-1]==='object'?daily[day-1]:{s:daily[day-1]||''};
   const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-  const c=document.createElement('div');
-  c.id='reconModal';
-  c.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
-  c.innerHTML=`
-    <div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:420px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.6);">
-      <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;"><i class="fa fa-file-signature"></i> Attendance Reconciliation — ${dateStr}</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Current Status: <b style="color:var(--text);">${dayObj.s||'—'}</b> | In: <b>${dayObj.i||dayObj.in||'—'}</b> | Out: <b>${dayObj.o||dayObj.out||'—'}</b></div>
-      <div style="margin-top:14px;">
-        <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:6px;">Reason for Reconciliation</label>
-        <textarea id="reconReason" rows="3" placeholder="Explain the discrepancy..." style="width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:12px;font-family:inherit;resize:vertical;"></textarea>
-      </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
-        <button onclick="document.getElementById('reconModal').remove()" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>
-        <button onclick="submitRecon(${year},${month},${day})" style="padding:8px 18px;border-radius:8px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-paper-plane"></i> Submit</button>
-      </div>
-    </div>`;
-  document.body.appendChild(c);
+  openReconForDate(dateStr);
 }
-
-async function submitRecon(year, month, day){
-  const emp=_portalEmployee; if(!emp) return;
-  const reason=document.getElementById('reconReason')?.value?.trim();
-  if(!reason){ alert('Please enter a reason.'); return; }
-  const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-  if(!emp.reconRequests) emp.reconRequests=[];
-  emp.reconRequests.push({date:dateStr,reason,submittedAt:new Date().toISOString(),status:'Pending'});
-  try{
-    const {data,error}=await _portalSupa.from('app_data').select('value').eq('key','employees').single();
-    if(error) throw error;
-    const emps=data.value;
-    const idx=emps.findIndex(e=>e.id===emp.id);
-    if(idx!==-1){ emps[idx].reconRequests=emp.reconRequests; }
-    const {error:se}=await _portalSupa.from('app_data').update({value:emps,updated_at:new Date().toISOString(),updated_by:emp.name}).eq('key','employees');
-    if(se) throw se;
-    document.getElementById('reconModal').remove();
-    toast('Reconciliation submitted ✓','success');
-  }catch(e){ toast('Failed: '+e.message,'error'); }
-}
-
 
 // ── SUPABASE + PORTAL LOGIN ──
 const PORTAL_SUPABASE_URL  = 'https://jtdpvydgbmtrbaapswys.supabase.co';
