@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -293,20 +294,61 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(201,164,77,.25);border-radius:6px;}
 ::-webkit-scrollbar-thumb:hover{background:rgba(201,164,77,.4);}
+/* ── LOGIN SCREEN ── */
+#loginScreen{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;}
+#loginScreen.hidden{display:none;}
+.login-box{background:var(--navy2);border:1px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,0.6);}
+.login-box h2{font-size:22px;font-weight:800;color:var(--gold);margin-bottom:6px;}
+.login-box p{font-size:13px;color:var(--text2);margin-bottom:24px;}
+.login-field{margin-bottom:16px;}
+.login-field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600;}
+.login-field input{width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;outline:none;font-family:inherit;}
+.login-field input:focus{border-color:var(--gold);}
+.login-btn{width:100%;padding:13px;background:var(--gold);color:#000;font-weight:800;font-size:14px;border:none;border-radius:10px;cursor:pointer;margin-top:8px;font-family:inherit;}
+.login-error{font-size:12px;color:#ef4444;margin-top:10px;text-align:center;min-height:18px;}
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div style="text-align:center;margin-bottom:24px;">
+      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8SiEWWv56_p1RnesE1tfdJeF0mUfHuQ4b0QghRw7HZ8dtk_CSWHeaLGlYkD0Dnxfx52sfwkmtzs-giKvAx6u6PIotNTeQGOHu4a6_OqNVYFAksu842PLcslBxpjP_5Z-KQC9IjRfHfu9QXWNl3dXxTWtj_Pp7eprXy9Z4mA6Rw14NW40YO-onABxuCqh9sCx1QFlzeabZw5RFgQzPuVxjG8XxDxiiCSC_WyRKMkL8DvEvAAjI5GnfN1tYI-Ufb1aSG3p2kIoZtIMc" alt="IED" style="height:56px;object-fit:contain;mix-blend-mode:screen;">
+    </div>
+    <h2>Employee Portal</h2>
+    <p>Login with your Employee ID and Portal Password</p>
+    <div class="login-field">
+      <label>Employee ID</label>
+      <input type="text" id="loginEmpId" placeholder="e.g. IED001" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doPortalLogin()">
+    </div>
+    <button class="login-btn" onclick="doPortalLogin()">Sign In</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div class="app" id="mainApp" style="display:none;">
 
 <!-- ── SIDEBAR ── -->
 <div class="sidebar">
   <div class="sidebar-top">
     <div style="padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:14px;">
       <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8SiEWWv56_p1RnesE1tfdJeF0mUfHuQ4b0QghRw7HZ8dtk_CSWHeaLGlYkD0Dnxfx52sfwkmtzs-giKvAx6u6PIotNTeQGOHu4a6_OqNVYFAksu842PLcslBxpjP_5Z-KQC9IjRfHfu9QXWNl3dXxTWtj_Pp7eprXy9Z4mA6Rw14NW40YO-onABxuCqh9sCx1QFlzeabZw5RFgQzPuVxjG8XxDxiiCSC_WyRKMkL8DvEvAAjI5GnfN1tYI-Ufb1aSG3p2kIoZtIMc" alt="IED" style="height:56px;width:auto;object-fit:contain;mix-blend-mode:screen;display:block;">
-      <div style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:rgba(201,164,77,0.1);border:1px solid rgba(201,164,77,0.28);border-radius:999px;padding:5px 14px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset;">
+      <div style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:rgba(201,164,77,0.1);border:1px solid rgba(201,164,77,0.28);border-radius:999px;padding:5px 14px;">
         <div style="width:6px;height:6px;border-radius:50%;background:var(--gold);"></div>
-        <span style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:0.06em;">HR System</span>
+        <span style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:0.06em;">Employee Portal</span>
       </div>
+    </div>
+    <!-- Logged-in employee info -->
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;color:var(--text);" id="portalEmpName">—</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:3px;" id="portalEmpDesig"></div>
+      <div style="font-size:11px;color:var(--gold);margin-top:2px;" id="portalEmpId"></div>
+      <button onclick="portalLogout()" style="margin-top:10px;font-size:11px;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;"><i class="fa fa-sign-out-alt"></i> Logout</button>
     </div>
   </div>
 
@@ -1621,6 +1663,93 @@ renderAttList();
 renderLeaveList();
 renderLeaveChart();
 renderReconList();
+</script>
+</div><!-- end mainApp -->
+
+<script>
+// ── SUPABASE + PORTAL LOGIN ──
+const PORTAL_SUPABASE_URL  = 'https://jtdpvydgbmtrbaapswys.supabase.co';
+const PORTAL_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0ZHB2eWRnYm10cmJhYXBzd3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNTQ1MzYsImV4cCI6MjA5NTkzMDUzNn0.SoANGN_Qmp5ihhmA62Ojb4aqHZU9HLUxu08f3xm51U4';
+const _portalSupa = window.supabase.createClient(PORTAL_SUPABASE_URL, PORTAL_SUPABASE_ANON, {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+
+let _portalEmployee = null;
+
+async function doPortalLogin(){
+  const empId = (document.getElementById('loginEmpId').value||'').trim().toUpperCase();
+  const password = (document.getElementById('loginPassword').value||'').trim();
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  if(!empId||!password){ errEl.textContent='Please enter Employee ID and Password.'; return; }
+
+  errEl.textContent = 'Signing in...';
+  try{
+    const { data, error } = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
+    if(error||!data) throw new Error('Could not connect to HR database.');
+    const employees = data.value;
+    const emp = employees.find(e=>{
+      const eid = (e.empId||'').toUpperCase().replace(/^IED_?0*/,'');
+      const input = empId.replace(/^IED_?0*/,'');
+      return eid===input || (e.empId||'').toUpperCase()===empId;
+    });
+    if(!emp){ errEl.textContent='Employee ID not found.'; return; }
+    if(!emp.portalPassword){ errEl.textContent='No portal password set. Contact HR.'; return; }
+    if(emp.portalPassword !== password){ errEl.textContent='Incorrect password.'; return; }
+
+    _portalEmployee = emp;
+    sessionStorage.setItem('ied_portal_session', JSON.stringify({empId:emp.empId, id:emp.id}));
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').style.display='';
+    initPortalUI(emp);
+    errEl.textContent='';
+  }catch(e){
+    errEl.textContent = e.message||'Login failed. Try again.';
+  }
+}
+
+function initPortalUI(emp){
+  // Show employee name in sidebar
+  const nameEl = document.getElementById('portalEmpName');
+  if(nameEl) nameEl.textContent = emp.name||'';
+  const desigEl = document.getElementById('portalEmpDesig');
+  if(desigEl) desigEl.textContent = (emp.desig||'') + (emp.dept?' | '+emp.dept:'');
+  const idEl = document.getElementById('portalEmpId');
+  if(idEl) idEl.textContent = 'ID: '+(emp.empId||'');
+}
+
+function portalLogout(){
+  sessionStorage.removeItem('ied_portal_session');
+  _portalEmployee = null;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginEmpId').value='';
+  document.getElementById('loginPassword').value='';
+  document.getElementById('loginError').textContent='';
+}
+
+// Check for existing session on load
+window.addEventListener('load', ()=>{
+  const sess = sessionStorage.getItem('ied_portal_session');
+  if(sess){
+    // Verify session still valid by loading fresh employee data
+    (async()=>{
+      try{
+        const { data } = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
+        if(data){
+          const u = JSON.parse(sess);
+          const emp = (data.value||[]).find(e=>e.id===u.id);
+          if(emp&&emp.portalPassword){
+            _portalEmployee = emp;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').style.display='';
+            initPortalUI(emp);
+            return;
+          }
+        }
+      }catch(e){}
+      // Session invalid, show login
+    })();
+  }
+});
 </script>
 </body>
 </html>
