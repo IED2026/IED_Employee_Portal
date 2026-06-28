@@ -2239,31 +2239,41 @@ function renderLeaveBalanceCards(emp, year, targetId){
   const casE = lb.casualEntitled||0, casT = lb.casualTaken||0, casB = casE-casT;
   const totE = annE+casE, totT = annT+casT, totB = totE-totT;
 
-  const card = (label,color,entitled,taken,remaining) => `
+  const card = (label,color,total,taken,left) => `
     <div style="background:var(--navy3);border:1px solid ${color}44;border-top:3px solid ${color};border-radius:12px;padding:16px;text-align:center;">
-      <div style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">${label}</div>
-      <div style="display:flex;justify-content:space-around;">
-        <div>
-          <div style="font-size:22px;font-weight:800;color:var(--text);">${entitled}</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Total</div>
-        </div>
-        <div>
-          <div style="font-size:22px;font-weight:800;color:#ef4444;">${taken}</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Taken</div>
-        </div>
-        <div>
-          <div style="font-size:22px;font-weight:800;color:#10b981;">${remaining}</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Left</div>
-        </div>
+      <div style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">${label}</div>
+      <div style="display:flex;justify-content:space-around;align-items:center;">
+        <div><div style="font-size:22px;font-weight:800;color:var(--text);">${total}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Total</div></div>
+        <div><div style="font-size:22px;font-weight:800;color:#ef4444;">${taken}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Taken</div></div>
+        <div><div style="font-size:22px;font-weight:800;color:#10b981;">${left}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Left</div></div>
       </div>
     </div>`;
 
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;align-items:stretch;">
       ${card('Total Leave','#c9a44d',totE,totT,totB)}
       ${card('Annual Leave','#3b82f6',annE,annT,annB)}
       ${card('Casual Leave','#8b5cf6',casE,casT,casB)}
+      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;align-self:flex-start;">Leave Overview</div>
+        <div style="position:relative;width:120px;height:120px;"><canvas id="leaveDonutPortal"></canvas></div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-self:flex-start;">
+          <div style="font-size:11px;color:var(--text2);"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;margin-right:5px;"></span>Remaining: <b>${totB}</b></div>
+          <div style="font-size:11px;color:var(--text2);"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:5px;"></span>Taken: <b>${totT}</b></div>
+        </div>
+      </div>
     </div>`;
+
+  setTimeout(()=>{
+    const ctx=document.getElementById('leaveDonutPortal');
+    if(ctx){
+      if(window._leaveDonutPortal) window._leaveDonutPortal.destroy();
+      window._leaveDonutPortal=new Chart(ctx,{type:'doughnut',data:{
+        labels:['Remaining','Taken'],
+        datasets:[{data:[totB,totT],backgroundColor:['#10b981','#ef4444'],borderWidth:0,hoverOffset:4}]
+      },options:{responsive:true,maintainAspectRatio:true,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:l=>l.label+': '+l.raw}}}}});
+    }
+  },100);
 }
 
 function renderYearlyAttCalendar(emp, year, attData){
