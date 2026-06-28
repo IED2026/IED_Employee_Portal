@@ -2553,80 +2553,80 @@ function renderMyAttendance(){
         </table></div>
       </div>`;
   } else {
-    // Single month daily log — read-only past data
     const md=attData[month]||{};
     const daily=md.daily||[];
     const dim=new Date(year,month+1,0).getDate();
     const DAY_FULL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTH_LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
     const MONTH_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const S_CLR={'P':'#10b981','D':'#f59e0b','E':'#ef4444','A':'#ef4444','L':'#3b82f6','H':'#818cf8','W':'#374151','PW':'#10b981','PH':'#10b981','':''};
-    const S_BG={'P':'rgba(16,185,129,0.12)','D':'rgba(245,158,11,0.12)','E':'rgba(239,68,68,0.12)','A':'rgba(239,68,68,0.12)','L':'rgba(59,130,246,0.12)','H':'rgba(129,140,248,0.12)','W':'rgba(55,65,81,0.2)','PW':'rgba(16,185,129,0.12)','PH':'rgba(16,185,129,0.12)','':''};
+    const S_CLR={'P':'#10b981','D':'#f59e0b','E':'#ef4444','A':'#ef4444','L':'#3b82f6','H':'#818cf8','W':'#4b5563','PW':'#10b981','PH':'#10b981','':''};
+    const S_BG={'P':'rgba(16,185,129,0.1)','D':'rgba(245,158,11,0.1)','E':'rgba(239,68,68,0.1)','A':'rgba(239,68,68,0.1)','L':'rgba(59,130,246,0.1)','H':'rgba(129,140,248,0.1)','W':'rgba(75,85,99,0.15)','PW':'rgba(16,185,129,0.1)','PH':'rgba(16,185,129,0.1)','':''};
+
+    const prevM=month===0?11:month-1; const prevY=month===0?year-1:year;
+    const nextM=month===11?0:month+1; const nextY=month===11?year+1:year;
+    const canGoNext=(nextY<nowY)||(nextY===nowY&&nextM<=nowM);
 
     const rows=[];
     for(let d=dim;d>=1;d--){
       const dt=new Date(year,month,d);
       const dowIdx=dt.getDay();
-      const dowFull=DAY_FULL[dowIdx];
+      const isPast=(year<nowY)||(year===nowY&&month<nowM)||(year===nowY&&month===nowM&&d<nowD);
+      const isToday=(year===nowY&&month===nowM&&d===nowD);
+      if(!isPast&&!isToday) continue;
       const isWknd=dowIdx===5||dowIdx===6;
       const dayRaw=daily[d-1];
       const dayObj=typeof dayRaw==='object'?dayRaw:{s:dayRaw||''};
       const st=dayObj.s||'';
-      const isFut=(year===nowY&&month===nowM&&d>nowD)||(year===nowY&&month>nowM)||year>nowY;
       const clr=S_CLR[st]||'var(--text3)';
       const bg=S_BG[st]||'transparent';
-
-      if(isFut){
-        rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.025);opacity:.3;">
-          <td style="padding:9px 14px;">
-            <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${dowFull}</div>
-            <div style="font-size:12px;font-weight:700;color:var(--text3);margin-top:1px;">${d} ${MONTH_S[month]} ${year}</div>
-          </td>
-          <td colspan="5" style="text-align:center;font-size:10px;color:var(--text3);">—</td>
-        </tr>`);
-      } else {
-        rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.04);${isWknd?'opacity:.55;':''}">
-          <td style="padding:9px 14px;">
-            <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;">${dowFull}</div>
-            <div style="font-size:12px;font-weight:700;color:${isWknd?'var(--text3)':'var(--text)'};margin-top:1px;">${d} ${MONTH_S[month]} ${year}</div>
-          </td>
-          <td style="padding:9px 8px;text-align:center;">
-            ${st?`<span style="display:inline-block;min-width:28px;background:${bg};color:${clr};border:1px solid ${clr}44;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.3px;">${st}</span>`:'<span style="color:var(--text3);font-size:11px;">—</span>'}
-          </td>
-          <td style="padding:9px 8px;text-align:center;font-size:11px;color:#06b6d4;font-weight:600;">${dayObj.in||'—'}</td>
-          <td style="padding:9px 8px;text-align:center;font-size:11px;color:#8b5cf6;font-weight:600;">${dayObj.out||'—'}</td>
-          <td style="padding:9px 8px;text-align:center;font-size:11px;color:#22d3ee;">${dayObj.ot||dayObj.ot===0?dayObj.ot:'—'}</td>
-          <td style="padding:9px 8px;text-align:center;font-size:11px;color:#a78bfa;">${dayObj.elOt||'—'}</td>
-          <td style="padding:9px 14px;text-align:center;">
-            <button onclick="openReconModal(${year},${month},${d})" style="background:rgba(201,162,77,0.1);border:1px solid rgba(201,162,77,0.3);border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--gold);font-size:10px;font-family:inherit;" title="Attendance Reconciliation">
-              <i class="fa fa-file-signature"></i>
-            </button>
-          </td>
-        </tr>`);
-      }
+      rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}${isWknd?'opacity:.55;':''}">
+        <td style="padding:10px 14px;min-width:160px;">
+          <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${DAY_FULL[dowIdx]}</div>
+          <div style="font-size:13px;font-weight:700;color:${isWknd?'var(--text3)':isToday?'var(--gold)':'var(--text)'};margin-top:1px;">${d} ${MONTH_S[month]} ${year}</div>
+        </td>
+        <td style="padding:10px 8px;text-align:center;">${st?`<span style="display:inline-block;min-width:30px;background:${bg};color:${clr};border:1px solid ${clr}55;padding:4px 10px;border-radius:7px;font-size:11px;font-weight:800;">${st}</span>`:'<span style="color:rgba(255,255,255,.15);font-size:11px;">—</span>'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#06b6d4;">${dayObj.in||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#8b5cf6;">${dayObj.out||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#22d3ee;">${(dayObj.ot!=null&&dayObj.ot!=='')?dayObj.ot:'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#a78bfa;">${dayObj.elOt||'—'}</td>
+        <td style="padding:10px 14px;text-align:center;">
+          <button onclick="openReconModal(${year},${month},${d})" style="background:rgba(201,162,77,0.08);border:1px solid rgba(201,162,77,0.25);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--gold);font-size:11px;font-family:inherit;" onmouseover="this.style.background='rgba(201,162,77,0.18)'" onmouseout="this.style.background='rgba(201,162,77,0.08)'" title="Attendance Reconciliation"><i class="fa fa-file-signature"></i></button>
+        </td>
+      </tr>`);
     }
 
     content.innerHTML=`
       <div style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-          <span style="font-size:13px;font-weight:700;color:var(--gold);"><i class="fa fa-calendar-days"></i> ${_MA_MONTHS[month]} ${year} — Daily Log</span>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            ${[['P','#10b981'],['D','#f59e0b'],['E','#ef4444'],['A','#ef4444'],['L','#3b82f6'],['H','#818cf8'],['W','#374151']].map(([s,c])=>`<span style="font-size:10px;color:${c};font-weight:700;">${s}</span>`).join('')}
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button onclick="changeMonth(${prevY},${prevM})" style="background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;color:var(--text2);font-size:13px;font-family:inherit;" title="${MONTH_LONG[prevM]} ${prevY}"><i class="fa fa-chevron-left"></i></button>
+            <span style="font-size:14px;font-weight:700;color:var(--gold);min-width:140px;text-align:center;">${MONTH_LONG[month]} ${year}</span>
+            ${canGoNext?`<button onclick="changeMonth(${nextY},${nextM})" style="background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;color:var(--text2);font-size:13px;font-family:inherit;" title="${MONTH_LONG[nextM]} ${nextY}"><i class="fa fa-chevron-right"></i></button>`:`<span style="width:38px;"></span>`}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${[['P','#10b981','rgba(16,185,129,0.1)'],['D','#f59e0b','rgba(245,158,11,0.1)'],['E','#ef4444','rgba(239,68,68,0.1)'],['A','#ef4444','rgba(239,68,68,0.1)'],['L','#3b82f6','rgba(59,130,246,0.1)'],['H','#818cf8','rgba(129,140,248,0.1)'],['W','#4b5563','rgba(75,85,99,0.15)']].map(([s,cl,bg])=>`<span style="background:${bg};color:${cl};border:1px solid ${cl}44;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:800;">${s}</span>`).join('')}
           </div>
         </div>
         <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">
-          <thead><tr style="background:rgba(255,255,255,0.03);">
-            <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Date</th>
-            <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th>
-            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#06b6d4;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">In Time</th>
-            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#8b5cf6;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Out Time</th>
-            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#22d3ee;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">OT(H)</th>
-            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#a78bfa;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">E/L(H)</th>
-            <th style="padding:10px 14px;text-align:center;font-size:10px;color:var(--gold);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border);">Recon</th>
+          <thead><tr style="background:rgba(255,255,255,0.02);">
+            <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Date</th>
+            <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Status</th>
+            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#06b6d4;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">In Time</th>
+            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#8b5cf6;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Out Time</th>
+            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#22d3ee;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">OT(H)</th>
+            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">E/L(H)</th>
+            <th style="padding:10px 14px;text-align:center;font-size:10px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Recon</th>
           </tr></thead>
-          <tbody>${rows.join('')}</tbody>
+          <tbody>${rows.length?rows.join(''):'<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text3);font-size:12px;">No data for this month</td></tr>'}</tbody>
         </table></div>
       </div>`;
   }
+}
+
+function changeMonth(y,m){
+  document.getElementById('myAttYear').value=y;
+  document.getElementById('myAttMonth').value=m;
+  renderMyAttendance();
 }
 
 function openReconModal(year, month, day){
