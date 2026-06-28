@@ -2071,79 +2071,116 @@ function renderDashboard(){
   }
   const overallPct = monthPctCount>0 ? Math.round(monthPctSum/monthPctCount) : 0;
   const overallClr = overallPct>=90?'#10b981':overallPct>=75?'#f59e0b':'#ef4444';
+
+  // Duty hours calc (8h per working day)
+  const expMins = totalWDSoFar * 8 * 60;
+  const actMins = Math.round(totalOT * 60) + totalPresent * 8 * 60;
+  const diffMins = actMins - expMins;
+  const fmtMins = m => { const h=Math.floor(Math.abs(m)/60); const mm=Math.abs(m)%60; return h+':'+(mm<10?'0':'')+mm; };
+  const dutyExpected = fmtMins(expMins);
+  const dutyActual = fmtMins(actMins);
+  const dutyDiff = diffMins;
+  const dutyDiffFmt = fmtMins(diffMins);
   const kpiEl=document.getElementById('attKpi');
   if(kpiEl) kpiEl.innerHTML=`
-    <div class="kpi-card blue" style="flex:1;min-width:110px;padding:0;overflow:hidden;display:flex;flex-direction:column;">
-      <div style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.08);">
-        <div style="font-size:18px;opacity:.85;">📅</div>
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:20px;font-weight:800;color:var(--text1);">${totalWDSoFar}</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Working Days</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;width:100%;">
+
+      <!-- Working Days + Present -->
+      <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f2a45,#0a1e32);border:1px solid rgba(59,130,246,0.25);border-top:3px solid #3b82f6;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;background:rgba(59,130,246,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📅</div>
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#fff;line-height:1;">${totalWDSoFar}</div>
+            <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Working Days</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="width:40px;height:40px;background:rgba(16,185,129,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">✅</div>
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#10b981;line-height:1;">${totalPresent}</div>
+            <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Present</div>
+          </div>
         </div>
       </div>
-      <div style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;">
-        <div style="font-size:18px;opacity:.85;">✅</div>
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:20px;font-weight:800;color:#10b981;">${totalPresent}</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Days Present</div>
+
+      <!-- Leave + Absent -->
+      <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#2a0f0f,#1e0a0a);border:1px solid rgba(239,68,68,0.25);border-top:3px solid #ef4444;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;background:rgba(245,158,11,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🌴</div>
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#f59e0b;line-height:1;">${totalLeave}</div>
+            <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Leave</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="width:40px;height:40px;background:rgba(239,68,68,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">❌</div>
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#ef4444;line-height:1;">${totalAbsent}</div>
+            <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Absent</div>
+          </div>
         </div>
       </div>
+
+      <!-- Duty Hours -->
+      <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f1f2a,#0a1520);border:1px solid rgba(6,182,212,0.25);border-top:3px solid #06b6d4;border-radius:14px;padding:16px 18px;">
+        <div style="font-size:11px;font-weight:700;color:#06b6d4;letter-spacing:.5px;margin-bottom:12px;"><i class="fa fa-clock"></i> DUTY HOURS</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:10px;color:#5b8fa6;">Expected</span>
+            <span style="font-size:13px;font-weight:700;color:#a0b0c8;">${dutyExpected}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:10px;color:#5b8fa6;">Actual</span>
+            <span style="font-size:14px;font-weight:800;color:#06b6d4;">${dutyActual}</span>
+          </div>
+          <div style="height:1px;background:rgba(255,255,255,0.06);margin:4px 0;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:10px;color:#5b8fa6;">Extra / Less</span>
+            <span style="font-size:13px;font-weight:700;color:${dutyDiff>=0?'#10b981':'#ef4444'};">${dutyDiff>=0?'+':''}${dutyDiffFmt}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Present Status -->
+      <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f1a2a,#0a1020);border:1px solid rgba(139,92,246,0.25);border-top:3px solid #8b5cf6;border-radius:14px;padding:16px 18px;">
+        <div style="font-size:11px;font-weight:700;color:#8b5cf6;letter-spacing:.5px;margin-bottom:12px;">PRESENT STATUS</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#10b981;"></div>
+              <span style="font-size:12px;color:#a0b0c8;">On Time</span>
+            </div>
+            <span style="font-size:18px;font-weight:800;color:#10b981;">${totalOnTime}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></div>
+              <span style="font-size:12px;color:#a0b0c8;">Delay</span>
+            </div>
+            <span style="font-size:18px;font-weight:800;color:#f59e0b;">${totalDelay}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;"></div>
+              <span style="font-size:12px;color:#a0b0c8;">Extreme Delay</span>
+            </div>
+            <span style="font-size:18px;font-weight:800;color:#ef4444;">${totalExDelay}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overall Attendance -->
+      <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#0f2a1a,#0a1e10);border:1px solid rgba(16,185,129,0.25);border-top:3px solid ${overallClr};border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:42px;font-weight:900;color:${overallClr};line-height:1;">${overallPct}%</div>
+        <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:6px;">Overall Attendance</div>
+        <div style="margin-top:12px;width:100%;background:rgba(255,255,255,0.06);border-radius:999px;height:5px;">
+          <div style="width:${overallPct}%;background:${overallClr};height:5px;border-radius:999px;transition:width .5s;"></div>
+        </div>
+      </div>
+
     </div>
-    <div class="kpi-card red" style="flex:1;min-width:110px;padding:0;overflow:hidden;display:flex;flex-direction:column;">
-      <div style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.08);">
-        <div style="font-size:18px;opacity:.85;">🌴</div>
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:20px;font-weight:800;color:#f59e0b;">${totalLeave}</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Days Leave</div>
-        </div>
-      </div>
-      <div style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;">
-        <div style="font-size:18px;opacity:.85;">❌</div>
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:20px;font-weight:800;color:#ef4444;">${totalAbsent}</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">Days Absent</div>
-        </div>
-      </div>
-    </div>
-    <div class="kpi-card blue" style="flex:1;min-width:110px;padding:14px;">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
-        <div style="font-size:16px;">⏱</div>
-        <div style="font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:.5px;text-transform:uppercase;">Duty Hours</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div>
-          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Expected</div>
-          <div style="font-size:15px;font-weight:800;color:var(--text2);letter-spacing:.5px;">${emp?.yearSummary?.[year]?.expectedDuty||'—'}</div>
-        </div>
-        <div>
-          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Actual</div>
-          <div style="font-size:15px;font-weight:800;color:#10b981;letter-spacing:.5px;">${emp?.yearSummary?.[year]?.actualDuty||'—'}</div>
-        </div>
-        <div style="border-top:1px solid var(--border);padding-top:8px;">
-          <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Extra / Less</div>
-          <div style="font-size:15px;font-weight:800;letter-spacing:.5px;color:${(emp?.yearSummary?.[year]?.elOtTotal||'').startsWith('-')?'#ef4444':'#8b5cf6'};">${ (()=>{ const v=emp?.yearSummary?.[year]?.elOtTotal; return v?(v.startsWith('-')?v:'+'+v):'—'; })() }</div>
-        </div>
-      </div>
-    </div>
-    <div class="kpi-card orange" style="flex:1.5;min-width:150px;padding:14px;">
-      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:10px;letter-spacing:.5px;">Present Status</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
-        <span style="font-size:11px;font-weight:600;color:var(--text1);background:var(--navy3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;">On Time</span>
-        <span style="font-size:16px;font-weight:700;color:#10b981;">${totalOnTime}</span>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
-        <span style="font-size:11px;font-weight:600;color:var(--text1);background:var(--navy3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;">Delay</span>
-        <span style="font-size:16px;font-weight:700;color:#f59e0b;">${totalDelay}</span>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:11px;font-weight:600;color:var(--text1);background:var(--navy3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;">Extreme Delay</span>
-        <span style="font-size:16px;font-weight:700;color:#ef4444;">${totalExDelay}</span>
-      </div>
-    </div>
-    <div class="kpi-card" style="flex:1;min-width:110px;border-top:2px solid ${overallClr};"><div class="kpi-icon">📊</div><div class="kpi-val" style="color:${overallClr}">${overallPct}%</div><div class="kpi-label">Overall Attendance</div></div>
   `;
-  // ── YEARLY CALENDAR ──
-  renderYearlyAttCalendar(emp, year, attData);
+  // ── YEARLY CALENDAR ──(emp, year, attData);
 
 
   renderLeaveBalanceCards(emp, year);
