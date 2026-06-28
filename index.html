@@ -2254,13 +2254,9 @@ function renderLeaveBalanceCards(emp, year, targetId){
       ${card('Total Leave','#c9a44d',totE,totT,totB)}
       ${card('Annual Leave','#3b82f6',annE,annT,annB)}
       ${card('Casual Leave','#8b5cf6',casE,casT,casB)}
-      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
-        <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;align-self:flex-start;">Leave Overview</div>
-        <div style="position:relative;width:120px;height:120px;"><canvas id="leaveDonutPortal"></canvas></div>
-        <div style="display:flex;flex-direction:column;gap:4px;align-self:flex-start;">
-          <div style="font-size:11px;color:var(--text2);"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;margin-right:5px;"></span>Remaining: <b>${totB}</b></div>
-          <div style="font-size:11px;color:var(--text2);"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:5px;"></span>Taken: <b>${totT}</b></div>
-        </div>
+      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;">Leave Overview</div>
+        <div style="position:relative;flex:1;min-height:140px;"><canvas id="leaveDonutPortal"></canvas></div>
       </div>
     </div>`;
 
@@ -2268,10 +2264,14 @@ function renderLeaveBalanceCards(emp, year, targetId){
     const ctx=document.getElementById('leaveDonutPortal');
     if(ctx){
       if(window._leaveDonutPortal) window._leaveDonutPortal.destroy();
-      window._leaveDonutPortal=new Chart(ctx,{type:'doughnut',data:{
-        labels:['Remaining','Taken'],
-        datasets:[{data:[totB,totT],backgroundColor:['#10b981','#ef4444'],borderWidth:0,hoverOffset:4}]
-      },options:{responsive:true,maintainAspectRatio:true,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:l=>l.label+': '+l.raw}}}}});
+      window._leaveDonutPortal=new Chart(ctx,{type:'bar',data:{
+        labels:['Total Leave','Annual Leave','Casual Leave'],
+        datasets:[
+          {label:'Total',data:[totE,annE,casE],backgroundColor:'rgba(201,162,77,0.7)',borderColor:'#c9a24d',borderWidth:1,borderRadius:4},
+          {label:'Taken',data:[totT,annT,casT],backgroundColor:'rgba(239,68,68,0.7)',borderColor:'#ef4444',borderWidth:1,borderRadius:4},
+          {label:'Left',data:[totB,annB,casB],backgroundColor:'rgba(16,185,129,0.7)',borderColor:'#10b981',borderWidth:1,borderRadius:4}
+        ]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#a0b0c8',font:{size:10},boxWidth:10}}},scales:{x:{ticks:{color:'#a0b0c8',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#a0b0c8',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true}}}});
     }
   },100);
 }
