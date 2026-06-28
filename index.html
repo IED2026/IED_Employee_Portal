@@ -458,7 +458,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   <!-- ── ATTENDANCE PAGE ── -->
 <div class="page" id="page-dashboard">
   <!-- Employee Info Bar -->
-  <div id="attEmpBar" style="display:none;background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+  <div id="attEmpBar" style="display:none;background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:14px;">
     <div style="width:40px;height:40px;border-radius:50%;background:var(--gold2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#0a1020;" id="attEmpInitial">-</div>
     <div>
       <div style="font-weight:700;font-size:14px;" id="attEmpName">-</div>
@@ -2620,6 +2620,7 @@ async function doPortalLogin(){
     document.getElementById('mainApp').style.display='';
     initPortalUI(emp);
     nav('dashboard');
+    setTimeout(renderDashboard, 100);
     errEl.textContent='';
   }catch(e){
     errEl.textContent = e.message||'Login failed. Try again.';
@@ -2666,6 +2667,7 @@ window.addEventListener('load', ()=>{
             document.getElementById('mainApp').style.display='';
             initPortalUI(emp);
             nav('dashboard');
+            setTimeout(renderDashboard, 100);
             return;
           }
         }
