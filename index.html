@@ -348,7 +348,6 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
       <div style="font-size:14px;font-weight:700;color:var(--text);" id="portalEmpName">—</div>
       <div style="font-size:11px;color:var(--text2);margin-top:3px;" id="portalEmpDesig"></div>
       <div style="font-size:11px;color:var(--gold);margin-top:2px;" id="portalEmpId"></div>
-      <button onclick="portalLogout()" style="margin-top:10px;font-size:11px;color:#ef4444;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;"><i class="fa fa-sign-out-alt"></i> Logout</button>
     </div>
   </div>
 
@@ -375,7 +374,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
         <div class="profile-role" id="sidebarRole" style="font-size:10px;">IT Executive • IED_99</div>
       </div>
     </div>
-    <button class="logout-btn"><i class="fa fa-right-from-bracket"></i> Log Out</button>
+    <button class="logout-btn" onclick="portalLogout()"><i class="fa fa-right-from-bracket"></i> Log Out</button>
   </div>
 </div>
 
@@ -1707,13 +1706,16 @@ async function doPortalLogin(){
 }
 
 function initPortalUI(emp){
-  // Show employee name in sidebar
   const nameEl = document.getElementById('portalEmpName');
   if(nameEl) nameEl.textContent = emp.name||'';
   const desigEl = document.getElementById('portalEmpDesig');
   if(desigEl) desigEl.textContent = (emp.desig||'') + (emp.dept?' | '+emp.dept:'');
   const idEl = document.getElementById('portalEmpId');
   if(idEl) idEl.textContent = 'ID: '+(emp.empId||'');
+  const sn = document.getElementById('sidebarName');
+  if(sn) sn.textContent = emp.name||'';
+  const sr = document.getElementById('sidebarRole');
+  if(sr) sr.textContent = (emp.desig||'') + (emp.empId?' • '+(emp.empId||''):'');
 }
 
 function portalLogout(){
