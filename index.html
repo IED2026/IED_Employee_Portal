@@ -2575,10 +2575,11 @@ function renderMyAttendance(){
       if(!isPast&&!isToday) continue;
       const isWknd=dowIdx===5||dowIdx===6;
       const dayRaw=daily[d-1];
-      const dayObj=typeof dayRaw==='object'?dayRaw:{s:dayRaw||''};
+      const dayObj=typeof dayRaw==='object'?{...dayRaw}:{s:typeof dayRaw==='string'?dayRaw:''};
+      if(typeof dayRaw==='string') dayObj.s=dayRaw;
       const st=dayObj.s||'';
       const clr=S_CLR[st]||'var(--text3)';
-      const bg=S_BG[st]||'transparent';
+      const bg=S_BG[st]||'rgba(255,255,255,0.03)';
       rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}${isWknd?'opacity:.55;':''}">
         <td style="padding:10px 14px;min-width:160px;">
           <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${DAY_FULL[dowIdx]}</div>
