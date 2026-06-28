@@ -2586,10 +2586,10 @@ function renderMyAttendance(){
           <div style="font-size:13px;font-weight:700;color:${isWknd?'var(--text3)':isToday?'var(--gold)':'var(--text)'};margin-top:1px;">${d} ${MONTH_S[month]} ${year}</div>
         </td>
         <td style="padding:10px 8px;text-align:center;">${st?`<span style="display:inline-block;min-width:30px;background:${bg};color:${clr};border:1px solid ${clr}55;padding:4px 10px;border-radius:7px;font-size:11px;font-weight:800;">${st}</span>`:'<span style="color:rgba(255,255,255,.15);font-size:11px;">—</span>'}</td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#06b6d4;">${dayObj.in||'—'}</td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#8b5cf6;">${dayObj.out||'—'}</td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#22d3ee;">${(dayObj.ot!=null&&dayObj.ot!=='')?dayObj.ot:'—'}</td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#a78bfa;">${dayObj.elOt||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#06b6d4;">${dayObj.i||dayObj.in||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#8b5cf6;">${dayObj.o||dayObj.out||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#22d3ee;">${dayObj.t||dayObj.ot||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#a78bfa;">${dayObj.e||dayObj.elOt||'—'}</td>
         <td style="padding:10px 14px;text-align:center;">
           <button onclick="openReconModal(${year},${month},${d})" style="background:rgba(201,162,77,0.08);border:1px solid rgba(201,162,77,0.25);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--gold);font-size:11px;font-family:inherit;" onmouseover="this.style.background='rgba(201,162,77,0.18)'" onmouseout="this.style.background='rgba(201,162,77,0.08)'" title="Attendance Reconciliation"><i class="fa fa-file-signature"></i></button>
         </td>
@@ -2643,7 +2643,7 @@ function openReconModal(year, month, day){
   c.innerHTML=`
     <div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:420px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.6);">
       <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;"><i class="fa fa-file-signature"></i> Attendance Reconciliation — ${dateStr}</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Current Status: <b style="color:var(--text);">${dayObj.s||'—'}</b> | In: <b>${dayObj.in||'—'}</b> | Out: <b>${dayObj.out||'—'}</b></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Current Status: <b style="color:var(--text);">${dayObj.s||'—'}</b> | In: <b>${dayObj.i||dayObj.in||'—'}</b> | Out: <b>${dayObj.o||dayObj.out||'—'}</b></div>
       <div style="margin-top:14px;">
         <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:6px;">Reason for Reconciliation</label>
         <textarea id="reconReason" rows="3" placeholder="Explain the discrepancy..." style="width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:12px;font-family:inherit;resize:vertical;"></textarea>
