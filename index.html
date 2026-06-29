@@ -1077,8 +1077,8 @@ function nav(page){
   if(page==='dashboard') renderDashboard();
   if(page==='attendance') initMyAttendance();
   if(page==='leave') renderCalendar();
-  if(page==='my-leave'){ renderLeaveList(); renderLeaveChart(); }
-  if(page==='recon') renderReconList();
+  if(page==='my-leave'){ refreshPortalEmployeeData().then(()=>{ renderLeaveList(); renderLeaveChart(); }); }
+  if(page==='recon') refreshPortalEmployeeData().then(()=>renderReconList());
   if(page==='profile') renderProfile();
 }
 
@@ -1217,11 +1217,9 @@ function fmtLeaveDate(iso){
 }
 // count working days (Sat & Sun treated as weekend, matching attendance)
 function countWorkdays(s,e){
-  const start=new Date(s),end=new Date(e); let days=0;
-  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
-    const dow=d.getDay(); if(dow!==5&&dow!==6) days++;
-  }
-  return Math.max(1,days);
+  const start=new Date(s),end=new Date(e);
+  const diff=Math.round((end-start)/(1000*60*60*24))+1;
+  return Math.max(1,diff);
 }
 
 // ── CALENDAR ──
@@ -2774,6 +2772,20 @@ function editRecon(id){
   const r = (_portalEmployee?.reconRequests||[]).find(r=>r.id===id);
   if(!r) return;
   openReconForDate(r.date);
+}
+
+
+async function refreshPortalEmployeeData(){
+  if(!_portalEmployee) return;
+  try{
+    const {data} = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
+    if(!data) return;
+    const fresh = data.value.find(e=>String(e.id)===String(_portalEmployee.id));
+    if(!fresh) return;
+    // Update recon and leave status from DB
+    _portalEmployee.reconRequests = fresh.reconRequests||[];
+    _portalEmployee.leaveRequests = fresh.leaveRequests||[];
+  }catch(e){ console.error('refresh failed',e); }
 }
 
 // ── SUPABASE + PORTAL LOGIN ──
