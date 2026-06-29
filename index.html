@@ -1671,7 +1671,6 @@ function submitRecon(){
   const inTime=document.getElementById('reconInTime')?.value;
   const outDate=document.getElementById('reconOutDate')?.value;
   const outTime=document.getElementById('reconOutTime')?.value;
-  console.log('reconTab:',reconTab,'inDate:',inDate,'inTime:',inTime,'outDate:',outDate,'outTime:',outTime,'remarks:',remarks);
 
   if(reconTab==='in' || reconTab==='both'){
     if(!inDate||!inTime){ toast('Please fill In Time date & time','error'); return; }
@@ -1691,10 +1690,8 @@ function submitRecon(){
   const newRecon = { id:'R'+Date.now(), status:'pending', type:typeLabel, date:dateStr, inTime: (reconTab==='in'||reconTab==='both')?inTime:'', outTime: (reconTab==='out'||reconTab==='both')?outTime:'', appDate:appStr };
   if(!_portalEmployee.reconRequests) _portalEmployee.reconRequests=[];
   _portalEmployee.reconRequests.push(newRecon);
-  renderReconList();
   closeModal('reconModal');
-  toast('Submitting...','success');
-  saveEmpDataToSupabase().then(()=>toast('Reconciliation submitted ✓','success')).catch(e=>toast('Save failed: '+e.message,'error'));
+  saveEmpDataToSupabase().then(()=>{renderReconList();toast('Reconciliation submitted ✓','success');}).catch(e=>toast('Save failed: '+e.message,'error'));
 }
 
 // ── PROFILE TABS ──
