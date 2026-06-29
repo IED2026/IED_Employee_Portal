@@ -2666,7 +2666,7 @@ async function saveEmpDataToSupabase(){
   const {data,error:re} = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
   if(re||!data) throw new Error('Could not load employee data: '+(re?.message||'unknown'));
   const emps = data.value;
-  const idx = emps.findIndex(e=>e.id===_portalEmployee.id);
+  const idx = emps.findIndex(e=>String(e.id)===String(_portalEmployee.id));
   if(idx!==-1){
     emps[idx].leaveRequests = _portalEmployee.leaveRequests||[];
     emps[idx].reconRequests = _portalEmployee.reconRequests||[];
