@@ -343,12 +343,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
         <span style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:0.06em;">Employee Portal</span>
       </div>
     </div>
-    <!-- Logged-in employee info -->
-    <div style="padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:14px;">
-      <div style="font-size:14px;font-weight:700;color:var(--text);" id="portalEmpName">—</div>
-      <div style="font-size:11px;color:var(--text2);margin-top:3px;" id="portalEmpDesig"></div>
-      <div style="font-size:11px;color:var(--gold);margin-top:2px;" id="portalEmpId"></div>
-    </div>
+
   </div>
 
   <div class="nav-section">
@@ -1070,14 +1065,7 @@ function rebuildAttData(){
 }
 rebuildAttData();
 
-const defaultLeaveData = [
-  {id:'L1',status:'approved',reason:'I am feeling high fever, need to leave',fromDate:'Mon, 11-05-2026',toDate:'Tue, 12-05-2026',days:2,type:'Casual Leave',appDate:'11-05-2026'},
-  {id:'L2',status:'approved',reason:'I had a family program, so I couldn\'t come for those days',fromDate:'Tue, 24-03-2026',toDate:'Wed, 25-03-2026',days:2,type:'Casual Leave',appDate:'29-03-2026'},
-  {id:'L3',status:'pending',reason:'Personal work',fromDate:'Mon, 22-06-2026',toDate:'Mon, 22-06-2026',days:1,type:'Annual Leave',appDate:'07-06-2026'},
-  {id:'L4',status:'pending',reason:'Out of town for a wedding',fromDate:'Thu, 25-06-2026',toDate:'Fri, 26-06-2026',days:2,type:'Casual Leave',appDate:'10-06-2026'},
-  {id:'L5',status:'rejected',reason:'Requested leave during project deadline',fromDate:'Wed, 13-05-2026',toDate:'Wed, 13-05-2026',days:1,type:'Annual Leave',appDate:'12-05-2026'},
-  {id:'L6',status:'rejected',reason:'Insufficient leave balance for this request',fromDate:'Mon, 02-02-2026',toDate:'Thu, 05-02-2026',days:4,type:'Annual Leave',appDate:'28-01-2026'},
-];
+const defaultLeaveData = [];
 
 const defaultReconData = [];
 
@@ -1298,6 +1286,7 @@ function nextMonth(){ if(calMonth===11){calMonth=0;calYear++;} else calMonth++; 
 // ── LEAVE LIST ──
 function renderLeaveList(){
   const cont = document.getElementById('leaveListContainer');
+  leaveData = (_portalEmployee?.leaveRequests||[]).slice().reverse();
   if(!leaveData.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No leave applications yet.</div>'; return; }
   cont.innerHTML = leaveData.map(l=>{
     const editable = l.status==='pending';
@@ -1401,10 +1390,16 @@ function renderReconList(){
     if(r.outTime) times.push(`<span style="color:var(--text2);"><i class="fa fa-right-from-bracket" style="margin-right:4px;"></i>Out: <b style="color:var(--text);">${r.outTime}</b></span>`);
     const timeRow = times.length?`<div class="recon-time" style="display:flex;gap:16px;margin-bottom:4px;">${times.join('')}</div>`:'';
     return `
-    <div class="recon-item">
-      <div class="recon-badges">
-        <span class="recon-badge ${badgeClass}">${label}</span>
-        <span class="recon-badge badge-type">${r.type}</span>
+    <div class="recon-item" style="position:relative;">
+      <div class="recon-badges" style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:8px;">
+          <span class="recon-badge ${badgeClass}">${label}</span>
+          <span class="recon-badge badge-type">${r.type}</span>
+        </div>
+        ${st==='pending'?`<div style="display:flex;gap:6px;">
+          <button onclick="editRecon('${r.id}')" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:4px 8px;cursor:pointer;color:#3b82f6;font-size:11px;font-family:inherit;"><i class="fa fa-pen"></i></button>
+          <button onclick="deleteReconConfirm('${r.id}')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 8px;cursor:pointer;color:#ef4444;font-size:11px;font-family:inherit;"><i class="fa fa-trash"></i></button>
+        </div>`:''}
       </div>
       <div class="recon-title">Attendance Reconciliation for <span style="color:var(--blue3);">${r.date}</span></div>
       ${timeRow}
@@ -1459,10 +1454,12 @@ function submitLeave(){
     type:type,
     appDate:`${pad2(now.getDate())}-${pad2(now.getMonth()+1)}-${now.getFullYear()}`
   };
-  leaveData.unshift(entry);
-  saveStore(LEAVE_KEY, leaveData);
+  if(!_portalEmployee.leaveRequests) _portalEmployee.leaveRequests=[];
+  _portalEmployee.leaveRequests.push(entry);
+  leaveData = _portalEmployee.leaveRequests.slice().reverse();
   renderLeaveList();
-  toast('Applied successfully!','success');
+  toast('Submitting...','success');
+  saveEmpDataToSupabase().then(()=>toast('Leave application submitted ✓','success'));
   document.getElementById('leaveType').value='';
   document.getElementById('leaveStart').value='';
   document.getElementById('leaveEnd').value='';
@@ -2671,6 +2668,48 @@ function openReconModal(year, month, day){
   openReconForDate(dateStr);
 }
 
+
+async function saveEmpDataToSupabase(){
+  if(!_portalEmployee) return;
+  try{
+    const {data} = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
+    if(!data) return;
+    const emps = data.value;
+    const idx = emps.findIndex(e=>e.id===_portalEmployee.id);
+    if(idx!==-1){
+      emps[idx].leaveRequests = _portalEmployee.leaveRequests||[];
+      emps[idx].reconRequests = _portalEmployee.reconRequests||[];
+    }
+    await _portalSupa.from('app_data').update({value:emps,updated_at:new Date().toISOString(),updated_by:_portalEmployee.name}).eq('key','employees');
+  }catch(e){ console.error('Supabase save failed',e); }
+}
+
+function deleteReconConfirm(id){
+  const c=document.createElement('div');
+  c.id='delReconOverlay';
+  c.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;';
+  c.innerHTML=`<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:340px;padding:24px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:10px;">⚠️</div>
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">Delete this reconciliation?</div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+      <button onclick="document.getElementById('delReconOverlay').remove()" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>
+      <button onclick="document.getElementById('delReconOverlay').remove();doDeleteRecon('${id}')" style="padding:8px 18px;border-radius:8px;border:none;background:#ef4444;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(c);
+}
+function doDeleteRecon(id){
+  if(!_portalEmployee) return;
+  _portalEmployee.reconRequests = (_portalEmployee.reconRequests||[]).filter(r=>r.id!==id);
+  renderReconList();
+  saveEmpDataToSupabase().then(()=>toast('Deleted ✓','success'));
+}
+function editRecon(id){
+  const r = (_portalEmployee?.reconRequests||[]).find(r=>r.id===id);
+  if(!r) return;
+  openReconForDate(r.date);
+}
+
 // ── SUPABASE + PORTAL LOGIN ──
 const PORTAL_SUPABASE_URL  = 'https://jtdpvydgbmtrbaapswys.supabase.co';
 const PORTAL_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0ZHB2eWRnYm10cmJhYXBzd3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNTQ1MzYsImV4cCI6MjA5NTkzMDUzNn0.SoANGN_Qmp5ihhmA62Ojb4aqHZU9HLUxu08f3xm51U4';
@@ -2713,16 +2752,12 @@ async function doPortalLogin(){
 }
 
 function initPortalUI(emp){
-  const nameEl = document.getElementById('portalEmpName');
-  if(nameEl) nameEl.textContent = emp.name||'';
-  const desigEl = document.getElementById('portalEmpDesig');
-  if(desigEl) desigEl.textContent = (emp.desig||'') + (emp.dept?' | '+emp.dept:'');
-  const idEl = document.getElementById('portalEmpId');
-  if(idEl) idEl.textContent = 'ID: '+(emp.empId||'');
   const sn = document.getElementById('sidebarName');
   if(sn) sn.textContent = emp.name||'';
   const sr = document.getElementById('sidebarRole');
-  if(sr) sr.textContent = (emp.desig||'') + (emp.empId?' • '+(emp.empId||''):'');
+  if(sr) sr.textContent = (emp.desig||'')+(emp.dept?' | '+emp.dept:'')+(emp.empId?' • '+(emp.empId||''):'');
+  const av = document.getElementById('sidebarAvatar');
+  if(av) av.textContent = (emp.name||'?')[0].toUpperCase();
 }
 
 function portalLogout(){
