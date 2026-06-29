@@ -1693,15 +1693,7 @@ function submitRecon(){
   renderReconList();
   closeModal('reconModal');
   toast('Submitting...','success');
-  _portalSupa.from('app_data').select('value').eq('key','employees').single().then(({data})=>{
-    if(!data) return;
-    const emps=data.value;
-    const idx=emps.findIndex(e=>e.id===_portalEmployee.id);
-    if(idx!==-1){ emps[idx].reconRequests=_portalEmployee.reconRequests; }
-    _portalSupa.from('app_data').update({value:emps,updated_at:new Date().toISOString(),updated_by:_portalEmployee.name}).eq('key','employees')
-      .then(()=>toast('Reconciliation submitted ✓','success'))
-      .catch(e=>toast('Sync failed: '+e.message,'error'));
-  });
+  saveEmpDataToSupabase().then(()=>toast('Reconciliation submitted ✓','success')).catch(e=>toast('Save failed: '+e.message,'error'));
 }
 
 // ── PROFILE TABS ──
@@ -2671,17 +2663,16 @@ function openReconModal(year, month, day){
 
 async function saveEmpDataToSupabase(){
   if(!_portalEmployee) return;
-  try{
-    const {data} = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
-    if(!data) return;
-    const emps = data.value;
-    const idx = emps.findIndex(e=>e.id===_portalEmployee.id);
-    if(idx!==-1){
-      emps[idx].leaveRequests = _portalEmployee.leaveRequests||[];
-      emps[idx].reconRequests = _portalEmployee.reconRequests||[];
-    }
-    await _portalSupa.from('app_data').update({value:emps,updated_at:new Date().toISOString(),updated_by:_portalEmployee.name}).eq('key','employees');
-  }catch(e){ console.error('Supabase save failed',e); }
+  const {data,error:re} = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
+  if(re||!data) throw new Error('Could not load employee data: '+(re?.message||'unknown'));
+  const emps = data.value;
+  const idx = emps.findIndex(e=>e.id===_portalEmployee.id);
+  if(idx!==-1){
+    emps[idx].leaveRequests = _portalEmployee.leaveRequests||[];
+    emps[idx].reconRequests = _portalEmployee.reconRequests||[];
+  }
+  const {error:we} = await _portalSupa.from('app_data').update({value:emps,updated_at:new Date().toISOString(),updated_by:_portalEmployee.name||'portal'}).eq('key','employees');
+  if(we) throw new Error('Save failed: '+we.message);
 }
 
 function deleteReconConfirm(id){
