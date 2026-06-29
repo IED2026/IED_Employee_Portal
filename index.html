@@ -1628,8 +1628,8 @@ function submitCheckin(){
     if(!md.daily) md.daily=[];
     while(md.daily.length<dy) md.daily.push('');
     const dayObj=typeof md.daily[dy-1]==='object'?md.daily[dy-1]:{s:md.daily[dy-1]||''};
-    if(currentCheckinType==='in') dayObj.i=t;
-    else dayObj.o=t;
+    if(currentCheckinType==='in'){ dayObj.i=t; dayObj.in=t; }
+    else { dayObj.o=t; dayObj.out=t; }
     md.daily[dy-1]=dayObj;
     saveEmpDataToSupabase().catch(e=>console.error('att save failed',e));
   }
