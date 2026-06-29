@@ -1607,7 +1607,11 @@ function submitCheckin(){
     log[key].in=t;
     toast('Checked in at '+t,'success');
   } else {
-    if(!log[key].in){
+    const now2c=new Date();
+    const yr2=now2c.getFullYear(),mo2=now2c.getMonth(),dy2=now2c.getDate();
+    const dbIn=_portalEmployee?.attendance?.[yr2]?.[mo2]?.daily?.[dy2-1];
+    const dbInTime=typeof dbIn==='object'?dbIn?.i:null;
+    if(!log[key].in && !dbInTime){
       toast('Please check in first','error');
       closeModal('checkinModal');
       return;
@@ -1627,7 +1631,7 @@ function submitCheckin(){
     const md=_portalEmployee.attendance[yr][mo];
     if(!md.daily) md.daily=[];
     while(md.daily.length<dy) md.daily.push('');
-    const dayObj=typeof md.daily[dy-1]==='object'?md.daily[dy-1]:{s:md.daily[dy-1]||''};
+    let dayObj=typeof md.daily[dy-1]==='object'&&md.daily[dy-1]!==null?md.daily[dy-1]:{s:typeof md.daily[dy-1]==='string'?md.daily[dy-1]:''};
     if(currentCheckinType==='in'){ dayObj.i=t; dayObj.in=t; }
     else { dayObj.o=t; dayObj.out=t; }
     md.daily[dy-1]=dayObj;
