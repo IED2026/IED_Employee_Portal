@@ -1636,6 +1636,8 @@ function submitCheckin(){
     else { dayObj.o=t; dayObj.out=t; }
     md.daily[dy-1]=dayObj;
     saveEmpDataToSupabase().catch(e=>console.error('att save failed',e));
+    // Re-render attendance page if active
+    if(document.getElementById('page-attendance')?.classList.contains('active')) renderMyAttendance();
   }
 
   // keep legacy vars in sync
