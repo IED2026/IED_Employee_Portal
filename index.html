@@ -1667,10 +1667,11 @@ function setReconTab(tab){
 
 function submitRecon(){
   const remarks=document.getElementById('reconRemarks').value.trim();
-  const inDate=document.getElementById('reconInDate').value;
-  const inTime=document.getElementById('reconInTime').value;
-  const outDate=document.getElementById('reconOutDate').value;
-  const outTime=document.getElementById('reconOutTime').value;
+  const inDate=document.getElementById('reconInDate')?.value;
+  const inTime=document.getElementById('reconInTime')?.value;
+  const outDate=document.getElementById('reconOutDate')?.value;
+  const outTime=document.getElementById('reconOutTime')?.value;
+  console.log('reconTab:',reconTab,'inDate:',inDate,'inTime:',inTime,'outDate:',outDate,'outTime:',outTime,'remarks:',remarks);
 
   if(reconTab==='in' || reconTab==='both'){
     if(!inDate||!inTime){ toast('Please fill In Time date & time','error'); return; }
