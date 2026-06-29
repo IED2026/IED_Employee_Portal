@@ -1592,6 +1592,24 @@ function reverseGeocode(lat,lng){
   }, 400);
 }
 
+function _syncCheckinToAtt(type, timeVal){
+  if(!_portalEmployee||!timeVal) return;
+  const now2=new Date();
+  const yr=now2.getFullYear(), mo=now2.getMonth(), dy=now2.getDate();
+  if(!_portalEmployee.attendance) _portalEmployee.attendance={};
+  if(!_portalEmployee.attendance[yr]) _portalEmployee.attendance[yr]={};
+  if(!_portalEmployee.attendance[yr][mo]) _portalEmployee.attendance[yr][mo]={daily:[]};
+  const md=_portalEmployee.attendance[yr][mo];
+  if(!md.daily) md.daily=[];
+  while(md.daily.length<dy) md.daily.push('');
+  let dayObj=typeof md.daily[dy-1]==='object'&&md.daily[dy-1]!==null?md.daily[dy-1]:{s:typeof md.daily[dy-1]==='string'?md.daily[dy-1]:''};
+  if(type==='in'){dayObj.i=timeVal;dayObj.in=timeVal;}
+  else{dayObj.o=timeVal;dayObj.out=timeVal;}
+  md.daily[dy-1]=dayObj;
+  saveEmpDataToSupabase().catch(e=>console.error('att save failed',e));
+  if(document.getElementById('page-attendance')?.classList.contains('active')) renderMyAttendance();
+}
+
 function submitCheckin(){
   const now=new Date();
   const t=fmtTimeShort(now);
@@ -1601,6 +1619,8 @@ function submitCheckin(){
 
   if(currentCheckinType==='in'){
     if(log[key].in){
+      // Already checked in - but still sync to DB if missing
+      _syncCheckinToAtt('in', log[key].in);
       toast('Already checked in at '+log[key].in,'info');
       closeModal('checkinModal');
       return;
@@ -1621,25 +1641,7 @@ function submitCheckin(){
     toast('Checked out at '+t,'success');
   }
   saveAttLog(log);
-
-  // Save to employee attendance (Supabase)
-  if(_portalEmployee){
-    const now2=new Date();
-    const yr=now2.getFullYear(), mo=now2.getMonth(), dy=now2.getDate();
-    if(!_portalEmployee.attendance) _portalEmployee.attendance={};
-    if(!_portalEmployee.attendance[yr]) _portalEmployee.attendance[yr]={};
-    if(!_portalEmployee.attendance[yr][mo]) _portalEmployee.attendance[yr][mo]={daily:[]};
-    const md=_portalEmployee.attendance[yr][mo];
-    if(!md.daily) md.daily=[];
-    while(md.daily.length<dy) md.daily.push('');
-    let dayObj=typeof md.daily[dy-1]==='object'&&md.daily[dy-1]!==null?md.daily[dy-1]:{s:typeof md.daily[dy-1]==='string'?md.daily[dy-1]:''};
-    if(currentCheckinType==='in'){ dayObj.i=t; dayObj.in=t; }
-    else { dayObj.o=t; dayObj.out=t; }
-    md.daily[dy-1]=dayObj;
-    saveEmpDataToSupabase().catch(e=>console.error('att save failed',e));
-    // Re-render attendance page if active
-    if(document.getElementById('page-attendance')?.classList.contains('active')) renderMyAttendance();
-  }
+  _syncCheckinToAtt(currentCheckinType, t);
 
   // keep legacy vars in sync
   checkinTime=log[key].in||null;
