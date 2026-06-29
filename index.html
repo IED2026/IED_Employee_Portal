@@ -1401,11 +1401,8 @@ function calcDays(){
   const e = document.getElementById('leaveEnd').value;
   if(!s||!e){ document.getElementById('dayCount').textContent='0.0 Day'; return; }
   const start = new Date(s), end = new Date(e);
-  let days = 0;
-  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
-    const dow=d.getDay();
-    if(dow!==5&&dow!==6) days++;
-  }
+  const diff = Math.round((end-start)/(1000*60*60*24))+1;
+  let days = Math.max(0,diff);
   const halfAdj = (startHalf==='second'?-0.5:0)+(endHalf==='first'?-0.5:0);
   days = Math.max(0,days+halfAdj);
   document.getElementById('dayCount').textContent=days.toFixed(1)+' Day'+(days!==1?'s':'');
