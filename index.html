@@ -1243,7 +1243,7 @@ function fmtLeaveDate(iso){
 function countWorkdays(s,e){
   const start=new Date(s),end=new Date(e); let days=0;
   for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
-    const dow=d.getDay(); if(dow!==0&&dow!==6) days++;
+    const dow=d.getDay(); if(dow!==5&&dow!==6) days++;
   }
   return Math.max(1,days);
 }
@@ -1430,7 +1430,7 @@ function calcDays(){
   let days = 0;
   for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
     const dow=d.getDay();
-    if(dow!==0&&dow!==6) days++;
+    if(dow!==5&&dow!==6) days++;
   }
   const halfAdj = (startHalf==='second'?-0.5:0)+(endHalf==='first'?-0.5:0);
   days = Math.max(0,days+halfAdj);
@@ -1454,6 +1454,26 @@ function submitLeave(){
     type:type,
     appDate:`${pad2(now.getDate())}-${pad2(now.getMonth()+1)}-${now.getFullYear()}`
   };
+  if(!_portalEmployee.leaveRequests) _portalEmployee.leaveRequests=[];
+  const existLeave=_portalEmployee.leaveRequests.find(l=>l.fromDate===entry.fromDate&&l.toDate===entry.toDate&&l.status==='pending');
+  if(existLeave){
+    const ov2=document.createElement('div');
+    ov2.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;';
+    ov2.innerHTML=`<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:380px;padding:24px;text-align:center;">
+      <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">Leave already applied for these dates</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:16px;">A pending leave exists for ${entry.fromDate}. Do you want to submit another?</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>
+        <button onclick="this.closest('div[style*=fixed]').remove();_doLeaveSubmit(${JSON.stringify(entry).replace(/'/g,'\'')})" style="padding:8px 18px;border-radius:8px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Submit Anyway</button>
+      </div>
+    </div>`;
+    document.body.appendChild(ov2);
+    return;
+  }
+  _doLeaveSubmit(entry);
+}
+function _doLeaveSubmit(entry){
   if(!_portalEmployee.leaveRequests) _portalEmployee.leaveRequests=[];
   _portalEmployee.leaveRequests.push(entry);
   leaveData = _portalEmployee.leaveRequests.slice().reverse();
@@ -1622,6 +1642,23 @@ function submitCheckin(){
   }
   saveAttLog(log);
 
+  // Save to employee attendance (Supabase)
+  if(_portalEmployee){
+    const now2=new Date();
+    const yr=now2.getFullYear(), mo=now2.getMonth(), dy=now2.getDate();
+    if(!_portalEmployee.attendance) _portalEmployee.attendance={};
+    if(!_portalEmployee.attendance[yr]) _portalEmployee.attendance[yr]={};
+    if(!_portalEmployee.attendance[yr][mo]) _portalEmployee.attendance[yr][mo]={daily:[]};
+    const md=_portalEmployee.attendance[yr][mo];
+    if(!md.daily) md.daily=[];
+    while(md.daily.length<dy) md.daily.push('');
+    const dayObj=typeof md.daily[dy-1]==='object'?md.daily[dy-1]:{s:md.daily[dy-1]||''};
+    if(currentCheckinType==='in') dayObj.i=t;
+    else dayObj.o=t;
+    md.daily[dy-1]=dayObj;
+    saveEmpDataToSupabase().catch(e=>console.error('att save failed',e));
+  }
+
   // keep legacy vars in sync
   checkinTime=log[key].in||null;
   checkoutTime=log[key].out||null;
@@ -1651,6 +1688,7 @@ function openReconForDate(date){
   document.getElementById('reconModalDate').textContent='Attendance date: '+new Date(date).toLocaleDateString('en-GB');
   document.getElementById('reconInDate').value=date;
   document.getElementById('reconOutDate').value=date;
+  document.getElementById('reconInDate').oninput=function(){ if(reconTab==='both') document.getElementById('reconOutDate').value=this.value; };
   document.getElementById('reconInTime').value='';
   document.getElementById('reconOutTime').value='';
   document.getElementById('reconRemarks').value='';
@@ -1663,6 +1701,25 @@ function setReconTab(tab){
   document.querySelectorAll('.recon-tab').forEach((t,i)=>t.classList.toggle('active',['in','out','both'][i]===tab));
   document.getElementById('reconInSection').style.display=(tab==='in'||tab==='both')?'block':'none';
   document.getElementById('reconOutSection').style.display=(tab==='out'||tab==='both')?'block':'none';
+  // For 'both', sync out date with in date
+  if(tab==='both'){
+    const inDate=document.getElementById('reconInDate').value;
+    if(inDate) document.getElementById('reconOutDate').value=inDate;
+    // hide out date field, sync automatically
+    const outDateRow=document.getElementById('reconOutDate')?.closest('.form-group');
+    if(outDateRow) outDateRow.style.display='none';
+  } else {
+    const outDateRow=document.getElementById('reconOutDate')?.closest('.form-group');
+    if(outDateRow) outDateRow.style.display='';
+  }
+}
+
+
+function _doReconUpdate(existingId, newData){
+  const idx = _portalEmployee.reconRequests.findIndex(r=>r.id===existingId);
+  if(idx!==-1) _portalEmployee.reconRequests[idx] = {...newData, id:existingId};
+  closeModal('reconModal');
+  saveEmpDataToSupabase().then(()=>{renderReconList();toast('Reconciliation updated ✓','success');}).catch(e=>toast('Save failed: '+e.message,'error'));
 }
 
 function submitRecon(){
@@ -1689,6 +1746,22 @@ function submitRecon(){
 
   const newRecon = { id:'R'+Date.now(), status:'pending', type:typeLabel, date:dateStr, inTime: (reconTab==='in'||reconTab==='both')?inTime:'', outTime: (reconTab==='out'||reconTab==='both')?outTime:'', appDate:appStr };
   if(!_portalEmployee.reconRequests) _portalEmployee.reconRequests=[];
+  const existingRecon = _portalEmployee.reconRequests.find(r=>r.date===dateStr&&r.status==='pending');
+  if(existingRecon){
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;';
+    ov.innerHTML=`<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:380px;padding:24px;text-align:center;">
+      <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">Recon already exists for ${dateStr}</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:16px;">Do you want to update your existing reconciliation?</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>
+        <button onclick="this.closest('div[style*=fixed]').remove();_doReconUpdate('${existingRecon.id}',${JSON.stringify(newRecon).replace(/'/g,'\'')});" style="padding:8px 18px;border-radius:8px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Update</button>
+      </div>
+    </div>`;
+    document.body.appendChild(ov);
+    return;
+  }
   _portalEmployee.reconRequests.push(newRecon);
   closeModal('reconModal');
   saveEmpDataToSupabase().then(()=>{renderReconList();toast('Reconciliation submitted ✓','success');}).catch(e=>toast('Save failed: '+e.message,'error'));
@@ -2664,7 +2737,8 @@ async function saveEmpDataToSupabase(){
   const {error} = await _portalSupa.rpc('update_employee_portal_data', {
     p_emp_id: _portalEmployee.id,
     p_recon_requests: _portalEmployee.reconRequests||[],
-    p_leave_requests: _portalEmployee.leaveRequests||[]
+    p_leave_requests: _portalEmployee.leaveRequests||[],
+    p_attendance: _portalEmployee.attendance||null
   });
   if(error) throw new Error('Save failed: '+error.message);
 }
