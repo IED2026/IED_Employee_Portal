@@ -2661,17 +2661,12 @@ function openReconModal(year, month, day){
 
 async function saveEmpDataToSupabase(){
   if(!_portalEmployee) return;
-  const {data,error:re} = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
-  if(re||!data) throw new Error('Could not load employee data: '+(re?.message||'unknown'));
-  const emps = JSON.parse(JSON.stringify(data.value));
-  const idx = emps.findIndex(e=>String(e.id)===String(_portalEmployee.id));
-  if(idx!==-1){
-    emps[idx].leaveRequests = JSON.parse(JSON.stringify(_portalEmployee.leaveRequests||[]));
-    emps[idx].reconRequests = JSON.parse(JSON.stringify(_portalEmployee.reconRequests||[]));
-  }
-  const payload = JSON.parse(JSON.stringify(emps));
-  const {error:we} = await _portalSupa.from('app_data').update({value:payload,updated_at:new Date().toISOString(),updated_by:_portalEmployee.name||'portal'}).eq('key','employees');
-  if(we) throw new Error('Save failed: '+we.message);
+  const {error} = await _portalSupa.rpc('update_employee_portal_data', {
+    p_emp_id: _portalEmployee.id,
+    p_recon_requests: _portalEmployee.reconRequests||[],
+    p_leave_requests: _portalEmployee.leaveRequests||[]
+  });
+  if(error) throw new Error('Save failed: '+error.message);
 }
 
 function deleteReconConfirm(id){
