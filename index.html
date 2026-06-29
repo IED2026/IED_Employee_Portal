@@ -744,11 +744,11 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   <!-- ── PROFILE PAGE ── -->
   <div class="page" id="page-profile">
     <div class="profile-header">
-      <div class="profile-avatar" id="profileAvatar">S</div>
+      <div class="profile-avatar" id="profileAvatar">?</div>
       <div>
-        <div class="profile-name-big" id="profileName">Md. Samiul Islam Sonet</div>
-        <div class="profile-desig" id="profileDesig">IT Executive</div>
-        <div class="profile-badge" id="profileBadge">IED_99</div>
+        <div class="profile-name-big" id="profileName">—</div>
+        <div class="profile-desig" id="profileDesig">—</div>
+        <div class="profile-badge" id="profileBadge">—</div>
       </div>
     </div>
     <div class="profile-tabs">
@@ -756,48 +756,22 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
       <div class="profile-tab" onclick="profileTab('job')">Job Info</div>
     </div>
     <div class="card" id="profilePersonal">
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-cake-candles"></i></div>
-        <div><div class="info-label">Date of Birth</div><div class="info-value">04-05-1998</div></div>
-      </div>
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-id-card"></i></div>
-        <div><div class="info-label">National ID</div><div class="info-value">9582678133</div></div>
-      </div>
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-flag"></i></div>
-        <div><div class="info-label">Nationality</div><div class="info-value">Bangladeshi</div></div>
-      </div>
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-envelope"></i></div>
-        <div><div class="info-label">Email</div><div class="info-value">msisonet17@gmail.com</div></div>
-      </div>
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-phone"></i></div>
-        <div><div class="info-label">Mobile</div><div class="info-value">+880 1XX-XXXXXXX</div></div>
-      </div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-cake-candles"></i></div><div><div class="info-label">Date of Birth</div><div class="info-value" id="pDob">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-venus-mars"></i></div><div><div class="info-label">Gender</div><div class="info-value" id="pGender">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-id-card"></i></div><div><div class="info-label">National ID</div><div class="info-value" id="pNid">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-flag"></i></div><div><div class="info-label">Nationality</div><div class="info-value" id="pNat">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-envelope"></i></div><div><div class="info-label">Email</div><div class="info-value" id="pEmail">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-phone"></i></div><div><div class="info-label">Mobile</div><div class="info-value" id="pPhone">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-location-dot"></i></div><div><div class="info-label">Address</div><div class="info-value" id="pAddr">—</div></div></div>
     </div>
     <div class="card" id="profileJob" style="display:none;">
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-briefcase"></i></div>
-        <div><div class="info-label">Designation</div><div class="info-value">IT Executive</div></div>
-      </div>
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-building"></i></div>
-        <div><div class="info-label">Department</div><div class="info-value">IT</div></div>
-      </div>
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-diagram-project"></i></div>
-        <div><div class="info-label">Project</div><div class="info-value">IED</div></div>
-      </div>
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-calendar"></i></div>
-        <div><div class="info-label">Joining Date</div><div class="info-value">22-01-2025</div></div>
-      </div>
-      <div class="info-row">
-        <div class="info-icon"><i class="fa fa-file-contract"></i></div>
-        <div><div class="info-label">Employment Type</div><div class="info-value">Permanent</div></div>
-      </div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-briefcase"></i></div><div><div class="info-label">Designation</div><div class="info-value" id="pDesig">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-building"></i></div><div><div class="info-label">Department</div><div class="info-value" id="pDept">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-diagram-project"></i></div><div><div class="info-label">Project</div><div class="info-value" id="pProject">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-calendar"></i></div><div><div class="info-label">Joining Date</div><div class="info-value" id="pJoin">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-file-contract"></i></div><div><div class="info-label">Employment Type</div><div class="info-value" id="pStatus">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-money-bill"></i></div><div><div class="info-label">Gross Salary</div><div class="info-value" id="pGross">—</div></div></div>
+      <div class="info-row"><div class="info-icon"><i class="fa fa-fingerprint"></i></div><div><div class="info-label">Employee ID</div><div class="info-value" id="pEmpId">—</div></div></div>
     </div>
   </div>
 
@@ -1105,6 +1079,7 @@ function nav(page){
   if(page==='leave') renderCalendar();
   if(page==='my-leave'){ renderLeaveList(); renderLeaveChart(); }
   if(page==='recon') renderReconList();
+  if(page==='profile') renderProfile();
 }
 
 // ── CLOCK ──
@@ -1772,6 +1747,29 @@ function profileTab(tab){
   document.querySelectorAll('.profile-tab').forEach((t,i)=>t.classList.toggle('active',['personal','job'][i]===tab));
   document.getElementById('profilePersonal').style.display=tab==='personal'?'block':'none';
   document.getElementById('profileJob').style.display=tab==='job'?'block':'none';
+}
+
+function renderProfile(){
+  const emp=_portalEmployee; if(!emp) return;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el) el.textContent=v||'—';};
+  document.getElementById('profileAvatar').textContent=(emp.name||'?')[0].toUpperCase();
+  set('profileName',emp.name);
+  set('profileDesig',emp.desig);
+  set('profileBadge',emp.empId);
+  set('pDob',emp.dob);
+  set('pGender',emp.gender);
+  set('pNid',emp.nid);
+  set('pNat',emp.nationality||'Bangladeshi');
+  set('pEmail',emp.email);
+  set('pPhone',emp.phone);
+  set('pAddr',emp.address||emp.addr);
+  set('pDesig',emp.desig);
+  set('pDept',emp.dept);
+  set('pProject',emp.project);
+  set('pJoin',emp.join);
+  set('pStatus',emp.status);
+  set('pGross','৳'+((emp.gross||0).toLocaleString('en-IN')));
+  set('pEmpId',emp.empId);
 }
 
 // ── CUSTOM 12H CLOCK PICKER ──
@@ -2802,6 +2800,7 @@ async function doPortalLogin(){
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').style.display='';
     initPortalUI(emp);
+    renderProfile();
     nav('dashboard');
     setTimeout(renderDashboard, 100);
     errEl.textContent='';
@@ -2845,6 +2844,7 @@ window.addEventListener('load', ()=>{
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').style.display='';
             initPortalUI(emp);
+            renderProfile();
             nav('dashboard');
             setTimeout(renderDashboard, 100);
                     return;
