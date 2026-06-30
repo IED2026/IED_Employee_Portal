@@ -2371,13 +2371,11 @@ function renderLeaveBalanceCards(emp, year, targetId){
   },100);
 }
 
-function deriveMonthStats(rawData){
+function deriveMonthStats(rawData, yr, mo){
   const daily = rawData.daily || [];
   let wd=0, present=0, absent=0, leave=0, late=0;
-  daily.forEach(d=>{
-    let s = typeof d==='object' && d ? (d.s||'') : (d||'');
-    const hasInOut = typeof d==='object' && d && (d.i||d.in||d.o||d.out);
-    if(hasInOut && (s===''||s==='A')) s='P';
+  daily.forEach((d,i)=>{
+    const s = (yr!=null && mo!=null) ? computeDayStatus(yr, mo, i+1, d) : (typeof d==='object' && d ? (d.s||'') : (d||''));
     if(s==='P'||s==='P(L)'){ present++; wd++; }
     else if(s==='D'||s==='E'){ present++; wd++; late++; }
     else if(s==='A'){ absent++; wd++; }
@@ -2408,7 +2406,7 @@ function renderYearlyAttCalendar(emp, year, attData){
     const isPast = isFutureYear3 ? false : (year < new Date().getFullYear() ? true : mIdx < nowM);
     const isCurrent = isFutureYear3 ? false : (mIdx === nowM && new Date().getFullYear()===year);
     const isFuture = isFutureYear3 ? true : (mIdx > nowM);
-    const mData = deriveMonthStats(attData[mIdx]||{});
+    const mData = deriveMonthStats(attData[mIdx]||{}, year, mIdx);
 
     const borderClr = isFuture ? 'rgba(200,210,220,0.2)' : isPast ? '#2563eb' : isCurrent ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)';
     const titleClr = isFuture ? '#6b7a8d' : isPast ? '#60a5fa' : isCurrent ? 'var(--gold)' : '#475569';
@@ -2432,9 +2430,7 @@ function renderYearlyAttCalendar(emp, year, attData){
     for(let d=1; d<=daysInMonth; d++){
       const _raw = daily[d-1] || '';
       const _detail = typeof _raw==='object' ? _raw : null;
-      let status = typeof _raw==='object' ? (_raw.s||'') : _raw;
-      const hasInOut = _detail && (_detail.i||_detail.in||_detail.o||_detail.out);
-      if(hasInOut && (status===''||status==='A')) status='P';
+      let status = computeDayStatus(year, mIdx, d, _raw);
       // isPast for this specific day
       const isDayPast = isPast || (isCurrent && d < nowD);
       const isDayToday = isCurrent && d === nowD;
@@ -2843,6 +2839,78 @@ const PORTAL_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 const _portalSupa = window.supabase.createClient(PORTAL_SUPABASE_URL, PORTAL_SUPABASE_ANON, {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 
 let _portalEmployee = null;
+let manningSched2 = {};
+
+async function loadTimePolicy(){
+  try{
+    const {data} = await _portalSupa.from('app_data').select('value').eq('key','manningSched2').single();
+    if(data && data.value) manningSched2 = data.value;
+  }catch(e){ console.error('policy load failed',e); }
+}
+
+// ── TIME & HOLIDAY POLICY ENGINE (mirrors HR System) ──
+function getTimePolicy(){
+  if(!manningSched2.__timePolicy) manningSched2.__timePolicy=[];
+  return manningSched2.__timePolicy;
+}
+function findPolicyForDate(dateStr){
+  const rules = getTimePolicy();
+  for(let i=rules.length-1;i>=0;i--){
+    const r=rules[i];
+    if(dateStr>=r.startDate && dateStr<=r.endDate) return r;
+  }
+  return null;
+}
+function parseHM(hm){
+  if(!hm) return null;
+  const m=hm.match(/(\d{1,2}):(\d{2})/);
+  if(!m) return null;
+  return parseInt(m[1])*60+parseInt(m[2]);
+}
+function parseTimeToMinutes(t){
+  if(!t) return null;
+  const m=t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if(!m) return null;
+  let h=parseInt(m[1]), mi=parseInt(m[2]);
+  if(m[3]){
+    if(m[3].toUpperCase()==='PM'&&h!==12) h+=12;
+    if(m[3].toUpperCase()==='AM'&&h===12) h=0;
+  }
+  return h*60+mi;
+}
+function computeDayStatus(yr, mo, dy, dayObj){
+  const dateStr = `${yr}-${String(mo+1).padStart(2,'0')}-${String(dy).padStart(2,'0')}`;
+  const policy = findPolicyForDate(dateStr);
+  const storedS = typeof dayObj==='object'&&dayObj ? (dayObj.s||'') : (dayObj||'');
+  const inTime = typeof dayObj==='object'&&dayObj ? (dayObj.i||dayObj.in||'') : '';
+
+  if(policy){
+    const isHoliday = (policy.holidays||[]).includes(dateStr);
+    const dow = new Date(yr,mo,dy).getDay();
+    const isWeekend = (policy.weekendDays||[5,6]).includes(dow);
+    if(inTime){
+      const inMin = parseTimeToMinutes(inTime);
+      const pCut = parseHM(policy.pTime);
+      const dCut = parseHM(policy.dTime);
+      let s='P';
+      if(pCut!=null && inMin!=null){
+        if(inMin<=pCut) s='P';
+        else if(dCut!=null && inMin<=dCut) s='D';
+        else s='E';
+      }
+      if(isHoliday) s = s==='P'?'P(H)':s;
+      else if(isWeekend) s = s==='P'?'P(W)':s;
+      return s;
+    }
+    if(isHoliday) return 'H';
+    if(isWeekend) return 'W';
+    if(storedS==='L'||storedS==='A') return storedS;
+    return storedS||'A';
+  }
+  if(inTime && (!storedS||storedS==='A')) return 'P';
+  return storedS;
+}
+
 
 async function doPortalLogin(){
   const empId = (document.getElementById('loginEmpId').value||'').trim().toUpperCase();
@@ -2871,6 +2939,7 @@ async function doPortalLogin(){
     document.getElementById('mainApp').style.display='';
     initPortalUI(emp);
     renderProfile();
+    await loadTimePolicy();
     nav('dashboard');
     setTimeout(renderDashboard, 100);
     errEl.textContent='';
@@ -2915,6 +2984,7 @@ window.addEventListener('load', ()=>{
             document.getElementById('mainApp').style.display='';
             initPortalUI(emp);
             renderProfile();
+            await loadTimePolicy();
             nav('dashboard');
             setTimeout(renderDashboard, 100);
                     return;
