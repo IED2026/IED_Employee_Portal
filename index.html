@@ -2371,6 +2371,22 @@ function renderLeaveBalanceCards(emp, year, targetId){
   },100);
 }
 
+function deriveMonthStats(rawData){
+  const daily = rawData.daily || [];
+  let wd=0, present=0, absent=0, leave=0, late=0;
+  daily.forEach(d=>{
+    let s = typeof d==='object' && d ? (d.s||'') : (d||'');
+    const hasInOut = typeof d==='object' && d && (d.i||d.in||d.o||d.out);
+    if(hasInOut && (s===''||s==='A')) s='P';
+    if(s==='P'||s==='P(L)'){ present++; wd++; }
+    else if(s==='D'||s==='E'){ present++; wd++; late++; }
+    else if(s==='A'){ absent++; wd++; }
+    else if(s==='L'){ leave++; wd++; }
+    else if(s==='P(W)'||s==='P(H)'){ present++; wd++; }
+  });
+  return {wd,present,absent,leave,late,half:parseInt(rawData.half)||0,ot:parseFloat(rawData.ot)||0,daily};
+}
+
 function renderYearlyAttCalendar(emp, year, attData){
   const section = document.getElementById('attYearlyCalSection');
   if(!section) return;
@@ -2392,7 +2408,7 @@ function renderYearlyAttCalendar(emp, year, attData){
     const isPast = isFutureYear3 ? false : (year < new Date().getFullYear() ? true : mIdx < nowM);
     const isCurrent = isFutureYear3 ? false : (mIdx === nowM && new Date().getFullYear()===year);
     const isFuture = isFutureYear3 ? true : (mIdx > nowM);
-    const mData = attData[mIdx]||{wd:0,present:0,absent:0,leave:0,late:0};
+    const mData = deriveMonthStats(attData[mIdx]||{});
 
     const borderClr = isFuture ? 'rgba(200,210,220,0.2)' : isPast ? '#2563eb' : isCurrent ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)';
     const titleClr = isFuture ? '#6b7a8d' : isPast ? '#60a5fa' : isCurrent ? 'var(--gold)' : '#475569';
@@ -2415,8 +2431,10 @@ function renderYearlyAttCalendar(emp, year, attData){
     const nowD = new Date().getDate(); // today's date number
     for(let d=1; d<=daysInMonth; d++){
       const _raw = daily[d-1] || '';
-      const status = typeof _raw==='object' ? (_raw.s||'') : _raw;
       const _detail = typeof _raw==='object' ? _raw : null;
+      let status = typeof _raw==='object' ? (_raw.s||'') : _raw;
+      const hasInOut = _detail && (_detail.i||_detail.in||_detail.o||_detail.out);
+      if(hasInOut && (status===''||status==='A')) status='P';
       // isPast for this specific day
       const isDayPast = isPast || (isCurrent && d < nowD);
       const isDayToday = isCurrent && d === nowD;
@@ -2424,8 +2442,6 @@ function renderYearlyAttCalendar(emp, year, attData){
       let dayClr, bgDay, fontW;
       if(isDayFuture){
         dayClr='rgba(255,255,255,0.15)'; bgDay='transparent'; fontW='400';
-      } else if(isDayToday){
-        dayClr='#fff'; bgDay='rgba(212,175,55,0.5)'; fontW='800'; // gold for today
       } else if(status==='A'){
         dayClr='#fff'; bgDay='rgba(239,68,68,0.75)'; fontW='800';
       } else if(status==='L'){
@@ -2436,6 +2452,8 @@ function renderYearlyAttCalendar(emp, year, attData){
         dayClr='#ef4444'; bgDay='transparent'; fontW='700';
       } else if(status==='W'){
         dayClr='#ef4444'; bgDay='transparent'; fontW='500';
+      } else if(isDayToday){
+        dayClr='#fff'; bgDay='rgba(212,175,55,0.5)'; fontW='800';
       } else {
         dayClr='rgba(255,255,255,0.25)'; bgDay='transparent'; fontW='400';
       }
