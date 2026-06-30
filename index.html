@@ -2440,6 +2440,7 @@ function renderYearlyAttCalendar(emp, year, attData){
       const isDayToday = isCurrent && d === nowD;
       const isDayFuture = isFuture || (isCurrent && d > nowD);
       let dayClr, bgDay, fontW;
+      let todayBorder='';
       if(isDayFuture){
         dayClr='rgba(255,255,255,0.15)'; bgDay='transparent'; fontW='400';
       } else if(status==='A'){
@@ -2447,7 +2448,8 @@ function renderYearlyAttCalendar(emp, year, attData){
       } else if(status==='L'){
         dayClr='#fff'; bgDay='rgba(239,68,68,0.55)'; fontW='800';
       } else if(status==='P'||status==='D'||status==='E'||status==='P(W)'||status==='P(H)'||status==='P(L)'){
-        dayClr='rgba(255,255,255,0.75)'; bgDay='transparent'; fontW='500';
+        if(isDayToday){ dayClr='#fff'; bgDay='rgba(16,185,129,0.7)'; fontW='800'; }
+        else { dayClr='rgba(255,255,255,0.75)'; bgDay='transparent'; fontW='500'; }
       } else if(status==='H'){
         dayClr='#ef4444'; bgDay='transparent'; fontW='700';
       } else if(status==='W'){
@@ -2457,13 +2459,14 @@ function renderYearlyAttCalendar(emp, year, attData){
       } else {
         dayClr='rgba(255,255,255,0.25)'; bgDay='transparent'; fontW='400';
       }
+      if(isDayToday) todayBorder='box-shadow:0 0 0 1.5px #10b981;';
       const _ds=`${String(d).padStart(2,'0')}-${String(mIdx+1).padStart(2,'0')}-${year}`;
       const _di=_detail?(_detail.i||''):'';
       const _do=_detail?(_detail.o||''):'';
       const _dt=_detail?(_detail.t||''):'';
       const _de=_detail?(_detail.e||''):'';
       const _clickable = isDayPast || isDayToday;
-      calGrid += `<div onclick="${_clickable?`showCalDayDetail(event,'${_ds}','${status}','${_di.replace(/'/g,'')}','${_do.replace(/'/g,'')}','${_dt.replace(/'/g,'')}','${_de.replace(/'/g,'')}')`:'return false'}" style="text-align:center;font-size:8px;color:${dayClr};background:${bgDay};border-radius:3px;padding:2px 1px;font-weight:${fontW};cursor:${_clickable?'pointer':'default'};transition:filter .1s;" ${_clickable?`onmouseover="this.style.filter='brightness(1.8)'" onmouseout="this.style.filter=''"`:''}>${d}</div>`;
+      calGrid += `<div onclick="${_clickable?`showCalDayDetail(event,'${_ds}','${status}','${_di.replace(/'/g,'')}','${_do.replace(/'/g,'')}','${_dt.replace(/'/g,'')}','${_de.replace(/'/g,'')}')`:'return false'}" style="text-align:center;font-size:8px;color:${dayClr};background:${bgDay};border-radius:3px;padding:2px 1px;font-weight:${fontW};cursor:${_clickable?'pointer':'default'};transition:filter .1s;${todayBorder}" ${_clickable?`onmouseover="this.style.filter='brightness(1.8)'" onmouseout="this.style.filter=''"`:''}>${d}</div>`;
     }
     calGrid += `</div>`;
 
