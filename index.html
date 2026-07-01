@@ -2882,7 +2882,11 @@ function computeDayStatus(yr, mo, dy, dayObj){
   const dateStr = `${yr}-${String(mo+1).padStart(2,'0')}-${String(dy).padStart(2,'0')}`;
   const policy = findPolicyForDate(dateStr);
   const storedS = typeof dayObj==='object'&&dayObj ? (dayObj.s||'') : (dayObj||'');
-  const inTime = typeof dayObj==='object'&&dayObj ? (dayObj.i||dayObj.in||'') : '';
+  const now = new Date();
+  const isToday = yr===now.getFullYear() && mo===now.getMonth() && dy===now.getDate();
+  const nowMin = now.getHours()*60+now.getMinutes();
+  let inTime = typeof dayObj==='object'&&dayObj ? (dayObj.i||dayObj.in||'') : '';
+  if(isToday){ const inMin=parseTimeToMinutes(inTime); if(inMin!=null&&inMin>nowMin) inTime=''; }
 
   if(policy){
     const isHoliday = (policy.holidays||[]).includes(dateStr);
