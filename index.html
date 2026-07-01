@@ -2457,10 +2457,15 @@ function renderYearlyAttCalendar(emp, year, attData){
       }
       if(isDayToday) todayBorder='box-shadow:0 0 0 1.5px #10b981;';
       const _ds=`${String(d).padStart(2,'0')}-${String(mIdx+1).padStart(2,'0')}-${year}`;
-      const _di=_detail?(_detail.i||''):'';
-      const _do=_detail?(_detail.o||''):'';
+      const _di_raw=_detail?(_detail.i||''):'';
+      const _do_raw=_detail?(_detail.o||''):'';
       const _dt=_detail?(_detail.t||''):'';
       const _de=_detail?(_detail.e||''):'';
+      const _nowMin=new Date().getHours()*60+new Date().getMinutes();
+      const _diMin=parseTimeToMinutes(_di_raw);
+      const _doMin=parseTimeToMinutes(_do_raw);
+      const _di=(isDayToday&&_diMin!=null&&_diMin>_nowMin)?'':_di_raw;
+      const _do=(isDayToday&&_doMin!=null&&_doMin>_nowMin)?'':_do_raw;
       const _clickable = isDayPast || isDayToday;
       calGrid += `<div onclick="${_clickable?`showCalDayDetail(event,'${_ds}','${status}','${_di.replace(/'/g,'')}','${_do.replace(/'/g,'')}','${_dt.replace(/'/g,'')}','${_de.replace(/'/g,'')}')`:'return false'}" style="text-align:center;font-size:8px;color:${dayClr};background:${bgDay};border-radius:3px;padding:2px 1px;font-weight:${fontW};cursor:${_clickable?'pointer':'default'};transition:filter .1s;${todayBorder}" ${_clickable?`onmouseover="this.style.filter='brightness(1.8)'" onmouseout="this.style.filter=''"`:''}>${d}</div>`;
     }
