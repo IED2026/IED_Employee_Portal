@@ -2914,8 +2914,8 @@ function computeDayStatus(yr, mo, dy, dayObj){
     }
     if(isHoliday) return 'H';
     if(isWeekend) return 'W';
-    if(storedS==='L'||storedS==='A') return storedS;
-    return storedS||'A';
+    if(storedS==='L') return 'L';
+    return storedS||'';
   }
   if(isToday && !inTime) return '';
   if(inTime && (!storedS||storedS==='A')) return 'P';
