@@ -717,20 +717,19 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   </div>
 
   <!-- ── MY LEAVE APPLICATIONS ── -->
-  <div class="page" id="page-my-leave">
-    <!-- Balance Chart -->
-    <div class="card" style="margin-bottom:20px;text-align:center;">
-      <div class="section-title" style="justify-content:center;">My Leave Balance</div>
-      <canvas id="leaveBalanceChart" width="160" height="160" style="max-width:160px;margin:0 auto;display:block;"></canvas>
-      <div class="leave-legend">
-        <div class="leave-legend-item"><div class="legend-dot" style="background:var(--blue2);"></div>Leave taken (5)</div>
-        <div class="leave-legend-item"><div class="legend-dot" style="background:var(--green);"></div>Remaining (22)</div>
-      </div>
+  <div class="page" id="page-my-leave" style="padding:20px;max-width:1100px;margin:0 auto;">
+
+  <!-- Leave Balance Cards -->
+  <div id="myLeaveBalanceCards" style="margin-bottom:20px;"></div>
+
+  <!-- Leave Applications List -->
+  <div style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:700;color:var(--gold);"><i class="fa fa-paper-plane" style="margin-right:8px;"></i>My Leave Applications</span>
     </div>
-    <!-- Leave History -->
-    <div class="section-title">Leave History</div>
     <div id="leaveListContainer"></div>
   </div>
+</div>
 
   <!-- ── RECON PAGE ── -->
   <div class="page" id="page-recon">
@@ -1260,27 +1259,61 @@ function nextMonth(){ if(calMonth===11){calMonth=0;calYear++;} else calMonth++; 
 // ── LEAVE LIST ──
 function renderLeaveList(){
   const cont = document.getElementById('leaveListContainer');
+  if(!cont) return;
   leaveData = (_portalEmployee?.leaveRequests||[]).slice().reverse();
-  if(!leaveData.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No leave applications yet.</div>'; return; }
-  cont.innerHTML = leaveData.map(l=>{
-    const editable = l.status==='pending';
-    const actions = editable
-      ? `<div class="leave-action-btn edit" title="Edit" onclick="editLeave('${l.id}')"><i class="fa fa-pen"></i></div>
-         <div class="leave-action-btn del" title="Delete" onclick="deleteLeave('${l.id}')"><i class="fa fa-trash"></i></div>`
-      : `<div class="leave-action-btn locked" title="Approved/Rejected — cannot modify"><i class="fa fa-pen"></i></div>
-         <div class="leave-action-btn locked" title="Approved/Rejected — cannot modify"><i class="fa fa-trash"></i></div>`;
-    return `
-    <div class="leave-item ${l.status}">
-      <div class="leave-actions">${actions}</div>
-      <div class="leave-status ${l.status}">${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
-      <div class="leave-reason">${l.reason}</div>
-      <div class="leave-dates">${l.fromDate} — ${l.toDate} • ${l.days} Day${l.days>1?'s':''}</div>
-      <div class="leave-meta">
-        <span class="leave-type-badge">${l.type}</span>
-        <span class="leave-days"><i class="fa fa-calendar" style="margin-right:4px;"></i>${l.appDate}</span>
-      </div>
-    </div>`;
-  }).join('');
+
+  // Populate balance cards if on my-leave page
+  const balCards = document.getElementById('myLeaveBalanceCards');
+  if(balCards) renderLeaveBalanceCards(_portalEmployee, new Date().getFullYear(), 'myLeaveBalanceCards');
+
+  if(!leaveData.length){
+    cont.innerHTML='<div style="padding:30px;text-align:center;color:var(--text3);font-size:13px;"><i class="fa fa-calendar-xmark" style="font-size:28px;display:block;margin-bottom:10px;opacity:.4;"></i>No leave applications yet.</div>';
+    return;
+  }
+
+  const ST_CLR={pending:'#f59e0b',approved:'#10b981',rejected:'#ef4444'};
+  const ST_BG={pending:'rgba(245,158,11,0.08)',approved:'rgba(16,185,129,0.08)',rejected:'rgba(239,68,68,0.08)'};
+  const TYPE_CLR={'Annual Leave':'#3b82f6','Casual Leave':'#8b5cf6','Sick Leave':'#06b6d4'};
+
+  cont.innerHTML = `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead><tr style="background:rgba(255,255,255,0.02);">
+      <th style="padding:10px 16px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Leave Type</th>
+      <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">From</th>
+      <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">To</th>
+      <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Days</th>
+      <th style="padding:10px 8px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Reason</th>
+      <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Applied On</th>
+      <th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Status</th>
+      <th style="padding:10px 16px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Action</th>
+    </tr></thead>
+    <tbody>
+    ${leaveData.map((l,i)=>{
+      const sc=ST_CLR[l.status]||'var(--text3)';
+      const sb=ST_BG[l.status]||'transparent';
+      const tc=TYPE_CLR[l.type]||'#a0b0c8';
+      const editable=l.status==='pending';
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.035);" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+        <td style="padding:10px 16px;">
+          <span style="background:${tc}18;color:${tc};border:1px solid ${tc}44;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;">${l.type||'—'}</span>
+        </td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;color:var(--text2);">${l.fromDate||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;color:var(--text2);">${l.toDate||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:14px;font-weight:800;color:var(--gold);">${l.days||'—'}</td>
+        <td style="padding:10px 8px;font-size:11px;color:var(--text3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.reason||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:11px;color:var(--text3);">${l.appDate||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;">
+          <span style="background:${sb};color:${sc};border:1px solid ${sc}55;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;">${(l.status||'').charAt(0).toUpperCase()+(l.status||'').slice(1)}</span>
+        </td>
+        <td style="padding:10px 16px;text-align:center;">
+          ${editable?`
+            <button onclick="editLeave('${l.id}')" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:5px 8px;cursor:pointer;color:#3b82f6;font-size:11px;font-family:inherit;margin-right:4px;" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'"><i class="fa fa-pen"></i></button>
+            <button onclick="deleteLeave('${l.id}')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 8px;cursor:pointer;color:#ef4444;font-size:11px;font-family:inherit;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'"><i class="fa fa-trash"></i></button>
+          `:`<span style="font-size:11px;color:var(--text3);">—</span>`}
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table></div>`;
 }
 
 let pendingDeleteId=null;
