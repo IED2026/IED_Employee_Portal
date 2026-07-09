@@ -1680,6 +1680,24 @@ function _syncCheckinToAtt(type, timeVal){
     } else { dayObj.s='P'; }
   } else {
     dayObj.o=timeVal;dayObj.out=timeVal;
+    // Auto-calculate Actual Duty and E/L Duty on checkout
+    if(dayObj.i||dayObj.in){
+      const toMins=t=>{if(!t)return null;const m=t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);if(!m)return null;let h=parseInt(m[1]),mi=parseInt(m[2]);if(m[3]){if(m[3].toUpperCase()==='PM'&&h!==12)h+=12;if(m[3].toUpperCase()==='AM'&&h===12)h=0;}return h*60+mi;};
+      const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
+      const inM=toMins(dayObj.i||dayObj.in);
+      const outM=toMins(timeVal);
+      if(inM!==null&&outM!==null){
+        let diff=outM-inM;
+        if(diff<0) diff+=24*60;
+        dayObj.t=fmtHM(diff);
+        // E/L = Actual - Expected
+        const iso=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(dy).padStart(2,'0');
+        const pol=findPolicyForDate(iso);
+        const expMins=pol?pol.workHours*60:9*60;
+        dayObj.exp=fmtHM(expMins);
+        dayObj.e=fmtHM(diff-expMins);
+      }
+    }
   }
   md.daily[dy-1]=dayObj;
   saveEmpDataToSupabase().catch(e=>console.error('att save failed',e));
