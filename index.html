@@ -2459,8 +2459,9 @@ function renderYearlyAttCalendar(emp, year, attData){
     for(let d=1; d<=daysInMonth; d++){
       const _raw = daily[d-1] || '';
       const _detail = typeof _raw==='object' ? _raw : null;
-      // Portal: use stored status directly from HR System — no recalculation
+      // Portal: use stored status. If s is empty but in-time exists, infer Present
       let status = typeof _raw==='object' && _raw ? (_raw.s||'') : (_raw||'');
+      if(!status && typeof _raw==='object' && _raw && (_raw.i||_raw.in)) status='P';
       // isPast for this specific day
       const isDayPast = isPast || (isCurrent && d < nowD);
       const isDayToday = isCurrent && d === nowD;
