@@ -495,9 +495,10 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
               <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#818cf8;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(129,140,248,.5);">Holiday</th>
               <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);">Late</th>
               <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(167,139,250,.5);">Half Day</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(6,182,212,.5);">OT Hours</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(34,211,238,.5);">AOT(H)</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#8b5cf6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(139,92,246,.5);">E/L OT(H)</th>
+              <th title="Expected Duty Hours — Total expected working hours for the month" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);cursor:help;">Exp.D(H)</th>
+              <th title="Actual Duty Hours — Total hours actually worked this month" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(6,182,212,.5);cursor:help;">Act.D(H)</th>
+              <th title="Extra / Less Duty Hours — Difference between Actual and Expected" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#8b5cf6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(139,92,246,.5);cursor:help;">E/L D(H)</th>
+              <th title="Average Actual Duty per Working Day" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(34,211,238,.5);cursor:help;">Avg.D/Day(H)</th>
               <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(212,175,55,.5);">Att %</th>
               <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);">Notes</th>
             </tr>
@@ -2143,9 +2144,10 @@ function renderDashboard(){
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.holiday||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'holiday',this.value)"></td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.late||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'late',this.value)"></td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.half||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'half',this.value)"></td>
-      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle.replace('width:52px','width:75px')}" step="0.5" value="${mData.ot||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'ot',this.value)"></td>
-      <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#22d3ee;">${present>0?(mData.ot/present).toFixed(2):'—'}</span></td>
+      <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#f59e0b;">${(()=>{const daily=(attData[i]||{}).daily||[];let mins=0;daily.forEach(d=>{if(typeof d==='object'&&d&&d.exp){const p=d.exp.split(':');if(p.length>=2)mins+=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}});return mins>0?(Math.floor(mins/60)+':'+String(mins%60).padStart(2,'0')):'—';})()}</span></td>
+      <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#06b6d4;">${mData.ot||'—'}</span></td>
       <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#8b5cf6;">${mData.elOt||'—'}</span></td>
+      <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#22d3ee;">${(()=>{if(!present||!mData.ot||mData.ot==='—')return '—';const totalMins=parseFloat(mData.ot)*60;const avgMins=totalMins/present;const h=Math.floor(avgMins/60);const m=Math.round(avgMins%60);return h+':'+String(m).padStart(2,'0');})()}</span></td>
       <td style="${tdStyle}">
         <span style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${pct2}%</span>
       </td>
@@ -2406,16 +2408,29 @@ function renderLeaveBalanceCards(emp, year, targetId){
 
 function deriveMonthStats(rawData, yr, mo){
   const daily = rawData.daily || [];
-  let wd=0, present=0, absent=0, leave=0, late=0;
-  daily.forEach((d,i)=>{
-    const s = (yr!=null && mo!=null) ? computeDayStatus(yr, mo, i+1, d) : (typeof d==='object' && d ? (d.s||'') : (d||''));
-    if(s==='P'||s==='P(L)'){ present++; wd++; }
-    else if(s==='D'||s==='E'){ present++; wd++; late++; }
-    else if(s==='A'){ absent++; wd++; }
-    else if(s==='L'){ leave++; wd++; }
-    else if(s==='P(W)'||s==='P(H)'){ present++; wd++; }
-  });
-  return {wd,present,absent,leave,late,half:parseInt(rawData.half)||0,ot:parseFloat(rawData.ot)||0,daily};
+  const limit = daily.length;
+  let wd=0, present=0, absent=0, leave=0, late=0, holiday=0, onTime=0, delay=0, exDelay=0;
+  let totalActMins=0, totalElMins=0;
+  const parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const m=hm.replace('-','').match(/(\d+):(\d+)/);if(!m)return 0;const v=parseInt(m[1])*60+parseInt(m[2]);return neg?-v:v;};
+  const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
+  for(let i=0;i<limit;i++){
+    const d=daily[i];
+    const s=(yr!=null&&mo!=null)?computeDayStatus(yr,mo,i+1,d):(typeof d==='object'&&d?(d.s||''):(d||''));
+    if(s==='P'||s==='P(L)'){present++;wd++;onTime++;}
+    else if(s==='D'){present++;wd++;late++;delay++;}
+    else if(s==='E'){present++;wd++;late++;exDelay++;}
+    else if(s==='A'){absent++;wd++;}
+    else if(s==='L'){leave++;wd++;}
+    else if(s==='H'){holiday++;}
+    else if(s==='P(W)'||s==='P(H)'){present++;wd++;onTime++;}
+    if(typeof d==='object'&&d){
+      if(d.t) totalActMins+=parseHMins(d.t);
+      if(d.e) totalElMins+=parseHMins(d.e);
+    }
+  }
+  const otHours=totalActMins>0?(totalActMins/60).toFixed(1):(parseFloat(rawData.ot)||0);
+  const elOtStr=totalActMins>0?fmtHM(totalElMins):(rawData.elOt||'');
+  return {wd,present,absent,leave,late,holiday,onTime,delay,exDelay,half:parseInt(rawData.half)||0,ot:otHours,elOt:elOtStr,daily};
 }
 
 function renderYearlyAttCalendar(emp, year, attData){
