@@ -2065,27 +2065,11 @@ function renderDashboard(){
     const rawData = attData[i]||{};
     let mData;
     if(isFuture){
-      mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',note:rawData.note||''};
+      mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',note:rawData.note||'',daily:rawData.daily||[]};
     } else if(isCurMonth){
-      const _daily=rawData.daily||[];
-      if(_daily.length>0){
-        let _wd=0,_p=0,_a=0,_l=0,_late=0,_h=0;
-        _daily.slice(0,nowDay-1).forEach(d=>{
-          const s=typeof d==='object'?d.s:d;
-          if(s==='P'||s==='P(L)'){ _p++; _wd++; }
-          else if(s==='D'){ _p++; _wd++; _late++; }
-          else if(s==='E'){ _p++; _wd++; _late++; }
-          else if(s==='A'){ _a++; _wd++; }
-          else if(s==='L'){ _l++; _wd++; }
-          else if(s==='H'){ _h++; }
-          else if(s==='P(W)'||s==='P(H)'){ _p++; _wd++; }
-        });
-        mData={...rawData,wd:_wd,present:_p,absent:_a,leave:_l,late:_late,holiday:_h,half:rawData.half||0,ot:rawData.ot||0};
-      } else {
-        mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',note:rawData.note||'',...rawData};
-      }
+      mData = deriveMonthStats(rawData, nowDay-1, year, i);
     } else {
-      mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',...rawData,wd:rawData.wd||0};
+      mData = deriveMonthStats(rawData, null, year, i);
     }
     const present=parseInt(mData.present)||0;
     const leave=parseInt(mData.leave)||0;
