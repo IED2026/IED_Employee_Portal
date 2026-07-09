@@ -2526,13 +2526,14 @@ function renderYearlyAttCalendar(emp, year, attData){
       const _do_raw=_detail?(_detail.o||''):'';
       const _dt=_detail?(_detail.t||''):'';
       const _de=_detail?(_detail.e||''):'';
+      const _exp=_detail?(_detail.exp||''):'';
       const _nowMin=new Date().getHours()*60+new Date().getMinutes();
       const _diMin=parseTimeToMinutes(_di_raw);
       const _doMin=parseTimeToMinutes(_do_raw);
       const _di=(isDayToday&&_diMin!=null&&_diMin>_nowMin)?'':_di_raw;
       const _do=(isDayToday&&_doMin!=null&&_doMin>_nowMin)?'':_do_raw;
       const _clickable = isDayPast || isDayToday;
-      calGrid += `<div onclick="${_clickable?`showCalDayDetail(event,'${_ds}','${status}','${_di.replace(/'/g,'')}','${_do.replace(/'/g,'')}','${_dt.replace(/'/g,'')}','${_de.replace(/'/g,'')}')`:'return false'}" style="text-align:center;font-size:8px;color:${dayClr};background:${bgDay};border-radius:3px;padding:2px 1px;font-weight:${fontW};cursor:${_clickable?'pointer':'default'};transition:filter .1s;${todayBorder}" ${_clickable?`onmouseover="this.style.filter='brightness(1.8)'" onmouseout="this.style.filter=''"`:''}>${d}</div>`;
+      calGrid += `<div onclick="${_clickable?`showCalDayDetail(event,'${_ds}','${status}','${_di.replace(/'/g,'')}','${_do.replace(/'/g,'')}','${_dt.replace(/'/g,'')}','${_de.replace(/'/g,'')}','${_exp.replace(/'/g,'')}')`:'return false'}" style="text-align:center;font-size:8px;color:${dayClr};background:${bgDay};border-radius:3px;padding:2px 1px;font-weight:${fontW};cursor:${_clickable?'pointer':'default'};transition:filter .1s;${todayBorder}" ${_clickable?`onmouseover="this.style.filter='brightness(1.8)'" onmouseout="this.style.filter=''"`:''}>${d}</div>`;
     }
     calGrid += `</div>`;
 
@@ -2600,7 +2601,7 @@ function deleteLeavePageRecord(idx){
 
 
 
-function showCalDayDetail(event, dateStr, status, inTime, outTime, actualDuty, elDuty){
+function showCalDayDetail(event, dateStr, status, inTime, outTime, actualDuty, elDuty, expDuty){
   event.stopPropagation();
   document.getElementById('calDayPopup')?.remove();
   const STATUS_LABEL={'P':'Present','D':'Delay','E':'Extreme Delay','A':'Absent','L':'Leave','H':'Holiday','W':'Weekend','P(W)':'Present (Weekend)','P(H)':'Present (Holiday)','P(L)':'Present (Leave)'};
@@ -2624,6 +2625,7 @@ function showCalDayDetail(event, dateStr, status, inTime, outTime, actualDuty, e
       </div>
       ${row('In Time', inTime, '#10b981')}
       ${row('Out Time', outTime, '#ef4444')}
+      ${status!=='H'&&status!=='W'?row('Expected Duty (h)', expDuty||'09:00', '#f59e0b'):''}
       ${row('Actual Duty (h)', actualDuty, '#3b82f6')}
       ${row('Extra/Less Duty (h)', elDuty, elColor)}
       ${!inTime&&!outTime?'<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0;">No time data</div>':''}
