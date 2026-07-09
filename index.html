@@ -2066,10 +2066,8 @@ function renderDashboard(){
     let mData;
     if(isFuture){
       mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',note:rawData.note||'',daily:rawData.daily||[]};
-    } else if(isCurMonth){
-      mData = deriveMonthStats(rawData, nowDay-1, year, i);
     } else {
-      mData = deriveMonthStats(rawData, null, year, i);
+      mData = deriveMonthStats(rawData);
     }
     const present=parseInt(mData.present)||0;
     const leave=parseInt(mData.leave)||0;
@@ -2391,30 +2389,29 @@ function renderLeaveBalanceCards(emp, year, targetId){
 }
 
 function deriveMonthStats(rawData, yr, mo){
+  // Portal is read-only — all data comes from HR System as stored in daily[]
+  // No recalculation here
   const daily = rawData.daily || [];
-  const limit = daily.length;
-  let wd=0, present=0, absent=0, leave=0, late=0, holiday=0, onTime=0, delay=0, exDelay=0;
+  let wd=0, present=0, absent=0, leave=0, late=0, holiday=0;
   let totalActMins=0, totalElMins=0;
   const parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const m=hm.replace('-','').match(/(\d+):(\d+)/);if(!m)return 0;const v=parseInt(m[1])*60+parseInt(m[2]);return neg?-v:v;};
   const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
-  for(let i=0;i<limit;i++){
-    const d=daily[i];
-    const s=(yr!=null&&mo!=null)?computeDayStatus(yr,mo,i+1,d):(typeof d==='object'&&d?(d.s||''):(d||''));
-    if(s==='P'||s==='P(L)'){present++;wd++;onTime++;}
-    else if(s==='D'){present++;wd++;late++;delay++;}
-    else if(s==='E'){present++;wd++;late++;exDelay++;}
+  daily.forEach(function(d){
+    if(!d||d==='') return;
+    const s=typeof d==='object'?( d.s||''):(d||'');
+    if(s==='P'||s==='P(L)'||s==='P(W)'||s==='P(H)'){present++;wd++;}
+    else if(s==='D'||s==='E'){present++;wd++;late++;}
     else if(s==='A'){absent++;wd++;}
     else if(s==='L'){leave++;wd++;}
     else if(s==='H'){holiday++;}
-    else if(s==='P(W)'||s==='P(H)'){present++;wd++;onTime++;}
     if(typeof d==='object'&&d){
       if(d.t) totalActMins+=parseHMins(d.t);
       if(d.e) totalElMins+=parseHMins(d.e);
     }
-  }
+  });
   const otHours=totalActMins>0?(totalActMins/60).toFixed(1):(parseFloat(rawData.ot)||0);
   const elOtStr=totalActMins>0?fmtHM(totalElMins):(rawData.elOt||'');
-  return {wd,present,absent,leave,late,holiday,onTime,delay,exDelay,half:parseInt(rawData.half)||0,ot:otHours,elOt:elOtStr,daily};
+  return {wd,present,absent,leave,late,holiday,half:parseInt(rawData.half)||0,ot:otHours,elOt:elOtStr,daily};
 }
 
 function renderYearlyAttCalendar(emp, year, attData){
@@ -2438,7 +2435,7 @@ function renderYearlyAttCalendar(emp, year, attData){
     const isPast = isFutureYear3 ? false : (year < new Date().getFullYear() ? true : mIdx < nowM);
     const isCurrent = isFutureYear3 ? false : (mIdx === nowM && new Date().getFullYear()===year);
     const isFuture = isFutureYear3 ? true : (mIdx > nowM);
-    const mData = deriveMonthStats(attData[mIdx]||{}, year, mIdx);
+    const mData = deriveMonthStats(attData[mIdx]||{});
 
     const borderClr = isFuture ? 'rgba(200,210,220,0.2)' : isPast ? '#2563eb' : isCurrent ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)';
     const titleClr = isFuture ? '#6b7a8d' : isPast ? '#60a5fa' : isCurrent ? 'var(--gold)' : '#475569';
@@ -2462,7 +2459,8 @@ function renderYearlyAttCalendar(emp, year, attData){
     for(let d=1; d<=daysInMonth; d++){
       const _raw = daily[d-1] || '';
       const _detail = typeof _raw==='object' ? _raw : null;
-      let status = computeDayStatus(year, mIdx, d, _raw);
+      // Portal: use stored status directly from HR System — no recalculation
+      let status = typeof _raw==='object' && _raw ? (_raw.s||'') : (_raw||'');
       // isPast for this specific day
       const isDayPast = isPast || (isCurrent && d < nowD);
       const isDayToday = isCurrent && d === nowD;
