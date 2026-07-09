@@ -1663,8 +1663,24 @@ function _syncCheckinToAtt(type, timeVal){
   if(!md.daily) md.daily=[];
   while(md.daily.length<dy) md.daily.push('');
   let dayObj=typeof md.daily[dy-1]==='object'&&md.daily[dy-1]!==null?md.daily[dy-1]:{s:typeof md.daily[dy-1]==='string'?md.daily[dy-1]:''};
-  if(type==='in'){dayObj.i=timeVal;dayObj.in=timeVal;}
-  else{dayObj.o=timeVal;dayObj.out=timeVal;}
+  if(type==='in'){
+    dayObj.i=timeVal;dayObj.in=timeVal;
+    // Set status based on policy or default to P
+    const iso=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(dy).padStart(2,'0');
+    const pol=findPolicyForDate(iso);
+    if(pol){
+      const inMin=parseTimeToMinutes(timeVal);
+      const pCut=parseHM(pol.pTime);
+      const dCut=parseHM(pol.dTime);
+      if(inMin!=null&&pCut!=null){
+        if(inMin<=pCut) dayObj.s='P';
+        else if(dCut!=null&&inMin<=dCut) dayObj.s='D';
+        else dayObj.s='E';
+      } else { dayObj.s='P'; }
+    } else { dayObj.s='P'; }
+  } else {
+    dayObj.o=timeVal;dayObj.out=timeVal;
+  }
   md.daily[dy-1]=dayObj;
   saveEmpDataToSupabase().catch(e=>console.error('att save failed',e));
   if(document.getElementById('page-attendance')?.classList.contains('active')) renderMyAttendance();
