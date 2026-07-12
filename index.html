@@ -2494,7 +2494,7 @@ function renderYearlyAttCalendar(emp, year, attData){
       const _raw = daily[d-1] || '';
       const _detail = typeof _raw==='object' ? _raw : null;
       // Portal: use computeDayStatus — same as HR System
-      let status = typeof _raw==='object' && _raw ? (computeDayStatus(year, mIdx, d, _raw)||_raw.s||'') : (_raw||'');
+      let status = computeDayStatus(year, mIdx, d, _raw);
       // isPast for this specific day
       const isDayPast = isPast || (isCurrent && d < nowD);
       const isDayToday = isCurrent && d === nowD;
