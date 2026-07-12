@@ -351,6 +351,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
     <div class="nav-item active" onclick="nav('home')"><i class="fa fa-home"></i> Home</div>
     <div class="nav-item" onclick="nav('dashboard')"><i class="fa fa-chart-line"></i> Dashboard</div>
     <div class="nav-item" onclick="nav('attendance')"><i class="fa fa-fingerprint"></i> Attendance</div>
+    <div class="nav-item" onclick="nav('kpi')"><i class="fa fa-chart-bar"></i> My KPI</div>
     <div class="nav-item" onclick="nav('leave')"><i class="fa fa-calendar-check"></i> Leave</div>
     <div class="nav-item" onclick="nav('profile')"><i class="fa fa-user"></i> My Profile</div>
   </div>
@@ -718,6 +719,11 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   </div>
 
   <!-- ── MY LEAVE APPLICATIONS ── -->
+  <!-- My KPI Page -->
+  <div class="page" id="page-kpi" style="padding:20px;max-width:900px;margin:0 auto;">
+    <div id="portalKpiContent"></div>
+  </div>
+
   <div class="page" id="page-my-leave" style="padding:20px;max-width:1100px;margin:0 auto;">
 
   <!-- Leave Balance Cards -->
@@ -1061,7 +1067,7 @@ let checkoutTime = null;
 
 // ── NAV ──
 const PAGE_TITLES = {
-  home:'Home', dashboard:'Dashboard', attendance:'My Attendance', leave:'Leave',
+  home:'Home', dashboard:'Dashboard', attendance:'My Attendance', kpi:'My KPI', leave:'Leave',
   'apply-leave':'Apply for Leave', 'my-leave':'My Leave Applications',
   recon:'Recon. Application', profile:'My Profile'
 };
@@ -3075,6 +3081,61 @@ window.addEventListener('load', ()=>{
     })();
   }
 });
+function calcKpiScore(k){let tot=0,cnt=0;[1,2,3,4].forEach(q=>{const t=parseFloat(k['q'+q+'t'])||0;const a=parseFloat(k['q'+q+'a'])||0;if(t>0){tot+=Math.min(a/t*100,150);cnt++;}});return cnt>0?Math.round(tot/cnt):0;}
+
+function renderPortalKpi(){
+  const cont=document.getElementById('portalKpiContent');
+  if(!cont) return;
+  const emp=_portalEmployee;
+  if(!emp){cont.innerHTML='<p style="color:var(--text3);">Not logged in.</p>';return;}
+  const year=new Date().getFullYear();
+  const items=(emp.kpiData||{})[year]?.items||[];
+  const teams=(manningSched2.__kpiTeams||[]);
+  const myTeam=teams.find(t=>(t.memberIds||[]).some(id=>String(id)===String(emp.id)));
+  let html='';
+  html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">';
+  html+='<i class="fa fa-chart-bar" style="color:var(--gold);font-size:18px;"></i>';
+  html+='<span style="font-size:16px;font-weight:700;color:var(--gold);">My KPI — '+year+'</span>';
+  if(myTeam) html+='<span style="font-size:11px;color:var(--text3);margin-left:8px;">Team: <b style="color:var(--text2);">'+myTeam.name+'</b></span>';
+  html+='</div>';
+  if(!items.length){
+    html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:30px;text-align:center;color:var(--text3);"><i class="fa fa-chart-bar" style="font-size:32px;opacity:.3;display:block;margin-bottom:10px;"></i>No KPI targets assigned for '+year+'.</div>';
+    cont.innerHTML=html; return;
+  }
+  let totalWeight=0,weightedScore=0;
+  items.forEach(function(k){const w=parseFloat(k.weight)||0;const s=calcKpiScore(k);totalWeight+=w;weightedScore+=w*s;});
+  const overall=totalWeight>0?Math.round(weightedScore/totalWeight):0;
+  const oc=overall>=80?'#10b981':overall>=60?'#f59e0b':'#ef4444';
+  html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">';
+  html+='<div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Overall KPI Score</div><div style="font-size:28px;font-weight:800;color:'+oc+';">'+overall+'%</div></div>';
+  html+='<div style="width:80px;height:80px;border-radius:50%;background:conic-gradient('+oc+' '+overall*3.6+'deg,rgba(255,255,255,0.05) 0);display:flex;align-items:center;justify-content:center;"><div style="width:60px;height:60px;border-radius:50%;background:var(--navy2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:'+oc+';">'+overall+'%</div></div>';
+  html+='</div>';
+  html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;overflow:hidden;"><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html+='<thead><tr style="background:rgba(255,255,255,0.03);">';
+  ['KPI Description','Weight','Period','Q1','Q2','Q3','Q4','Score'].forEach(function(h){
+    html+='<th style="padding:10px 8px;text-align:center;font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">'+h+'</th>';
+  });
+  html+='</tr></thead><tbody>';
+  items.forEach(function(k,i){
+    const score=calcKpiScore(k);
+    const sc=score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
+    html+='<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">';
+    html+='<td style="padding:10px 14px;color:var(--text);font-weight:600;">'+(k.desc||'—')+'</td>';
+    html+='<td style="padding:10px 8px;text-align:center;color:var(--gold);font-weight:700;">'+(k.weight||0)+'%</td>';
+    html+='<td style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);">'+(k.startDate||'—')+' → '+(k.endDate||'—')+'</td>';
+    [1,2,3,4].forEach(function(q){
+      const t=parseFloat(k['q'+q+'t'])||0,a=parseFloat(k['q'+q+'a'])||0;
+      const qs=t>0?Math.round(Math.min(a/t*100,150)):null;
+      const qc=qs===null?'var(--text3)':qs>=80?'#10b981':qs>=60?'#f59e0b':'#ef4444';
+      html+='<td style="padding:10px 8px;text-align:center;"><span style="font-size:11px;color:'+qc+';font-weight:'+(qs!==null?'700':'400')+'">'+(qs!==null?qs+'%':'—')+'</span></td>';
+    });
+    html+='<td style="padding:10px 8px;text-align:center;"><span style="font-size:14px;font-weight:800;color:'+sc+';">'+score+'%</span></td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table></div></div>';
+  cont.innerHTML=html;
+}
+
 </script>
 </body>
 </html>
