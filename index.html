@@ -1082,6 +1082,7 @@ function nav(page){
   document.getElementById('pageTitle').textContent = PAGE_TITLES[page]||page;
   if(page==='dashboard') renderDashboard();
   if(page==='attendance') initMyAttendance();
+  if(page==='kpi') renderPortalKpi();
   if(page==='leave') renderCalendar();
   if(page==='my-leave'){ refreshPortalEmployeeData().then(()=>{ renderLeaveList(); renderLeaveChart(); }); }
   if(page==='recon') refreshPortalEmployeeData().then(()=>renderReconList());
