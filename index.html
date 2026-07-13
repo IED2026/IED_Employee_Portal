@@ -1538,6 +1538,16 @@ let checkinWatchId = null;
 let bestAccuracy = Infinity;
 
 function openCheckinModal(type){
+  // Guard: prevent double check-in
+  if(type==='in'){
+    const now=new Date();
+    const yr=now.getFullYear(), mo=now.getMonth(), dy=now.getDate();
+    const dayObj=(_portalEmployee?.attendance||{})[yr]?.[mo]?.daily?.[dy-1];
+    if(typeof dayObj==='object' && dayObj && (dayObj.i||dayObj.in)){
+      alert('Sorry, Already Checked In.');
+      return;
+    }
+  }
   currentCheckinType=type;
   document.getElementById('checkinModalTitle').textContent=type==='in'?'Check In':'Check Out';
   document.getElementById('checkinRemarks').value='';
