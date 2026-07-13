@@ -1017,12 +1017,13 @@ function generateRecentAttendance(){
 
 // ── PERSISTENT ATTENDANCE LOG (localStorage) ──
 const ATT_LOG_KEY = 'ied_attendance_log';
+function getAttLogKey(){ return ATT_LOG_KEY+'_'+(_portalEmployee?.id||'guest'); }
 function getAttLog(){
-  try{ return JSON.parse(localStorage.getItem(ATT_LOG_KEY)||'{}'); }
+  try{ return JSON.parse(localStorage.getItem(getAttLogKey())||'{}'); }
   catch(e){ return {}; }
 }
 function saveAttLog(log){
-  try{ localStorage.setItem(ATT_LOG_KEY, JSON.stringify(log)); }catch(e){}
+  try{ localStorage.setItem(getAttLogKey(), JSON.stringify(log)); }catch(e){}
 }
 function todayKey(){ return isoDate(new Date()); }
 
