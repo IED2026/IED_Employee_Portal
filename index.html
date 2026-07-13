@@ -1582,7 +1582,7 @@ function openCheckinModal(type){
       firstFixDone=true;
     }, ()=>{
       // ignore — the watch below may still succeed
-    }, {enableHighAccuracy:false, timeout:6000, maximumAge:60000});
+    }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
 
     // STAGE 2 — high-accuracy watch in the background: as soon as the device
     // gets a sharper reading, the pin snaps to the more exact spot.
