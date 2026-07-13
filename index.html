@@ -3061,8 +3061,9 @@ function computeDayStatus(yr, mo, dy, dayObj){
     if(isHoliday) return 'H';
     if(isWeekend) return 'W';
     if(storedS==='L') return 'L';
+    // Past working day with no check-in → Absent
+    if(!isToday) return 'A';
     return storedS||'';
-  }
   if(isToday && !inTime) return '';
   if(inTime && (!storedS||storedS==='A')) return 'P';
   return storedS;
