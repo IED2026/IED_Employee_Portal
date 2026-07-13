@@ -2455,51 +2455,31 @@ function renderLeaveBalanceCards(emp, year, targetId){
 }
 
 function deriveMonthStats(rawData, yr, mo){
-  // Portal is read-only — reads stored data from HR System
   const daily = rawData.daily || [];
-  let wd=0, present=0, absent=0, leave=0, late=0, holiday=0;
   let totalActMins=0, totalElMins=0;
   const parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const m=hm.replace('-','').match(/(\d+):(\d+)/);if(!m)return 0;const v=parseInt(m[1])*60+parseInt(m[2]);return neg?-v:v;};
   const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
-
-  // If yr/mo provided, use computeDayStatus to count working days (same as HR System)
-  if(yr!=null && mo!=null){
-    const now=new Date();
-    const daysInMonth=new Date(yr,mo+1,0).getDate();
-    const todayStr=now.toISOString().slice(0,10);
-    for(let d=1;d<=daysInMonth;d++){
-      const dateStr=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-      if(dateStr>todayStr) break;
-      const raw=daily[d-1]||'';
-      const s=computeDayStatus(yr,mo,d,raw);
-      if(s==='P'||s==='P(L)'||s==='P(W)'||s==='P(H)'){present++;wd++;}
-      else if(s==='D'||s==='E'){present++;wd++;late++;}
-      else if(s==='A'){absent++;wd++;}
-      else if(s==='L'){leave++;wd++;}
-      else if(s==='H'){holiday++;}
-      if(typeof raw==='object'&&raw){
-        if(raw.t) totalActMins+=parseHMins(raw.t);
-        if(raw.e) totalElMins+=parseHMins(raw.e);
-      }
+  daily.forEach(function(d){
+    if(typeof d==='object'&&d){
+      if(d.t) totalActMins+=parseHMins(d.t);
+      if(d.e) totalElMins+=parseHMins(d.e);
     }
-  } else {
-    daily.forEach(function(d){
-      if(!d||d==='') return;
-      const s=typeof d==='object'?(d.s||''):(d||'');
-      if(s==='P'||s==='P(L)'||s==='P(W)'||s==='P(H)'){present++;wd++;}
-      else if(s==='D'||s==='E'){present++;wd++;late++;}
-      else if(s==='A'){absent++;wd++;}
-      else if(s==='L'){leave++;wd++;}
-      else if(s==='H'){holiday++;}
-      if(typeof d==='object'&&d){
-        if(d.t) totalActMins+=parseHMins(d.t);
-        if(d.e) totalElMins+=parseHMins(d.e);
-      }
-    });
-  }
+  });
   const otHours=totalActMins>0?(totalActMins/60).toFixed(1):(parseFloat(rawData.ot)||0);
   const elOtStr=totalActMins>0?fmtHM(totalElMins):(rawData.elOt||'');
-  return {wd,present,absent,leave,late,holiday,half:parseInt(rawData.half)||0,ot:otHours,elOt:elOtStr,daily};
+  // Use stored monthly stats from HR System sync
+  return {
+    wd: parseInt(rawData.wd)||0,
+    present: parseInt(rawData.present)||0,
+    absent: parseInt(rawData.absent)||0,
+    leave: parseInt(rawData.leave)||0,
+    late: parseInt(rawData.late)||0,
+    holiday: parseInt(rawData.holiday)||0,
+    half: parseInt(rawData.half)||0,
+    ot: otHours,
+    elOt: elOtStr,
+    daily
+  };
 }
 
 function renderYearlyAttCalendar(emp, year, attData){
