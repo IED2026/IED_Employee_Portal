@@ -2745,12 +2745,33 @@ function renderMyAttendance(){
   const sub=document.getElementById('myAttSubtitle');
   if(sub) sub.textContent=month===-1?`Year ${year} — Full Overview`:`${_MA_MONTHS[month]} ${year}`;
 
-  // KPI
+  // KPI — derive from daily[] (HR System is source of truth)
   const months=month===-1?Array.from({length:12},(_,i)=>i):[month];
-  let totWD=0,totP=0,totL=0,totA=0,totLate=0,totOT=0;
-  months.forEach(mi=>{const md=attData[mi]||{};totWD+=parseInt(md.wd)||0;totP+=parseInt(md.present)||0;totL+=parseInt(md.leave)||0;totA+=parseInt(md.absent)||0;totLate+=parseInt(md.late)||0;totOT+=parseFloat(md.ot)||0;});
+  const parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const m=hm.replace('-','').match(/(\d+):(\d+)/);if(!m)return 0;const v=parseInt(m[1])*60+parseInt(m[2]);return neg?-v:v;};
+  const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
+  let totWD=0,totP=0,totL=0,totA=0,totLate=0,totActMins=0,totElMins=0,totExpMins=0;
+  months.forEach(mi=>{
+    const md=deriveMonthStats(attData[mi]||{});
+    totWD+=parseInt(md.wd)||0;
+    totP+=parseInt(md.present)||0;
+    totL+=parseInt(md.leave)||0;
+    totA+=parseInt(md.absent)||0;
+    totLate+=parseInt(md.late)||0;
+    totActMins+=parseHMins(String(parseFloat(md.ot)||0).includes(':')?md.ot:(parseFloat(md.ot)*60+''));
+    totElMins+=parseHMins(md.elOt||'');
+    // Expected duty from daily[].exp
+    (attData[mi]?.daily||[]).forEach(d=>{if(typeof d==='object'&&d&&d.exp){const p=d.exp.split(':');if(p.length>=2)totExpMins+=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}});
+  });
+  // Re-derive act from daily[].t directly
+  totActMins=0; totElMins=0;
+  months.forEach(mi=>{
+    (attData[mi]?.daily||[]).forEach(d=>{
+      if(typeof d==='object'&&d){if(d.t)totActMins+=parseHMins(d.t);if(d.e)totElMins+=parseHMins(d.e);}
+    });
+  });
   const pct=totWD>0?Math.round(totP/totWD*100):0;
   const pctClr=pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
+  const elColor=totElMins<0?'#ef4444':'#10b981';
 
   document.getElementById('myAttKpi').innerHTML=`
     <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;">
@@ -2760,7 +2781,6 @@ function renderMyAttendance(){
         ['🌴',totL,'Leave','#f59e0b'],
         ['❌',totA,'Absent','#ef4444'],
         ['⏰',totLate,'Late','#f97316'],
-        ['💡',totOT.toFixed(1),'OT Hours','#06b6d4'],
       ].map(([ic,v,lb,cl])=>`<div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${cl}33;border-top:3px solid ${cl};border-radius:12px;padding:12px 10px;text-align:center;">
         <div style="font-size:16px;margin-bottom:2px;">${ic}</div>
         <div style="font-size:20px;font-weight:800;color:${cl};">${v}</div>
@@ -2770,6 +2790,20 @@ function renderMyAttendance(){
         <div style="font-size:16px;margin-bottom:2px;">📊</div>
         <div style="font-size:20px;font-weight:900;color:${pctClr};">${pct}%</div>
         <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Attendance</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;margin-top:10px;">
+      <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid rgba(245,158,11,0.2);border-top:3px solid #f59e0b;border-radius:12px;padding:12px 10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⏱ Expected Duty</div>
+        <div style="font-size:18px;font-weight:800;color:#f59e0b;">${totExpMins>0?fmtHM(totExpMins):'—'}</div>
+      </div>
+      <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid rgba(6,182,212,0.2);border-top:3px solid #06b6d4;border-radius:12px;padding:12px 10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⚡ Actual Duty</div>
+        <div style="font-size:18px;font-weight:800;color:#06b6d4;">${totActMins>0?fmtHM(totActMins):'—'}</div>
+      </div>
+      <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid ${elColor}33;border-top:3px solid ${elColor};border-radius:12px;padding:12px 10px;text-align:center;">
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">📈 Extra / Less</div>
+        <div style="font-size:18px;font-weight:800;color:${elColor};">${totActMins>0?(totElMins>=0?'+':'')+fmtHM(totElMins):'—'}</div>
       </div>
     </div>`;
 
