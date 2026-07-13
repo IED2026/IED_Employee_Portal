@@ -3061,6 +3061,7 @@ function computeDayStatus(yr, mo, dy, dayObj){
     if(isHoliday) return 'H';
     if(isWeekend) return 'W';
     if(storedS==='L') return 'L';
+    if(!isToday) return 'A';
     return storedS||'';
   }
   if(isToday && !inTime) return '';
