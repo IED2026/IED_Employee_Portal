@@ -1608,6 +1608,8 @@ function handleFix(pos, loading){
   if(acc>bestAccuracy+5) return;
   const improving = acc < bestAccuracy;
   bestAccuracy = Math.min(bestAccuracy, acc);
+  // Store globally for distance check
+  window._checkinLat=lat; window._checkinLng=lng;
 
   document.getElementById('locationText').textContent=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
   if(checkinMap){
@@ -1722,6 +1724,18 @@ function _syncCheckinToAtt(type, timeVal){
 }
 
 function submitCheckin(){
+  // Office location check
+  const OFFICE_LAT=23.77317, OFFICE_LNG=90.35995, OFFICE_R=20;
+  if(window._checkinLat!=null && window._checkinLng!=null){
+    const dLat=(window._checkinLat-OFFICE_LAT)*Math.PI/180;
+    const dLng=(window._checkinLng-OFFICE_LNG)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2+Math.cos(OFFICE_LAT*Math.PI/180)*Math.cos(window._checkinLat*Math.PI/180)*Math.sin(dLng/2)**2;
+    const dist=6371000*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    if(dist>OFFICE_R){
+      alert('Sorry, you are outside of your office ('+Math.round(dist)+'m away).');
+      return;
+    }
+  }
   const now=new Date();
   const t=fmtTimeShort(now);
   const key=todayKey();
