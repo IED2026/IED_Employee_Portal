@@ -2634,7 +2634,15 @@ function showCalDayDetail(event, dateStr, status, inTime, outTime, actualDuty, e
       </div>
       ${row('In Time', inTime, '#10b981')}
       ${row('Out Time', outTime, '#ef4444')}
-      ${status!=='H'&&status!=='W'&&expDuty?row('Expected Duty (h)', expDuty, '#f59e0b'):''}
+      ${(()=>{
+        if(status==='H'||status==='W') return '';
+        // Policy first
+        let iso=dateStr;const dm=dateStr.match(/^(\d{2})-(\d{2})-(\d{4})$/);if(dm)iso=dm[3]+'-'+dm[2]+'-'+dm[1];
+        const pol=typeof findPolicyForDate==='function'?findPolicyForDate(iso):null;
+        if(pol){const wh=pol.workHours;return row('Expected Duty (h)',String(Math.floor(wh)).padStart(2,'0')+':'+String(Math.round((wh%1)*60)).padStart(2,'0'),'#f59e0b');}
+        if(expDuty) return row('Expected Duty (h)',expDuty,'#f59e0b');
+        return '';
+      })()}
       ${row('Actual Duty (h)', actualDuty, '#3b82f6')}
       ${row('Extra/Less Duty (h)', elDuty, elColor)}
       ${!inTime&&!outTime?'<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0;">No time data</div>':''}
