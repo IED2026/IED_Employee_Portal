@@ -2824,6 +2824,7 @@ function renderMyAttendance(){
         </td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#06b6d4;">${dayObj.i||dayObj.in||'—'}</td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#8b5cf6;">${dayObj.o||dayObj.out||'—'}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#f59e0b;">${(()=>{const iso=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');const pol=typeof findPolicyForDate==='function'?findPolicyForDate(iso):null;if(pol){const wh=pol.workHours;return String(Math.floor(wh)).padStart(2,'0')+':'+String(Math.round((wh%1)*60)).padStart(2,'0');}return dayObj.exp||'—';})()}</td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;color:#22d3ee;">${dayObj.t||dayObj.ot||'—'}</td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;color:#a78bfa;">${dayObj.e||dayObj.elOt||'—'}</td>
         <td style="padding:10px 14px;text-align:center;">
@@ -2849,11 +2850,12 @@ function renderMyAttendance(){
             <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Date</th>
             <th style="padding:10px 8px;text-align:center;font-size:10px;color:#06b6d4;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">In Time</th>
             <th style="padding:10px 8px;text-align:center;font-size:10px;color:#8b5cf6;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Out Time</th>
-            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#22d3ee;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">OT(H)</th>
-            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">E/L(H)</th>
+            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#f59e0b;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);" title="Expected Duty Hours">Exp.D(H)</th>
+            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#22d3ee;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);" title="Actual Duty Hours">Act.D(H)</th>
+            <th style="padding:10px 8px;text-align:center;font-size:10px;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);" title="Extra/Less Duty Hours">E/L D(H)</th>
             <th style="padding:10px 14px;text-align:center;font-size:10px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">Recon</th>
           </tr></thead>
-          <tbody>${rows.length?rows.join(''):'<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text3);font-size:12px;">No data for this month</td></tr>'}</tbody>
+          <tbody>${rows.length?rows.join(''):'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3);font-size:12px;">No data for this month</td></tr>'}</tbody>
         </table></div>
       </div>`;
   }
