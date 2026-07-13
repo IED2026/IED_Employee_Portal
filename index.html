@@ -2870,7 +2870,8 @@ function renderMyAttendance(){
       const dayRaw=daily[d-1];
       const dayObj=typeof dayRaw==='object'?{...dayRaw}:{s:typeof dayRaw==='string'?dayRaw:''};
       if(typeof dayRaw==='string') dayObj.s=dayRaw;
-      const st=dayObj.s||'';
+      // Use computeDayStatus same as HR System calendar
+      const st=computeDayStatus(year, month, d, dayRaw)||dayObj.s||'';
       const clr=S_CLR[st]||'var(--text3)';
       const bg=S_BG[st]||'rgba(255,255,255,0.03)';
       rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}">
