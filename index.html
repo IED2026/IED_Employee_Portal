@@ -3256,8 +3256,8 @@ function renderPortalMyTeams(){
     html+='<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">';
     html+='<div style="display:flex;align-items:center;gap:8px;"><i class="fa fa-users" style="color:var(--gold);"></i><span style="font-size:13px;font-weight:700;color:var(--gold);">'+team.name+'</span><span style="font-size:10px;color:var(--text3);">'+members.length+' member(s)</span></div>';
     html+='<div style="display:flex;gap:6px;">';
-    html+='<button onclick="openAssignKpiModal('' +team.id+ '')" style="padding:5px 12px;border-radius:6px;border:1px solid var(--gold);background:rgba(201,162,77,0.1);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-chart-bar"></i> Assign KPI</button>';
-    html+='<button onclick="openPortalCreateTeamModal('' +team.id+ '')" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-pen"></i> Edit</button>';
+    html+='<button onclick="openAssignKpiModal(\'' +team.id+ '\')" style="padding:5px 12px;border-radius:6px;border:1px solid var(--gold);background:rgba(201,162,77,0.1);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-chart-bar"></i> Assign KPI</button>';
+    html+='<button onclick="openPortalCreateTeamModal(\'' +team.id+ '\')" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-pen"></i> Edit</button>';
     html+='</div></div>';
     if(!members.length){
       html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:12px;">No members. Click Edit to add.</div>';
@@ -3312,7 +3312,7 @@ function openPortalCreateTeamModal(teamId){
     +'<input class="form-control" placeholder="Filter..." style="margin-bottom:6px;" oninput="filterPortalMemberList(this.value)">'
     +'<div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;">'+memList+'</div></div>'
     +'<div style="display:flex;gap:10px;justify-content:space-between;margin-top:18px;">'
-    +(team?'<button onclick="portalDeleteTeamConfirm('' +team.id+ '')" style="padding:8px 14px;border-radius:7px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;font-size:12px;cursor:pointer;font-family:inherit;">Delete</button>':'<span></span>')
+    +(team?'<button onclick="portalDeleteTeamConfirm(\'' +team.id+ '\')" style="padding:8px 14px;border-radius:7px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;font-size:12px;cursor:pointer;font-family:inherit;">Delete</button>':'<span></span>')
     +'<div style="display:flex;gap:8px;">'
     +'<button class="btn btn-secondary btn-sm" onclick="document.getElementById('portalTeamModal').remove()">Cancel</button>'
     +'<button class="btn btn-primary btn-sm" onclick="savePortalTeam()"><i class="fa fa-check"></i> '+(team?'Update':'Create')+' Team</button>'
@@ -3360,7 +3360,7 @@ function portalDeleteTeamConfirm(teamId){
     +'<div style="font-size:11px;color:var(--text3);margin-bottom:18px;">This will permanently remove "'+team.name+'".</div>'
     +'<div style="display:flex;gap:10px;justify-content:center;">'
     +'<button onclick="this.closest('div').parentNode.parentNode.remove()" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>'
-    +'<button onclick="this.closest('div').parentNode.parentNode.remove();document.getElementById('portalTeamModal')&&document.getElementById('portalTeamModal').remove();portalDoDeleteTeam('' +teamId+ '')" style="padding:8px 18px;border-radius:8px;border:none;background:#ef4444;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Delete</button>'
+    +'<button onclick="this.closest('div').parentNode.parentNode.remove();document.getElementById('portalTeamModal')&&document.getElementById('portalTeamModal').remove();portalDoDeleteTeam(\'' +teamId+ '\')" style="padding:8px 18px;border-radius:8px;border:none;background:#ef4444;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Delete</button>'
     +'</div></div>';
   document.body.appendChild(c);
 }
@@ -3395,7 +3395,7 @@ function openAssignKpiModal(teamId){
     html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
     html+='<div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;">'+m.name.charAt(0)+'</div>';
     html+='<span style="font-size:13px;font-weight:600;color:var(--text);">'+m.name+'</span></div>';
-    html+='<button onclick="addPortalKpiItem('+m.id+','' +teamId+ '','+year+')" style="padding:4px 12px;border-radius:6px;border:none;background:rgba(201,162,77,0.15);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;">+ Add KPI</button>';
+    html+='<button onclick="addPortalKpiItem('+m.id+',\'' +teamId+ '\','+year+')" style="padding:4px 12px;border-radius:6px;border:none;background:rgba(201,162,77,0.15);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;">+ Add KPI</button>';
     html+='</div><div id="portalKpiItems_'+m.id+'">'+renderPortalKpiItems(m,year,teamId)+'</div></div>';
   });
   html+='</div>';
@@ -3413,29 +3413,29 @@ function renderPortalKpiItems(m,year,teamId){
       +'<div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+(k.desc||'—')+'</div>'
       +'<div style="font-size:10px;color:var(--text2);margin-top:2px;"><span style="color:var(--gold);">'+(k.weight||0)+'%</span> &middot; '+(k.startDate||'—')+' &rarr; '+(k.endDate||'—')+'</div></div>'
       +'<span style="font-size:14px;font-weight:800;color:'+sc+';">'+score+'%</span>'
-      +'<button onclick="togglePortalKpiEdit('+m.id+','' +teamId+ '','+year+','+i+')" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--navy4);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">Edit</button>'
-      +'<button onclick="removePortalKpiItem('+m.id+','' +teamId+ '','+year+','+i+')" style="padding:3px 8px;border-radius:5px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;">&times;</button></div>';
+      +'<button onclick="togglePortalKpiEdit('+m.id+',\'' +teamId+ '\','+year+','+i+')" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--navy4);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">Edit</button>'
+      +'<button onclick="removePortalKpiItem('+m.id+',\'' +teamId+ '\','+year+','+i+')" style="padding:3px 8px;border-radius:5px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;">&times;</button></div>';
     return '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:5px;">'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">'
       +'<div style="flex:2;min-width:120px;"><label style="font-size:9px;color:var(--text3);">Description</label>'
-      +'<input style="'+INP+'width:100%;" value="'+(k.desc||'')+'" onchange="updatePortalKpiField('+m.id+','' +teamId+ '','+year+','+i+','desc',this.value)"></div>'
+      +'<input style="'+INP+'width:100%;" value="'+(k.desc||'')+'" onchange="updatePortalKpiField('+m.id+',\'' +teamId+ '\','+year+','+i+','desc',this.value)"></div>'
       +'<div style="flex:0 0 65px;"><label style="font-size:9px;color:var(--text3);">Weight %</label>'
-      +'<input type="number" style="'+INP+'width:100%;" value="'+(k.weight||0)+'" onchange="updatePortalKpiField('+m.id+','' +teamId+ '','+year+','+i+','weight',this.value)"></div>'
+      +'<input type="number" style="'+INP+'width:100%;" value="'+(k.weight||0)+'" onchange="updatePortalKpiField('+m.id+',\'' +teamId+ '\','+year+','+i+','weight',this.value)"></div>'
       +'<div style="flex:1;min-width:100px;"><label style="font-size:9px;color:var(--text3);">Start Date</label>'
-      +'<input type="date" style="'+INP+'width:100%;" value="'+(k.startDate||'')+'" onchange="updatePortalKpiField('+m.id+','' +teamId+ '','+year+','+i+','startDate',this.value)"></div>'
+      +'<input type="date" style="'+INP+'width:100%;" value="'+(k.startDate||'')+'" onchange="updatePortalKpiField('+m.id+',\'' +teamId+ '\','+year+','+i+','startDate',this.value)"></div>'
       +'<div style="flex:1;min-width:100px;"><label style="font-size:9px;color:var(--text3);">End Date</label>'
-      +'<input type="date" style="'+INP+'width:100%;" value="'+(k.endDate||'')+'" onchange="updatePortalKpiField('+m.id+','' +teamId+ '','+year+','+i+','endDate',this.value)"></div>'
+      +'<input type="date" style="'+INP+'width:100%;" value="'+(k.endDate||'')+'" onchange="updatePortalKpiField('+m.id+',\'' +teamId+ '\','+year+','+i+','endDate',this.value)"></div>'
       +'</div>'
       +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">'
       +[1,2,3,4].map(function(q){return '<div><label style="font-size:9px;color:var(--text3);">Q'+q+' Target</label>'
-        +'<input type="number" style="'+INP+'width:100%;" value="'+(k['q'+q+'t']||'')+'" onchange="updatePortalKpiField('+m.id+','' +teamId+ '','+year+','+i+','q'+q+'t',this.value)">'
+        +'<input type="number" style="'+INP+'width:100%;" value="'+(k['q'+q+'t']||'')+'" onchange="updatePortalKpiField('+m.id+',\'' +teamId+ '\','+year+','+i+','q'+q+'t',this.value)">'
         +'<label style="font-size:9px;color:var(--text3);">Q'+q+' Actual</label>'
-        +'<input type="number" style="'+INP+'width:100%;" value="'+(k['q'+q+'a']||'')+'" onchange="updatePortalKpiField('+m.id+','' +teamId+ '','+year+','+i+','q'+q+'a',this.value)">'
+        +'<input type="number" style="'+INP+'width:100%;" value="'+(k['q'+q+'a']||'')+'" onchange="updatePortalKpiField('+m.id+',\'' +teamId+ '\','+year+','+i+','q'+q+'a',this.value)">'
         +'</div>';}).join('')
       +'</div>'
       +'<div style="text-align:right;">'
-      +'<button onclick="savePortalKpiItem('+m.id+','' +teamId+ '','+year+','+i+')" style="padding:5px 14px;border-radius:6px;border:none;background:var(--gold);color:#000;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:6px;">Save</button>'
-      +'<button onclick="togglePortalKpiEdit('+m.id+','' +teamId+ '','+year+','+i+')" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy4);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">Close</button>'
+      +'<button onclick="savePortalKpiItem('+m.id+',\'' +teamId+ '\','+year+','+i+')" style="padding:5px 14px;border-radius:6px;border:none;background:var(--gold);color:#000;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:6px;">Save</button>'
+      +'<button onclick="togglePortalKpiEdit('+m.id+',\'' +teamId+ '\','+year+','+i+')" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy4);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">Close</button>'
       +'</div></div>';
   }).join('');
 }
