@@ -3089,8 +3089,9 @@ async function doPortalLogin(){
   try{
     const { data, error } = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
     if(error||!data) throw new Error('Could not connect to HR database.');
-    const employees = data.value;
-    const emp = employees.find(e=>{
+    const empList = data.value;
+    employees = empList; // populate global
+    const emp = empList.find(e=>{
       const normalize = s => (s||'').toString().toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^(IED)?0*/,'');
       const inputNorm = normalize(empId);
       return normalize(e.empId)===inputNorm || normalize(e.id)===inputNorm || (e.empId||'').toString().toUpperCase()===empId.toUpperCase() || (e.email||'').toLowerCase()===(empId||'').toLowerCase();
@@ -3209,6 +3210,12 @@ function renderPortalKpi(){
 }
 </script>
 <script>
+async function saveSingleKey(key, value){
+  try{
+    await _portalSupa.from('app_data').upsert({key, value: JSON.stringify(value)},{onConflict:'key'});
+  } catch(e){ console.error('saveSingleKey error:', e); }
+}
+
 var _kpiTab='my';
 function switchKpiTab(tab){
   _kpiTab=tab;
