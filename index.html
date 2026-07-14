@@ -720,7 +720,12 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 
   <!-- ── MY LEAVE APPLICATIONS ── -->
   <!-- My KPI Page -->
-  <div class="page" id="page-kpi" style="padding:20px;max-width:900px;margin:0 auto;">
+  <div class="page" id="page-kpi" style="padding:20px;max-width:1000px;margin:0 auto;">
+    <!-- KPI Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button id="kpiTab_my" onclick="switchKpiTab('my')" style="padding:8px 20px;border-radius:8px;border:1px solid var(--gold);background:rgba(201,162,77,0.12);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-chart-bar"></i> My KPI</button>
+      <button id="kpiTab_teams" onclick="switchKpiTab('teams')" style="padding:8px 20px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;"><i class="fa fa-users"></i> My Teams</button>
+    </div>
     <div id="portalKpiContent"></div>
   </div>
 
@@ -3201,6 +3206,298 @@ function renderPortalKpi(){
   });
   cont.innerHTML=html;
 }
+var _kpiTab='my';
+function switchKpiTab(tab){
+  _kpiTab=tab;
+  ['my','teams'].forEach(function(t){
+    var btn=document.getElementById('kpiTab_'+t);
+    if(!btn) return;
+    var active=t===tab;
+    btn.style.borderColor=active?'var(--gold)':'var(--border)';
+    btn.style.background=active?'rgba(201,162,77,0.12)':'transparent';
+    btn.style.color=active?'var(--gold)':'var(--text2)';
+    btn.style.fontWeight=active?'700':'400';
+  });
+  if(tab==='my') renderPortalKpi();
+  else renderPortalMyTeams();
+}
+
+function renderPortalMyTeams(){
+  var cont=document.getElementById('portalKpiContent');
+  if(!cont) return;
+  var emp=_portalEmployee;
+  if(!emp){cont.innerHTML='<p style="color:var(--text3);">Not logged in.</p>';return;}
+  var year=new Date().getFullYear();
+  var allTeams=manningSched2.__kpiTeams||[];
+  // Teams where this employee is leader
+  var myTeams=allTeams.filter(function(t){return String(t.leaderId)===String(emp.id);});
+  var html='';
+  // Header
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
+  html+='<div style="display:flex;align-items:center;gap:10px;"><i class="fa fa-users" style="color:var(--gold);font-size:18px;"></i><span style="font-size:16px;font-weight:700;color:var(--gold);">My Teams</span></div>';
+  html+='<button onclick="openCreateTeamModal()" style="padding:8px 16px;border-radius:8px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-plus"></i> Create Team</button>';
+  html+='</div>';
+  if(!myTeams.length){
+    html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:30px;text-align:center;color:var(--text3);"><i class="fa fa-users" style="font-size:32px;opacity:.3;display:block;margin-bottom:10px;"></i>No teams created yet. Click "Create Team" to get started.</div>';
+    cont.innerHTML=html; return;
+  }
+  myTeams.forEach(function(team){
+    var members=(team.memberIds||[]).map(function(id){return employees.find(function(e){return e.id===id;});}).filter(Boolean);
+    html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;">';
+    // Team header
+    html+='<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">';
+    html+='<div style="display:flex;align-items:center;gap:8px;"><i class="fa fa-users" style="color:var(--gold);"></i><span style="font-size:13px;font-weight:700;color:var(--gold);">'+team.name+'</span><span style="font-size:10px;color:var(--text3);">'+members.length+' member(s)</span></div>';
+    html+='<div style="display:flex;gap:6px;">';
+    html+='<button onclick="openAssignKpiModal(''+team.id+'')" style="padding:5px 12px;border-radius:6px;border:1px solid var(--gold);background:rgba(201,162,77,0.1);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-chart-bar"></i> Assign KPI</button>';
+    html+='<button onclick="openEditTeamModal(''+team.id+'')" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-pen"></i> Edit</button>';
+    html+='</div></div>';
+    // Members list
+    if(!members.length){
+      html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:12px;">No members. Click Edit to add members.</div>';
+    } else {
+      html+='<div style="padding:12px 16px;">';
+      members.forEach(function(m){
+        var items=((m.kpiData||{})[year]||{})[team.id]?.items||[];
+        var totalW=0,wScore=0;
+        items.forEach(function(k){var w=parseFloat(k.weight)||0;totalW+=w;wScore+=w*calcKpiScore(k);});
+        var score=totalW>0?Math.round(wScore/totalW):null;
+        var sc=score===null?'var(--text3)':score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
+        html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">';
+        html+='<div style="width:32px;height:32px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;flex-shrink:0;">'+(m.name||'?').charAt(0)+'</div>';
+        html+='<div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+m.name+'</div><div style="font-size:10px;color:var(--text3);">'+(m.desig||'')+'</div></div>';
+        html+='<span style="font-size:14px;font-weight:800;color:'+sc+';">'+(score!==null?score+'%':'—')+'</span>';
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  cont.innerHTML=html;
+}
+
+function openCreateTeamModal(){
+  document.getElementById('portalTeamModal')?.remove();
+  var modal=document.createElement('div');
+  modal.id='portalTeamModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;';
+  var allEmps=employees||[];
+  var INP='width:100%;background:var(--navy4);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;';
+  modal.innerHTML='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:440px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6);">'
+    +'<div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;"><i class="fa fa-users"></i> Create Team</div>'
+    +'<div style="margin-bottom:10px;"><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px;">Team Name</label>'
+    +'<input id="newTeamName" type="text" placeholder="e.g. Alpha Team" style="'+INP+'"></div>'
+    +'<div style="margin-bottom:14px;"><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:6px;">Select Members</label>'
+    +'<div style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;" id="newTeamMemberList">'
+    +allEmps.filter(function(e){return String(e.id)!==String(_portalEmployee?.id);}).map(function(e){
+      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:var(--navy3);cursor:pointer;">'
+        +'<input type="checkbox" value="'+e.id+'" style="width:14px;height:14px;">'
+        +'<span style="font-size:12px;color:var(--text);">'+e.name+'</span>'
+        +'<span style="font-size:10px;color:var(--text3);margin-left:auto;">'+(e.desig||'')+'</span></label>';
+    }).join('')
+    +'</div></div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;">'
+    +'<button onclick="document.getElementById('portalTeamModal').remove()" style="padding:8px 16px;border-radius:7px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>'
+    +'<button onclick="saveNewTeam()" style="padding:8px 20px;border-radius:7px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-check"></i> Create</button>'
+    +'</div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveNewTeam(){
+  var name=document.getElementById('newTeamName')?.value?.trim();
+  if(!name){alert('Enter team name');return;}
+  var memberIds=Array.from(document.querySelectorAll('#newTeamMemberList input:checked')).map(function(cb){return parseInt(cb.value);});
+  memberIds.push(parseInt(_portalEmployee.id)); // include self
+  var team={id:'T'+Date.now(),name,leaderId:parseInt(_portalEmployee.id),memberIds,createdAt:new Date().toISOString()};
+  if(!manningSched2.__kpiTeams) manningSched2.__kpiTeams=[];
+  manningSched2.__kpiTeams.push(team);
+  await saveSingleKey('manningSched2',manningSched2);
+  document.getElementById('portalTeamModal').remove();
+  renderPortalMyTeams();
+  toast('Team created ✓','success');
+}
+
+function openEditTeamModal(teamId){
+  var team=(manningSched2.__kpiTeams||[]).find(function(t){return t.id===teamId;});
+  if(!team) return;
+  document.getElementById('portalTeamModal')?.remove();
+  var modal=document.createElement('div');
+  modal.id='portalTeamModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;';
+  var allEmps=employees||[];
+  var INP='width:100%;background:var(--navy4);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;';
+  modal.innerHTML='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:440px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6);">'
+    +'<div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;"><i class="fa fa-pen"></i> Edit Team</div>'
+    +'<div style="margin-bottom:10px;"><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px;">Team Name</label>'
+    +'<input id="editTeamName" type="text" value="'+team.name+'" style="'+INP+'"></div>'
+    +'<div style="margin-bottom:14px;"><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:6px;">Members</label>'
+    +'<div style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;" id="editTeamMemberList">'
+    +allEmps.filter(function(e){return String(e.id)!==String(_portalEmployee?.id);}).map(function(e){
+      var checked=(team.memberIds||[]).includes(e.id);
+      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:var(--navy3);cursor:pointer;">'
+        +'<input type="checkbox" value="'+e.id+'"'+(checked?' checked':'')+' style="width:14px;height:14px;">'
+        +'<span style="font-size:12px;color:var(--text);">'+e.name+'</span>'
+        +'<span style="font-size:10px;color:var(--text3);margin-left:auto;">'+(e.desig||'')+'</span></label>';
+    }).join('')
+    +'</div></div>'
+    +'<div style="display:flex;gap:8px;justify-content:space-between;">'
+    +'<button onclick="deleteTeamConfirm(''+teamId+'')" style="padding:8px 14px;border-radius:7px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;font-size:12px;cursor:pointer;font-family:inherit;">Delete Team</button>'
+    +'<div style="display:flex;gap:8px;">'
+    +'<button onclick="document.getElementById('portalTeamModal').remove()" style="padding:8px 16px;border-radius:7px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>'
+    +'<button onclick="saveEditTeam(''+teamId+'')" style="padding:8px 20px;border-radius:7px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Save</button>'
+    +'</div></div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveEditTeam(teamId){
+  var team=(manningSched2.__kpiTeams||[]).find(function(t){return t.id===teamId;});
+  if(!team) return;
+  var name=document.getElementById('editTeamName')?.value?.trim();
+  if(!name){alert('Enter team name');return;}
+  var memberIds=Array.from(document.querySelectorAll('#editTeamMemberList input:checked')).map(function(cb){return parseInt(cb.value);});
+  memberIds.push(parseInt(_portalEmployee.id));
+  team.name=name; team.memberIds=memberIds;
+  await saveSingleKey('manningSched2',manningSched2);
+  document.getElementById('portalTeamModal').remove();
+  renderPortalMyTeams();
+  toast('Team updated ✓','success');
+}
+
+async function deleteTeamConfirm(teamId){
+  if(!confirm('Delete this team? KPI data will remain on employees.')) return;
+  manningSched2.__kpiTeams=(manningSched2.__kpiTeams||[]).filter(function(t){return t.id!==teamId;});
+  await saveSingleKey('manningSched2',manningSched2);
+  document.getElementById('portalTeamModal')?.remove();
+  renderPortalMyTeams();
+  toast('Team deleted','success');
+}
+
+function openAssignKpiModal(teamId){
+  window._portalKpiTeamId=teamId;
+  var team=(manningSched2.__kpiTeams||[]).find(function(t){return t.id===teamId;});
+  if(!team) return;
+  document.getElementById('portalKpiAssignModal')?.remove();
+  var members=(team.memberIds||[]).map(function(id){return employees.find(function(e){return e.id===id;});}).filter(Boolean);
+  var year=new Date().getFullYear();
+  var modal=document.createElement('div');
+  modal.id='portalKpiAssignModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
+  var html='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:820px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto;">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
+  html+='<div style="font-size:14px;font-weight:700;color:var(--gold);">Assign KPI — '+team.name+' · '+year+'</div>';
+  html+='<div style="display:flex;gap:8px;">';
+  html+='<button onclick="saveAllPortalKpi()" style="padding:7px 16px;border-radius:7px;border:none;background:#10b981;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-floppy-disk"></i> Save All</button>';
+  html+='<button onclick="document.getElementById('portalKpiAssignModal').remove()" style="padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Close</button>';
+  html+='</div></div>';
+  members.forEach(function(m){
+    if(!m.kpiData) m.kpiData={};
+    if(!m.kpiData[year]) m.kpiData[year]={};
+    if(!m.kpiData[year][teamId]) m.kpiData[year][teamId]={items:[],review:{}};
+    var items=m.kpiData[year][teamId].items;
+    html+='<div style="background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
+    html+='<div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;">'+m.name.charAt(0)+'</div>';
+    html+='<span style="font-size:13px;font-weight:600;color:var(--text);">'+m.name+'</span></div>';
+    html+='<button onclick="addPortalKpiItem('+m.id+',''+teamId+'','+year+')" style="padding:4px 12px;border-radius:6px;border:none;background:rgba(201,162,77,0.15);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;">+ Add KPI</button>';
+    html+='</div>';
+    html+='<div id="portalKpiItems_'+m.id+'">';
+    html+=renderPortalKpiItems(m,year,teamId);
+    html+='</div></div>';
+  });
+  html+='</div>';
+  modal.innerHTML=html;
+  document.body.appendChild(modal);
+}
+
+function renderPortalKpiItems(m,year,teamId){
+  var items=((m.kpiData||{})[year]||{})[teamId]?.items||[];
+  if(!items.length) return '<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px;">No KPI targets. Click + Add KPI.</div>';
+  var INP='background:var(--navy4);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:11px;font-family:inherit;box-sizing:border-box;';
+  return items.map(function(k,i){
+    var score=calcKpiScore(k);var sc=score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
+    var ed=k._editing;
+    if(!ed) return '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;margin-bottom:5px;">'
+      +'<div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+(k.desc||'—')+'</div>'
+      +'<div style="font-size:10px;color:var(--text2);margin-top:2px;"><span style="color:var(--gold);">'+(k.weight||0)+'%</span> · '+(k.startDate||'—')+' → '+(k.endDate||'—')+'</div></div>'
+      +'<span style="font-size:14px;font-weight:800;color:'+sc+';">'+score+'%</span>'
+      +'<button onclick="togglePortalKpiEdit('+m.id+',''+teamId+'','+year+','+i+')" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--navy4);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">Edit</button>'
+      +'<button onclick="removePortalKpiItem('+m.id+',''+teamId+'','+year+','+i+')" style="padding:3px 8px;border-radius:5px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;">×</button>'
+      +'</div>';
+    return '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:5px;">'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">'
+      +'<div style="flex:2;min-width:120px;"><label style="font-size:9px;color:var(--text3);">Description</label>'
+      +'<input style="'+INP+'width:100%;" value="'+(k.desc||'')+'" onchange="updatePortalKpiField('+m.id+',''+teamId+'','+year+','+i+','desc',this.value)"></div>'
+      +'<div style="flex:0 0 60px;"><label style="font-size:9px;color:var(--text3);">Weight%</label>'
+      +'<input type="number" style="'+INP+'width:100%;" value="'+(k.weight||0)+'" onchange="updatePortalKpiField('+m.id+',''+teamId+'','+year+','+i+','weight',this.value)"></div>'
+      +'<div style="flex:1;min-width:100px;"><label style="font-size:9px;color:var(--text3);">Start Date</label>'
+      +'<input type="date" style="'+INP+'width:100%;color:#111;background:#fff;" value="'+(k.startDate||'')+'" onchange="updatePortalKpiField('+m.id+',''+teamId+'','+year+','+i+','startDate',this.value)"></div>'
+      +'<div style="flex:1;min-width:100px;"><label style="font-size:9px;color:var(--text3);">End Date</label>'
+      +'<input type="date" style="'+INP+'width:100%;color:#111;background:#fff;" value="'+(k.endDate||'')+'" onchange="updatePortalKpiField('+m.id+',''+teamId+'','+year+','+i+','endDate',this.value)"></div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">'
+      +[1,2,3,4].map(function(q){return '<div><label style="font-size:9px;color:var(--text3);">Q'+q+' Target</label>'
+        +'<input type="number" style="'+INP+'width:100%;color:#111;background:#fff;" value="'+(k['q'+q+'t']||'')+'" onchange="updatePortalKpiField('+m.id+',''+teamId+'','+year+','+i+','q'+q+'t',this.value)">'
+        +'<label style="font-size:9px;color:var(--text3);">Q'+q+' Actual</label>'
+        +'<input type="number" style="'+INP+'width:100%;color:#111;background:#fff;" value="'+(k['q'+q+'a']||'')+'" onchange="updatePortalKpiField('+m.id+',''+teamId+'','+year+','+i+','q'+q+'a',this.value)">'
+        +'</div>';}).join('')
+      +'</div>'
+      +'<div style="text-align:right;">'
+      +'<button onclick="savePortalKpiItem('+m.id+',''+teamId+'','+year+','+i+')" style="padding:5px 14px;border-radius:6px;border:none;background:var(--gold);color:#000;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:6px;">Save</button>'
+      +'<button onclick="togglePortalKpiEdit('+m.id+',''+teamId+'','+year+','+i+')" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy4);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">Close</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+function togglePortalKpiEdit(empId,teamId,year,idx){
+  var m=employees.find(function(e){return e.id===empId;});
+  if(!m) return;
+  var items=((m.kpiData||{})[year]||{})[teamId]?.items||[];
+  items.forEach(function(k,i){k._editing=(i===idx)?!k._editing:false;});
+  var el=document.getElementById('portalKpiItems_'+empId);
+  if(el) el.innerHTML=renderPortalKpiItems(m,year,teamId);
+}
+
+function updatePortalKpiField(empId,teamId,year,idx,field,val){
+  var m=employees.find(function(e){return e.id===empId;});
+  if(!m) return;
+  var items=((m.kpiData||{})[year]||{})[teamId]?.items;
+  if(items&&items[idx]) items[idx][field]=val;
+}
+
+function savePortalKpiItem(empId,teamId,year,idx){
+  var m=employees.find(function(e){return e.id===empId;});
+  if(!m) return;
+  var items=((m.kpiData||{})[year]||{})[teamId]?.items;
+  if(items&&items[idx]) items[idx]._editing=false;
+  var el=document.getElementById('portalKpiItems_'+empId);
+  if(el) el.innerHTML=renderPortalKpiItems(m,year,teamId);
+}
+
+function addPortalKpiItem(empId,teamId,year){
+  var m=employees.find(function(e){return e.id===empId;});
+  if(!m) return;
+  if(!m.kpiData) m.kpiData={};
+  if(!m.kpiData[year]) m.kpiData[year]={};
+  if(!m.kpiData[year][teamId]) m.kpiData[year][teamId]={items:[],review:{}};
+  m.kpiData[year][teamId].items.push({desc:'',weight:10,startDate:'',endDate:'',q1t:'',q1a:'',q2t:'',q2a:'',q3t:'',q3a:'',q4t:'',q4a:'',_editing:true});
+  var el=document.getElementById('portalKpiItems_'+empId);
+  if(el) el.innerHTML=renderPortalKpiItems(m,year,teamId);
+}
+
+function removePortalKpiItem(empId,teamId,year,idx){
+  if(!confirm('Remove this KPI?')) return;
+  var m=employees.find(function(e){return e.id===empId;});
+  if(!m) return;
+  var items=((m.kpiData||{})[year]||{})[teamId]?.items;
+  if(items) items.splice(idx,1);
+  var el=document.getElementById('portalKpiItems_'+empId);
+  if(el) el.innerHTML=renderPortalKpiItems(m,year,teamId);
+}
+
+async function saveAllPortalKpi(){
+  await saveSingleKey('employees',employees);
+  toast('KPI saved ✓','success');
+}
+
 </script>
 </body>
 </html>
