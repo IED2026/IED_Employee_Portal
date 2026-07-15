@@ -3212,7 +3212,7 @@ function renderPortalKpi(){
 <script>
 async function saveSingleKey(key, value){
   try{
-    await _portalSupa.from('app_data').upsert({key, value: JSON.stringify(value)},{onConflict:'key'});
+    await _portalSupa.from('app_data').upsert({key, value: value},{onConflict:'key'});
   } catch(e){ console.error('saveSingleKey error:', e); }
 }
 
@@ -3643,7 +3643,7 @@ async function savePortalTeam(){
   setKpiTeams(teams);
   var d=document.getElementById('portalTeamModalDiv');if(d)d.remove();
   renderPortalMyTeams();
-  await _portalSupa.from('app_data').upsert({key:'manningSched2',value:JSON.stringify(manningSched2)},{onConflict:'key'});
+  await _portalSupa.from('app_data').upsert({key:'manningSched2',value:manningSched2},{onConflict:'key'});
   toast('Team saved','success');
 }
 
@@ -3651,7 +3651,7 @@ async function portalDeleteTeam(teamId){
   setKpiTeams(getKpiTeams().filter(function(t){return String(t.id)!==String(teamId);}));
   var d=document.getElementById('portalTeamModalDiv');if(d)d.remove();
   renderPortalMyTeams();
-  await _portalSupa.from('app_data').upsert({key:'manningSched2',value:JSON.stringify(manningSched2)},{onConflict:'key'});
+  await _portalSupa.from('app_data').upsert({key:'manningSched2',value:manningSched2},{onConflict:'key'});
   toast('Team deleted','success');
 }
 
@@ -3671,7 +3671,7 @@ function openPortalAssignKpi(teamId){
   var hbtns=document.createElement('div'); hbtns.style.cssText='display:flex;gap:8px;';
   var saBtn=document.createElement('button'); saBtn.style.cssText='padding:7px 16px;border-radius:7px;border:none;background:#10b981;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;';
   saBtn.textContent='Save All';
-  saBtn.onclick=async function(){await _portalSupa.from('app_data').upsert({key:'employees',value:JSON.stringify(employees)},{onConflict:'key'});toast('KPI saved','success');};
+  saBtn.onclick=async function(){await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});toast('KPI saved','success');};
   var clBtn=document.createElement('button'); clBtn.style.cssText='padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;';
   clBtn.textContent='Close';
   clBtn.onclick=function(){var d=document.getElementById('portalKpiAssignDiv');if(d)d.remove();};
