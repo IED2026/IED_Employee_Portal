@@ -1274,6 +1274,7 @@ function nextMonth(){ if(calMonth===11){calMonth=0;calYear++;} else calMonth++; 
 function renderLeaveList(){
   const cont = document.getElementById('leaveListContainer');
   if(!cont) return;
+  if(typeof _portalEmployee === 'undefined') return;
   leaveData = (_portalEmployee?.leaveRequests||[]).slice().reverse();
 
   // Populate balance cards if on my-leave page
