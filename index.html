@@ -494,7 +494,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
               <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#3b82f6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(59,130,246,.5);">Leave</th>
               <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#ef4444;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(239,68,68,.5);">Absent</th>
               <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#818cf8;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(129,140,248,.5);">Holiday</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);">Late</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);">Delay</th>
+              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#ef4444;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(239,68,68,.5);">Extreme Delay</th>
               <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(167,139,250,.5);">Half Day</th>
               <th title="Expected Duty Hours — Total expected working hours for the month" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);cursor:help;">Exp.D(H)</th>
               <th title="Actual Duty Hours — Total hours actually worked this month" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(6,182,212,.5);cursor:help;">Act.D(H)</th>
@@ -2194,7 +2195,8 @@ function renderDashboard(){
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.leave||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'leave',this.value)"></td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.absent||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'absent',this.value)"></td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.holiday||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'holiday',this.value)"></td>
-      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.late||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'late',this.value)"></td>
+      <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#f59e0b;">${mDelay||0}</span></td>
+      <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#ef4444;">${mExDelay||0}</span></td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.half||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'half',this.value)"></td>
       <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#f59e0b;">${(()=>{const daily=(attData[i]||{}).daily||[];let mins=0;daily.forEach(d=>{if(typeof d==='object'&&d&&d.exp){const p=d.exp.split(':');if(p.length>=2)mins+=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}});return mins>0?(Math.floor(mins/60)+':'+String(mins%60).padStart(2,'0')):'—';})()}</span></td>
       <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#06b6d4;">${mData.ot||'—'}</span></td>
