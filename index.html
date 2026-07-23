@@ -3720,8 +3720,11 @@ async function saveSatRegretEntry(type){
   document.getElementById('satRegretFormArea').innerHTML='';
   renderSatRegretHistory();
   renderPortalMyTeams();
-  await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});
-  toast('Saved','success');
+  try{
+    const {error:srErr}=await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});
+    if(srErr){ toast('Save FAILED: '+srErr.message,'error'); return; }
+    toast('Saved','success');
+  }catch(ex){ toast('Save FAILED (exception): '+ex.message,'error'); }
 }
 function renderSatRegretHistory(){
   var emp=employees.find(function(e){return e.id===window._satRegretEmpId;});
@@ -3751,8 +3754,11 @@ async function doRemoveSatRegret(recordId){
   emp.satRegretRecords=(emp.satRegretRecords||[]).filter(function(r){return String(r.id)!==String(recordId);});
   renderSatRegretHistory();
   renderPortalMyTeams();
-  await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});
-  toast('Removed','success');
+  try{
+    const {error:rmErr}=await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});
+    if(rmErr){ toast('Remove FAILED: '+rmErr.message,'error'); return; }
+    toast('Removed','success');
+  }catch(ex){ toast('Remove FAILED (exception): '+ex.message,'error'); }
 }
 
 function openPortalTeamModal(teamId){
@@ -3880,7 +3886,13 @@ function openPortalAssignKpi(teamId){
   var hbtns=document.createElement('div'); hbtns.style.cssText='display:flex;gap:8px;';
   var saBtn=document.createElement('button'); saBtn.style.cssText='padding:7px 16px;border-radius:7px;border:none;background:#10b981;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;';
   saBtn.textContent='Save All';
-  saBtn.onclick=async function(){await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});toast('KPI saved','success');};
+  saBtn.onclick=async function(){
+    try{
+      const {error:assignErr}=await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});
+      if(assignErr){ var et=(assignErr.message||'')+' | code:'+(assignErr.code||'-')+' | details:'+(assignErr.details||'-')+' | hint:'+(assignErr.hint||'-'); console.error('Assign KPI save error:', et); toast('Save FAILED: '+et,'error'); return; }
+      toast('KPI saved','success');
+    }catch(ex){ console.error('Assign KPI save threw:', ex); toast('Save FAILED (exception): '+ex.message,'error'); }
+  };
   var clBtn=document.createElement('button'); clBtn.style.cssText='padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;';
   clBtn.textContent='Close';
   clBtn.onclick=function(){var d=document.getElementById('portalKpiAssignDiv');if(d)d.remove();};
