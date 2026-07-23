@@ -3846,18 +3846,22 @@ async function savePortalTeam(){
   setKpiTeams(teams);
   var d=document.getElementById('portalTeamModalDiv');if(d)d.remove();
   renderPortalMyTeams();
-  const {error:saveTeamErr}=await _portalSupa.from('app_data').upsert({key:'manningSched2',value:manningSched2},{onConflict:'key'});
-  if(saveTeamErr){ console.error('savePortalTeam Supabase error:', saveTeamErr); toast('Save FAILED: '+saveTeamErr.message,'error'); return; }
-  toast('Team saved','success');
+  try{
+    const {error:saveTeamErr}=await _portalSupa.from('app_data').upsert({key:'manningSched2',value:manningSched2},{onConflict:'key'});
+    if(saveTeamErr){ console.error('savePortalTeam Supabase error:', saveTeamErr); toast('Save FAILED: '+saveTeamErr.message,'error'); return; }
+    toast('Team saved','success');
+  }catch(ex){ console.error('savePortalTeam threw:', ex); toast('Save FAILED (exception): '+ex.message,'error'); }
 }
 
 async function portalDeleteTeam(teamId){
   setKpiTeams(getKpiTeams().filter(function(t){return String(t.id)!==String(teamId);}));
   var d=document.getElementById('portalTeamModalDiv');if(d)d.remove();
   renderPortalMyTeams();
-  const {error:delTeamErr}=await _portalSupa.from('app_data').upsert({key:'manningSched2',value:manningSched2},{onConflict:'key'});
-  if(delTeamErr){ console.error('portalDeleteTeam Supabase error:', delTeamErr); toast('Delete FAILED: '+delTeamErr.message,'error'); return; }
-  toast('Team deleted','success');
+  try{
+    const {error:delTeamErr}=await _portalSupa.from('app_data').upsert({key:'manningSched2',value:manningSched2},{onConflict:'key'});
+    if(delTeamErr){ console.error('portalDeleteTeam Supabase error:', delTeamErr); toast('Delete FAILED: '+delTeamErr.message,'error'); return; }
+    toast('Team deleted','success');
+  }catch(ex){ console.error('portalDeleteTeam threw:', ex); toast('Delete FAILED (exception): '+ex.message,'error'); }
 }
 
 function openPortalAssignKpi(teamId){
