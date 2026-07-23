@@ -3573,8 +3573,8 @@ function renderPortalMyTeams(){
         var overall3=items3.length&&tw3>0?Math.round(ws3/tw3):null;
         var scoreColor3=overall3===null?'var(--text3)':overall3>=80?'#10b981':overall3>=60?'#f59e0b':'#ef4444';
         var level3=calcStarLevel(getEmpScore(m));
-        var satCount=(m.satRegretRecords||[]).filter(function(r){return r.type==='satisfactory';}).length;
-        var regretCount=(m.satRegretRecords||[]).filter(function(r){return r.type==='regret';}).length;
+        var satCount=(m.satRegretRecords||[]).filter(function(r){return r.type==='satisfactory' && String(r.teamId)===String(team.id);}).length;
+        var regretCount=(m.satRegretRecords||[]).filter(function(r){return r.type==='regret' && String(r.teamId)===String(team.id);}).length;
         html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.025);border:1px solid var(--border);border-radius:10px;flex-wrap:nowrap;">';
         html+='<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:13px;flex-shrink:0;">'+(m.name||'?').charAt(0).toUpperCase()+'</div>';
         html+='<div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+m.name+'</div>';
@@ -3716,7 +3716,7 @@ async function saveSatRegretEntry(type){
   var note=document.getElementById('srNote').value.trim();
   if(!date){ toast('Date required','error'); return; }
   if(!emp.satRegretRecords) emp.satRegretRecords=[];
-  emp.satRegretRecords.push({id:Date.now(),type:type,date:date,note:note,addedBy:(_portalEmployee||{}).name||'Portal'});
+  emp.satRegretRecords.push({id:Date.now(),type:type,date:date,note:note,teamId:window._satRegretTeamId,addedBy:(_portalEmployee||{}).name||'Portal'});
   document.getElementById('satRegretFormArea').innerHTML='';
   renderSatRegretHistory();
   renderPortalMyTeams();
@@ -3730,7 +3730,7 @@ function renderSatRegretHistory(){
   var emp=employees.find(function(e){return e.id===window._satRegretEmpId;});
   var el=document.getElementById('satRegretHistory');
   if(!el||!emp) return;
-  var records=(emp.satRegretRecords||[]).slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var records=(emp.satRegretRecords||[]).filter(function(r){return String(r.teamId)===String(window._satRegretTeamId);}).slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   if(!records.length){ el.innerHTML='<p style="font-size:12px;color:var(--text3);text-align:center;padding:10px;">No entries yet.</p>'; return; }
   el.innerHTML=records.map(function(r){
     var isOk=r.type==='satisfactory';
