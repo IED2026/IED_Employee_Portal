@@ -3146,8 +3146,9 @@ window.addEventListener('load', ()=>{
       try{
         const { data } = await _portalSupa.from('app_data').select('value').eq('key','employees').single();
         if(data){
+          employees = data.value||[];
           const u = JSON.parse(sess);
-          const emp = (data.value||[]).find(e=>e.id===u.id);
+          const emp = employees.find(e=>e.id===u.id);
           if(emp&&emp.portalPassword){
             _portalEmployee = emp;
             document.getElementById('loginScreen').classList.add('hidden');
