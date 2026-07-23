@@ -2046,7 +2046,6 @@ let employees=[];
 function saveState(){return Promise.resolve();}
 function getEidBonus(){return 0;}
 function getEmpGrossForMonth(){return 0;}
-function toast(m,t){}
 
 function bdt(n){
   const x=Math.round(parseFloat(n)||0);
@@ -3848,7 +3847,7 @@ async function savePortalTeam(){
   renderPortalMyTeams();
   try{
     const {error:saveTeamErr}=await _portalSupa.from('app_data').upsert({key:'manningSched2',value:manningSched2},{onConflict:'key'});
-    if(saveTeamErr){ console.error('savePortalTeam Supabase error:', saveTeamErr); toast('Save FAILED: '+saveTeamErr.message,'error'); return; }
+    if(saveTeamErr){ var errTxt=(saveTeamErr.message||'')+' | code:'+(saveTeamErr.code||'-')+' | details:'+(saveTeamErr.details||'-')+' | hint:'+(saveTeamErr.hint||'-'); console.error('savePortalTeam Supabase error:', errTxt); toast('Save FAILED: '+errTxt,'error'); return; }
     toast('Team saved','success');
   }catch(ex){ console.error('savePortalTeam threw:', ex); toast('Save FAILED (exception): '+ex.message,'error'); }
 }
@@ -3859,7 +3858,7 @@ async function portalDeleteTeam(teamId){
   renderPortalMyTeams();
   try{
     const {error:delTeamErr}=await _portalSupa.from('app_data').upsert({key:'manningSched2',value:manningSched2},{onConflict:'key'});
-    if(delTeamErr){ console.error('portalDeleteTeam Supabase error:', delTeamErr); toast('Delete FAILED: '+delTeamErr.message,'error'); return; }
+    if(delTeamErr){ var errTxt2=(delTeamErr.message||'')+' | code:'+(delTeamErr.code||'-')+' | details:'+(delTeamErr.details||'-')+' | hint:'+(delTeamErr.hint||'-'); console.error('portalDeleteTeam Supabase error:', errTxt2); toast('Delete FAILED: '+errTxt2,'error'); return; }
     toast('Team deleted','success');
   }catch(ex){ console.error('portalDeleteTeam threw:', ex); toast('Delete FAILED (exception): '+ex.message,'error'); }
 }
