@@ -724,7 +724,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   <div class="page" id="page-kpi" style="padding:20px;max-width:1000px;margin:0 auto;">
     <div style="display:flex;gap:8px;margin-bottom:16px;">
       <button id="kpiTab_my" onclick="switchKpiTab('my')" style="padding:8px 20px;border-radius:8px;border:1px solid var(--gold);background:rgba(201,162,77,0.12);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-chart-bar"></i> My KPI</button>
-      <button id="kpiTab_teams" onclick="switchKpiTab('teams')" style="padding:8px 20px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;"><i class="fa fa-users"></i> My Teams</button>
+      <button id="kpiTab_teams" onclick="switchKpiTab('teams')" style="padding:8px 20px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;"><i class="fa fa-users"></i> Teams</button>
     </div>
     <div id="portalKpiContent"></div>
   </div>
@@ -3508,11 +3508,11 @@ function renderPortalMyTeams(){
   if(!cont) return;
   var emp=_portalEmployee; if(!emp){cont.innerHTML='';return;}
   var year=new Date().getFullYear();
-  var myTeams=getKpiTeams().filter(function(t){return String(t.leaderId)===String(emp.id);});
+  var myTeams=getKpiTeams();
   var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
   html+='<div style="display:flex;align-items:center;gap:10px;">';
   html+='<i class="fa fa-users" style="color:var(--gold);font-size:18px;"></i>';
-  html+='<span style="font-size:16px;font-weight:700;color:var(--gold);">My Teams</span></div>';
+  html+='<span style="font-size:16px;font-weight:700;color:var(--gold);">Teams</span></div>';
   html+='<button onclick="openPortalTeamModal(null)" style="padding:8px 16px;border-radius:8px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">';
   html+='<i class="fa fa-plus"></i> Create Team</button></div>';
   if(!myTeams.length){
@@ -3522,18 +3522,26 @@ function renderPortalMyTeams(){
   }
   for(var ti=0;ti<myTeams.length;ti++){
     var team=myTeams[ti];
+    var isLeader=String(team.leaderId)===String(emp.id);
     var members=[]; for(var mi=0;mi<(team.memberIds||[]).length;mi++){var mm=employees.find(function(e){return e.id===team.memberIds[mi];});if(mm)members.push(mm);}
     html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;">';
     html+='<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">';
     html+='<div style="display:flex;align-items:center;gap:8px;">';
     html+='<i class="fa fa-users" style="color:var(--gold);"></i>';
     html+='<span style="font-size:13px;font-weight:700;color:var(--gold);">'+team.name+'</span>';
-    html+='<span style="font-size:10px;color:var(--text3);">'+members.length+' member(s)</span></div>';
+    html+='<span style="font-size:10px;color:var(--text3);">'+members.length+' member(s)</span>';
+    var leaderEmp=employees.find(function(e){return String(e.id)===String(team.leaderId);});
+    html+='<span style="font-size:10px;color:var(--text3);">· Leader: '+(leaderEmp?leaderEmp.name:'—')+'</span></div>';
     html+='<div style="display:flex;gap:6px;">';
-    html+='<button data-tid="'+team.id+'" onclick="openPortalAssignKpi(this.dataset.tid)" style="padding:5px 12px;border-radius:6px;border:1px solid var(--gold);background:rgba(201,162,77,0.1);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;">';
-    html+='<i class="fa fa-chart-bar"></i> Assign KPI</button>';
-    html+='<button data-tid="'+team.id+'" onclick="openPortalTeamModal(this.dataset.tid)" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">';
-    html+='<i class="fa fa-pen"></i> Edit</button></div></div>';
+    if(isLeader){
+      html+='<button data-tid="'+team.id+'" onclick="openPortalAssignKpi(this.dataset.tid)" style="padding:5px 12px;border-radius:6px;border:1px solid var(--gold);background:rgba(201,162,77,0.1);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;">';
+      html+='<i class="fa fa-chart-bar"></i> Assign KPI</button>';
+      html+='<button data-tid="'+team.id+'" onclick="openPortalTeamModal(this.dataset.tid)" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">';
+      html+='<i class="fa fa-pen"></i> Edit</button>';
+    } else {
+      html+='<span style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);color:var(--text3);font-size:11px;"><i class="fa fa-eye"></i> View only</span>';
+    }
+    html+='</div></div>';
     if(!members.length){
       html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:12px;">No members added.</div>';
     } else {
@@ -3559,6 +3567,7 @@ function renderPortalMyTeams(){
 
 function openPortalTeamModal(teamId){
   var team=teamId?getKpiTeams().find(function(t){return String(t.id)===String(teamId);}):null;
+  if(team && String(team.leaderId)!==String((_portalEmployee||{}).id)){ toast('Only the team leader can edit this team','error'); return; }
   window._portalEditTeamId=teamId||null;
   var empOptions=(employees||[]).slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
   var el=document.getElementById('portalTeamModalDiv'); if(el) el.remove();
@@ -3660,6 +3669,7 @@ async function portalDeleteTeam(teamId){
 
 function openPortalAssignKpi(teamId){
   var team=getKpiTeams().find(function(t){return String(t.id)===String(teamId);}); if(!team) return;
+  if(String(team.leaderId)!==String((_portalEmployee||{}).id)){ toast('Only the team leader can assign KPI for this team','error'); return; }
   var el=document.getElementById('portalKpiAssignDiv');if(el)el.remove();
   var members=[];
   for(var mi=0;mi<(team.memberIds||[]).length;mi++){var mm=employees.find(function(e){return e.id===team.memberIds[mi];});if(mm)members.push(mm);}
