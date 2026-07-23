@@ -3508,61 +3508,249 @@ function renderPortalMyTeams(){
   if(!cont) return;
   var emp=_portalEmployee; if(!emp){cont.innerHTML='';return;}
   var year=new Date().getFullYear();
-  var myTeams=getKpiTeams();
+  var allTeams=getKpiTeams();
+  var totalTeams=allTeams.length;
+  var totalMembers=allTeams.reduce(function(s,t){return s+(t.memberIds||[]).length;},0);
+
   var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
-  html+='<div style="display:flex;align-items:center;gap:10px;">';
-  html+='<i class="fa fa-users" style="color:var(--gold);font-size:18px;"></i>';
-  html+='<span style="font-size:16px;font-weight:700;color:var(--gold);">Teams</span></div>';
-  html+='<button onclick="openPortalTeamModal(null)" style="padding:8px 16px;border-radius:8px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">';
-  html+='<i class="fa fa-plus"></i> Create Team</button></div>';
-  if(!myTeams.length){
-    html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:30px;text-align:center;color:var(--text3);">';
-    html+='<i class="fa fa-users" style="font-size:32px;opacity:.3;display:block;margin-bottom:10px;"></i>No teams created yet.</div>';
+  html+='<div style="display:flex;align-items:center;gap:10px;"><i class="fa fa-users" style="color:var(--gold);font-size:18px;"></i><span style="font-size:16px;font-weight:700;color:var(--gold);">Teams</span></div>';
+  html+='<button onclick="openPortalTeamModal(null)" style="padding:8px 16px;border-radius:8px;border:none;background:var(--gold);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-plus"></i> Create Team</button></div>';
+
+  html+='<div style="display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap;">';
+  html+='<div style="flex:1;min-width:140px;background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;"><div style="font-size:22px;">\ud83d\udc65</div><div><div style="font-size:22px;font-weight:800;color:var(--text);">'+totalTeams+'</div><div style="font-size:11px;color:var(--text3);">Teams</div></div></div>';
+  html+='<div style="flex:1;min-width:140px;background:var(--navy2);border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;"><div style="font-size:22px;">\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1</div><div><div style="font-size:22px;font-weight:800;color:var(--text);">'+totalMembers+'</div><div style="font-size:11px;color:var(--text3);">Total Members</div></div></div>';
+  html+='</div>';
+
+  if(!totalTeams){
+    html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:30px;text-align:center;color:var(--text3);"><i class="fa fa-users-gear" style="font-size:32px;opacity:.3;display:block;margin-bottom:10px;"></i>No teams created yet. Click "Create Team" to get started.</div>';
     cont.innerHTML=html; return;
   }
-  for(var ti=0;ti<myTeams.length;ti++){
-    var team=myTeams[ti];
+
+  for(var ti=0;ti<allTeams.length;ti++){
+    var team=allTeams[ti];
     var isLeader=String(team.leaderId)===String(emp.id);
-    var members=[]; for(var mi=0;mi<(team.memberIds||[]).length;mi++){var mm=employees.find(function(e){return e.id===team.memberIds[mi];});if(mm)members.push(mm);}
-    html+='<div style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;">';
-    html+='<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">';
-    html+='<div style="display:flex;align-items:center;gap:8px;">';
-    html+='<i class="fa fa-users" style="color:var(--gold);"></i>';
-    html+='<span style="font-size:13px;font-weight:700;color:var(--gold);">'+team.name+'</span>';
-    html+='<span style="font-size:10px;color:var(--text3);">'+members.length+' member(s)</span>';
     var leaderEmp=employees.find(function(e){return String(e.id)===String(team.leaderId);});
-    html+='<span style="font-size:10px;color:var(--text3);">· Leader: '+(leaderEmp?leaderEmp.name:'—')+'</span></div>';
-    html+='<div style="display:flex;gap:6px;">';
-    if(isLeader){
-      html+='<button data-tid="'+team.id+'" onclick="openPortalAssignKpi(this.dataset.tid)" style="padding:5px 12px;border-radius:6px;border:1px solid var(--gold);background:rgba(201,162,77,0.1);color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;">';
-      html+='<i class="fa fa-chart-bar"></i> Assign KPI</button>';
-      html+='<button data-tid="'+team.id+'" onclick="openPortalTeamModal(this.dataset.tid)" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">';
-      html+='<i class="fa fa-pen"></i> Edit</button>';
-    } else {
-      html+='<span style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);color:var(--text3);font-size:11px;"><i class="fa fa-eye"></i> View only</span>';
+    var members=[]; for(var mi=0;mi<(team.memberIds||[]).length;mi++){var mm=employees.find(function(e){return e.id===team.memberIds[mi];});if(mm)members.push(mm);}
+    var memberScores=[];
+    for(var msi=0;msi<members.length;msi++){
+      var mm2=members[msi];
+      var items2=((mm2.kpiData||{})[year]||{})[team.id]?mm2.kpiData[year][team.id].items||[]:[];
+      var tw2=0,ws2=0; for(var ki2=0;ki2<items2.length;ki2++){var w2=parseFloat(items2[ki2].weight)||0;tw2+=w2;ws2+=w2*calcKpiScore(items2[ki2]);}
+      if(items2.length && tw2>0) memberScores.push(Math.round(ws2/tw2));
     }
-    html+='</div></div>';
+    var teamAvg=memberScores.length?Math.round(memberScores.reduce(function(a,b){return a+b;},0)/memberScores.length):null;
+    var teamAvgColor=teamAvg===null?'var(--text3)':teamAvg>=80?'#10b981':teamAvg>=60?'#f59e0b':'#ef4444';
+    var isOpen=window._kpiTeamOpen && window._kpiTeamOpen[team.id];
+
+    html+='<div style="background:var(--navy2);border:1px solid rgba(212,175,55,0.18);border-radius:12px;overflow:hidden;margin-bottom:14px;">';
+    html+='<div data-tid3="'+team.id+'" onclick="toggleTeamCard(this.dataset.tid3)" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;cursor:pointer;flex-wrap:wrap;">';
+    html+='<div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">';
+    html+='<i class="fa fa-chevron-'+(isOpen?'down':'right')+'" style="color:var(--text3);font-size:11px;width:12px;flex-shrink:0;"></i>';
+    html+='<div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#b8941f);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">\ud83d\udc65</div>';
+    html+='<div style="min-width:0;"><div style="font-size:14px;font-weight:800;color:var(--text);letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+team.name+'</div>';
+    html+='<div style="font-size:11px;color:var(--text3);margin-top:2px;"><i class="fa fa-user-tie" style="color:var(--gold);"></i> '+(leaderEmp?leaderEmp.name:'—')+' &nbsp;|&nbsp; '+members.length+' member'+(members.length!==1?'s':'')+'</div></div></div>';
+    html+='<div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">';
+    html+='<div style="text-align:center;"><div style="font-size:15px;font-weight:800;color:'+teamAvgColor+';">'+(teamAvg===null?'—':teamAvg+'%')+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;">Avg KPI</div></div>';
+    html+='<div style="display:flex;gap:6px;" onclick="event.stopPropagation()">';
+    if(isLeader) html+='<button data-tid="'+team.id+'" onclick="openPortalAssignKpi(this.dataset.tid)" style="padding:5px 10px;border-radius:6px;border:none;background:var(--gold);color:#000;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-bullseye"></i> Assign KPI</button>';
+    html+='<button data-tid="'+team.id+'" onclick="showTeamKpiBoard(this.dataset.tid)" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-chart-bar"></i> Show KPI</button>';
+    if(isLeader){
+      html+='<button data-tid="'+team.id+'" onclick="openPortalTeamModal(this.dataset.tid)" style="padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-pen"></i></button>';
+      html+='<button data-tid="'+team.id+'" onclick="deleteTeamConfirm(this.dataset.tid)" style="padding:5px 8px;border-radius:6px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-trash"></i></button>';
+    }
+    html+='</div></div></div>';
+
+    html+='<div style="display:'+(isOpen?'flex':'none')+';flex-direction:column;gap:8px;padding:0 16px 16px 16px;border-top:1px solid var(--border);padding-top:12px;">';
     if(!members.length){
-      html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:12px;">No members added.</div>';
+      html+='<span style="font-size:11px;color:var(--text3);">No members assigned</span>';
     } else {
-      html+='<div style="padding:12px 16px;">';
       for(var mei=0;mei<members.length;mei++){
         var m=members[mei];
-        var items=((m.kpiData||{})[year]||{})[team.id]?m.kpiData[year][team.id].items||[]:[];
-        var tw=0,ws=0; for(var ki=0;ki<items.length;ki++){var w=parseFloat(items[ki].weight)||0;tw+=w;ws+=w*calcKpiScore(items[ki]);}
-        var sc=tw>0?Math.round(ws/tw):null;
-        var cl=sc===null?'var(--text3)':sc>=80?'#10b981':sc>=60?'#f59e0b':'#ef4444';
-        html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">';
-        html+='<div style="width:32px;height:32px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;">'+m.name.charAt(0)+'</div>';
-        html+='<div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+m.name+'</div>';
-        html+='<div style="font-size:10px;color:var(--text3);">'+(m.desig||'')+'</div></div>';
-        html+='<span style="font-size:14px;font-weight:800;color:'+cl+';">'+(sc!==null?sc+'%':'—')+'</span></div>';
+        var items3=((m.kpiData||{})[year]||{})[team.id]?m.kpiData[year][team.id].items||[]:[];
+        var tw3=0,ws3=0; for(var ki3=0;ki3<items3.length;ki3++){var w3=parseFloat(items3[ki3].weight)||0;tw3+=w3;ws3+=w3*calcKpiScore(items3[ki3]);}
+        var overall3=items3.length&&tw3>0?Math.round(ws3/tw3):null;
+        var scoreColor3=overall3===null?'var(--text3)':overall3>=80?'#10b981':overall3>=60?'#f59e0b':'#ef4444';
+        var level3=calcStarLevel(getEmpScore(m));
+        var satCount=(m.satRegretRecords||[]).filter(function(r){return r.type==='satisfactory';}).length;
+        var regretCount=(m.satRegretRecords||[]).filter(function(r){return r.type==='regret';}).length;
+        html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.025);border:1px solid var(--border);border-radius:10px;flex-wrap:nowrap;">';
+        html+='<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:13px;flex-shrink:0;">'+(m.name||'?').charAt(0).toUpperCase()+'</div>';
+        html+='<div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+m.name+'</div>';
+        html+='<div style="font-size:10px;color:var(--text3);">'+(m.desig||'')+' '+starHtml(level3,'xs')+'</div></div>';
+        html+='<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;min-width:220px;justify-content:flex-end;">';
+        html+='<div style="text-align:center;width:56px;"><div style="font-size:13px;font-weight:800;color:'+scoreColor3+';">'+(overall3===null?'—':overall3+'%')+'</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;">KPI Score</div></div>';
+        html+='<div style="width:70px;">';
+        if(items3.length) html+='<button data-eid="'+m.id+'" data-tid2="'+team.id+'" onclick="showMemberKpiPopup(parseInt(this.dataset.eid),this.dataset.tid2)" style="width:100%;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:10px;cursor:pointer;font-family:inherit;"><i class="fa fa-chart-bar"></i> KPI ('+items3.length+')</button>';
+        html+='</div>';
+        html+='<div style="width:32px;text-align:center;"><span style="font-size:12px;color:#10b981;">\ud83d\udc4d '+satCount+'</span></div>';
+        html+='<div style="width:32px;text-align:center;"><span style="font-size:12px;color:#ef4444;">\ud83d\udc4e '+regretCount+'</span></div>';
+        if(isLeader) html+='<button data-eid="'+m.id+'" data-tid2="'+team.id+'" onclick="openSatRegretModal(parseInt(this.dataset.eid),this.dataset.tid2)" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-comment-dots"></i></button>';
+        html+='</div></div>';
       }
-      html+='</div>';
     }
-    html+='</div>';
+    html+='</div></div>';
   }
   cont.innerHTML=html;
+}
+
+function toggleTeamCard(teamId){
+  if(!window._kpiTeamOpen) window._kpiTeamOpen={};
+  window._kpiTeamOpen[teamId]=!window._kpiTeamOpen[teamId];
+  renderPortalMyTeams();
+}
+
+function calcStarLevel(pts){
+  if(pts>=200) return 5;
+  if(pts>=120) return 4;
+  if(pts>=60) return 3;
+  if(pts>=20) return 2;
+  if(pts>=1) return 1;
+  return 0;
+}
+function starHtml(level,size){
+  size=size||'';
+  var h='';
+  for(var i=1;i<=5;i++) h+='<i class="fa'+(i<=level?'-solid':'-regular')+' fa-star'+(i>level?' empty':'')+'"></i>';
+  return '<span class="stars '+size+'">'+h+'</span>';
+}
+function getEmpScore(emp){
+  var achs=emp.achievements||[];
+  var s=0; for(var i=0;i<achs.length;i++) s+=parseInt(achs[i].points)||0;
+  return s;
+}
+
+function showMemberKpiPopup(empId,teamId){
+  var emp=employees.find(function(e){return e.id===empId;}); if(!emp) return;
+  var year=new Date().getFullYear();
+  var items=((emp.kpiData||{})[year]||{})[teamId]?emp.kpiData[year][teamId].items||[]:[];
+  var c=document.createElement('div'); c.id='memberKpiPopup';
+  c.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  var rows=items.map(function(k){
+    var score=calcKpiScore(k);
+    var sc=score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
+    var totalDays=(k.startDate&&k.endDate)?Math.max(0,Math.round((new Date(k.endDate)-new Date(k.startDate))/86400000)+1):null;
+    return '<tr><td style="padding:8px;font-weight:600;">'+(k.desc||'—')+'</td><td style="padding:8px;text-align:center;">'+(k.weight||0)+'%</td><td style="padding:8px;text-align:center;font-size:10px;">'+(k.startDate||'—')+'</td><td style="padding:8px;text-align:center;font-size:10px;">'+(k.endDate||'—')+'</td><td style="padding:8px;text-align:center;">'+(totalDays===null?'—':totalDays)+'</td><td style="padding:8px;text-align:center;font-weight:700;color:'+sc+';">'+score+'%</td></tr>';
+  }).join('');
+  c.innerHTML='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:680px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.6);">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div style="font-size:14px;font-weight:700;color:var(--gold);"><i class="fa fa-chart-bar"></i> KPI Targets — '+emp.name+' ('+year+')</div>'+
+    '<button onclick="document.getElementById(\'memberKpiPopup\').remove()" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;"><i class="fa fa-times"></i></button></div>'+
+    (!items.length?'<p style="text-align:center;color:var(--text3);padding:20px;">No KPI targets assigned.</p>':
+    '<div style="overflow-x:auto;"><table style="width:100%;font-size:12px;border-collapse:collapse;"><thead><tr style="background:var(--navy3);"><th style="padding:8px;color:var(--gold);text-align:left;">KPI Description</th><th style="padding:8px;color:var(--gold);text-align:center;">Weight</th><th style="padding:8px;color:var(--gold);text-align:center;">Start</th><th style="padding:8px;color:var(--gold);text-align:center;">End</th><th style="padding:8px;color:var(--gold);text-align:center;">Days</th><th style="padding:8px;color:var(--gold);text-align:center;">Score</th></tr></thead><tbody>'+rows+'</tbody></table></div>')+
+    '</div>';
+  document.body.appendChild(c);
+}
+
+function showTeamKpiBoard(teamId){
+  var team=getKpiTeams().find(function(t){return String(t.id)===String(teamId);}); if(!team) return;
+  var members=[]; for(var mi=0;mi<(team.memberIds||[]).length;mi++){var mm=employees.find(function(e){return e.id===team.memberIds[mi];});if(mm)members.push(mm);}
+  var year=new Date().getFullYear();
+  var c=document.createElement('div'); c.id='teamKpiBoard';
+  c.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;';
+  var memberBoards=members.map(function(m){
+    var items=((m.kpiData||{})[year]||{})[teamId]?m.kpiData[year][teamId].items||[]:[];
+    var totalW=0; for(var i=0;i<items.length;i++) totalW+=parseFloat(items[i].weight)||0;
+    var ws=0; for(var i2=0;i2<items.length;i2++) ws+=(parseFloat(items[i2].weight)||0)*calcKpiScore(items[i2])/100;
+    var overall=items.length&&totalW>0?Math.round(ws/totalW*100):null;
+    var oc=overall===null?'var(--text3)':overall>=80?'#10b981':overall>=60?'#f59e0b':'#ef4444';
+    var level=calcStarLevel(getEmpScore(m));
+    var kpiRows=items.map(function(k){
+      var score=calcKpiScore(k);
+      var sc=score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
+      var progress=Math.min(score,100);
+      var totalDays=(k.startDate&&k.endDate)?Math.max(0,Math.round((new Date(k.endDate)-new Date(k.startDate))/86400000)+1):null;
+      return '<div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+(k.desc||'—')+'</div><div style="display:flex;gap:10px;align-items:center;">'+(totalDays!==null?'<span style="font-size:10px;color:var(--text3);"><i class="fa fa-clock"></i> '+totalDays+' days</span>':'')+'<span style="font-size:13px;font-weight:800;color:'+sc+';">'+score+'%</span></div></div><div style="background:rgba(255,255,255,0.05);border-radius:4px;height:5px;"><div style="width:'+progress+'%;background:'+sc+';height:5px;border-radius:4px;"></div></div><div style="font-size:9px;color:var(--text3);margin-top:3px;">Weight: '+(k.weight||0)+'% '+(k.startDate?'| '+k.startDate+' \u2192 '+(k.endDate||'?'):'')+'</div></div>';
+    }).join('');
+    return '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:16px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:15px;flex-shrink:0;">'+(m.name||'?').charAt(0)+'</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--text);">'+m.name+'</div><div style="font-size:10px;color:var(--text3);">'+(m.desig||'')+' '+starHtml(level,'xs')+'</div></div><div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:'+oc+';">'+(overall===null?'—':overall+'%')+'</div><div style="font-size:8px;color:var(--text3);">Overall</div></div></div>'+(kpiRows||'<p style="font-size:11px;color:var(--text3);text-align:center;">No KPIs assigned</p>')+'</div>';
+  }).join('');
+  c.innerHTML='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:1000px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.6);margin:auto;">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;"><div><div style="font-size:16px;font-weight:800;color:var(--gold);"><i class="fa fa-chart-bar"></i> KPI Board — '+team.name+'</div><div style="font-size:11px;color:var(--text3);margin-top:4px;">'+year+' | '+members.length+' member(s)</div></div>'+
+    '<button onclick="document.getElementById(\'teamKpiBoard\').remove()" style="padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;"><i class="fa fa-times"></i> Close</button></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">'+(memberBoards||'<p style="color:var(--text3);">No members.</p>')+'</div></div>';
+  document.body.appendChild(c);
+}
+
+function deleteTeamConfirm(teamId){
+  var team=getKpiTeams().find(function(t){return String(t.id)===String(teamId);}); if(!team) return;
+  if(String(team.leaderId)!==String((_portalEmployee||{}).id)){ toast('Only the team leader can delete this team','error'); return; }
+  var c=document.createElement('div'); c.id='deleteTeamConfirm';
+  c.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;';
+  c.innerHTML='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:360px;padding:24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.6);">'+
+    '<div style="font-size:28px;margin-bottom:10px;">\u26a0\ufe0f</div><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">Delete "'+team.name+'"?</div><div style="font-size:11px;color:var(--text3);margin-bottom:18px;">This will permanently remove this team.</div>'+
+    '<div style="display:flex;gap:10px;justify-content:center;"><button onclick="document.getElementById(\'deleteTeamConfirm\').remove()" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>'+
+    '<button data-tid4="'+team.id+'" onclick="document.getElementById(\'deleteTeamConfirm\').remove();portalDeleteTeam(this.dataset.tid4)" style="padding:8px 18px;border-radius:8px;border:none;background:#ef4444;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Delete</button></div></div>';
+  document.body.appendChild(c);
+}
+
+function openSatRegretModal(empId,teamId){
+  var team=getKpiTeams().find(function(t){return String(t.id)===String(teamId);});
+  if(!team || String(team.leaderId)!==String((_portalEmployee||{}).id)){ toast('Only the team leader can add satisfactory/regret entries','error'); return; }
+  var emp=employees.find(function(e){return e.id===empId;}); if(!emp) return;
+  window._satRegretEmpId=empId; window._satRegretTeamId=teamId;
+  var c=document.createElement('div'); c.id='satRegretModal';
+  c.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  c.innerHTML='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.6);">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><div style="font-size:14px;font-weight:700;color:var(--gold);"><i class="fa fa-comment-dots"></i> Satisfactory & Regret — '+emp.name+'</div>'+
+    '<button onclick="document.getElementById(\'satRegretModal\').remove()" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;"><i class="fa fa-times"></i></button></div>'+
+    '<div style="display:flex;gap:10px;margin-bottom:16px;"><button onclick="showSatRegretForm(\'satisfactory\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:#10b981;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-thumbs-up"></i> Add Satisfactory Letter</button>'+
+    '<button onclick="showSatRegretForm(\'regret\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-thumbs-down"></i> Add Regret Letter</button></div>'+
+    '<div id="satRegretFormArea"></div>'+
+    '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px;">History</div>'+
+    '<div id="satRegretHistory"></div></div>';
+  document.body.appendChild(c);
+  renderSatRegretHistory();
+}
+function showSatRegretForm(type){
+  var isOk=type==='satisfactory';
+  var el=document.getElementById('satRegretFormArea');
+  el.innerHTML='<div style="background:rgba(255,255,255,0.02);border:1px solid '+(isOk?'#10b981':'#ef4444')+';border-radius:10px;padding:14px;margin-bottom:10px;">'+
+    '<div style="font-size:12px;font-weight:700;color:'+(isOk?'#10b981':'#ef4444')+';margin-bottom:10px;"><i class="fa fa-'+(isOk?'thumbs-up':'thumbs-down')+'"></i> '+(isOk?'Satisfactory':'Regret')+' Letter</div>'+
+    '<div style="margin-bottom:8px;"><label style="font-size:11px;color:var(--text3);">Date</label><input class="form-control" id="srDate" type="date" style="color:#111;" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
+    '<div style="margin-bottom:8px;"><label style="font-size:11px;color:var(--text3);">Note / Details</label><textarea class="form-control" id="srNote" rows="3" style="color:#111;" placeholder="Describe the '+(isOk?'satisfactory feedback':'regret/issue')+'..."></textarea></div>'+
+    '<button onclick="saveSatRegretEntry(\''+type+'\')" style="padding:7px 14px;border-radius:7px;border:none;background:'+(isOk?'#10b981':'#ef4444')+';color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-check"></i> Save Entry</button></div>';
+}
+async function saveSatRegretEntry(type){
+  var emp=employees.find(function(e){return e.id===window._satRegretEmpId;}); if(!emp) return;
+  var date=document.getElementById('srDate').value;
+  var note=document.getElementById('srNote').value.trim();
+  if(!date){ toast('Date required','error'); return; }
+  if(!emp.satRegretRecords) emp.satRegretRecords=[];
+  emp.satRegretRecords.push({id:Date.now(),type:type,date:date,note:note,addedBy:(_portalEmployee||{}).name||'Portal'});
+  document.getElementById('satRegretFormArea').innerHTML='';
+  renderSatRegretHistory();
+  renderPortalMyTeams();
+  await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});
+  toast('Saved','success');
+}
+function renderSatRegretHistory(){
+  var emp=employees.find(function(e){return e.id===window._satRegretEmpId;});
+  var el=document.getElementById('satRegretHistory');
+  if(!el||!emp) return;
+  var records=(emp.satRegretRecords||[]).slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  if(!records.length){ el.innerHTML='<p style="font-size:12px;color:var(--text3);text-align:center;padding:10px;">No entries yet.</p>'; return; }
+  el.innerHTML=records.map(function(r){
+    var isOk=r.type==='satisfactory';
+    return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-left:3px solid '+(isOk?'#10b981':'#ef4444')+';border-radius:8px;margin-bottom:8px;">'+
+      '<div style="font-size:16px;">'+(isOk?'\ud83d\udc4d':'\ud83d\udc4e')+'</div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:'+(isOk?'#10b981':'#ef4444')+';">'+(isOk?'Satisfactory':'Regret')+'</div>'+
+      '<div style="font-size:11px;color:var(--text2);margin:3px 0;">'+(r.note||'—')+'</div><div style="font-size:10px;color:var(--text3);">'+r.date+' \u2022 by '+(r.addedBy||'—')+'</div></div>'+
+      '<button data-rid="'+r.id+'" onclick="removeSatRegretConfirm(this.dataset.rid)" style="padding:4px 8px;border-radius:6px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;"><i class="fa fa-trash"></i></button></div>';
+  }).join('');
+}
+function removeSatRegretConfirm(recordId){
+  var c=document.createElement('div'); c.id='removeSatRegretConfirm';
+  c.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;';
+  c.innerHTML='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:360px;padding:24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.6);">'+
+    '<div style="font-size:28px;margin-bottom:10px;">\u26a0\ufe0f</div><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">Remove this entry?</div>'+
+    '<div style="display:flex;gap:10px;justify-content:center;"><button onclick="document.getElementById(\'removeSatRegretConfirm\').remove()" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--navy3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>'+
+    '<button data-rid2="'+recordId+'" onclick="document.getElementById(\'removeSatRegretConfirm\').remove();doRemoveSatRegret(this.dataset.rid2)" style="padding:8px 18px;border-radius:8px;border:none;background:#ef4444;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Remove</button></div></div>';
+  document.body.appendChild(c);
+}
+async function doRemoveSatRegret(recordId){
+  var emp=employees.find(function(e){return e.id===window._satRegretEmpId;}); if(!emp) return;
+  emp.satRegretRecords=(emp.satRegretRecords||[]).filter(function(r){return String(r.id)!==String(recordId);});
+  renderSatRegretHistory();
+  renderPortalMyTeams();
+  await _portalSupa.from('app_data').upsert({key:'employees',value:employees},{onConflict:'key'});
+  toast('Removed','success');
 }
 
 function openPortalTeamModal(teamId){
