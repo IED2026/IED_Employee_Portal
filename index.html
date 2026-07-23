@@ -3166,6 +3166,13 @@ window.addEventListener('load', ()=>{
   }
 });
 function calcKpiScore(k){let tot=0,cnt=0;[1,2,3,4].forEach(q=>{const t=parseFloat(k['q'+q+'t'])||0;const a=parseFloat(k['q'+q+'a'])||0;if(t>0){tot+=Math.min(a/t*100,150);cnt++;}});return cnt>0?Math.round(tot/cnt):0;}
+function fmtKpiDate(ds){
+  if(!ds) return '—';
+  var p=String(ds).split('-'); if(p.length<3) return ds;
+  var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var mi=parseInt(p[1])-1; if(mi<0||mi>11) return ds;
+  return String(p[2]).padStart(2,'0')+'-'+MN[mi]+'-'+p[0];
+}
 
 function renderPortalKpi(){
   const cont=document.getElementById('portalKpiContent');
@@ -3201,7 +3208,7 @@ function renderPortalKpi(){
         var score=calcKpiScore(k);var sc=score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
         html+='<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:8px 14px;color:var(--text);font-weight:600;">'+(k.desc||'—')+'</td>';
         html+='<td style="padding:8px;text-align:center;color:var(--gold);font-weight:700;">'+(k.weight||0)+'%</td>';
-        html+='<td style="padding:8px;text-align:center;font-size:10px;color:var(--text3);">'+(k.startDate||'—')+' → '+(k.endDate||'—')+'</td>';
+        html+='<td style="padding:8px;text-align:center;font-size:10px;color:var(--text3);">'+fmtKpiDate(k.startDate)+' → '+fmtKpiDate(k.endDate)+'</td>';
         [1,2,3,4].forEach(function(q){var t=parseFloat(k['q'+q+'t'])||0,a=parseFloat(k['q'+q+'a'])||0;var qs=t>0?Math.round(Math.min(a/t*100,150)):null;var qc=qs===null?'var(--text3)':qs>=80?'#10b981':qs>=60?'#f59e0b':'#ef4444';html+='<td style="padding:8px;text-align:center;"><span style="font-size:11px;color:'+qc+';font-weight:'+(qs!==null?'700':'400')+'">'+(qs!==null?qs+'%':'—')+'</span></td>';});
         html+='<td style="padding:8px;text-align:center;"><span style="font-size:14px;font-weight:800;color:'+sc+';">'+score+'%</span></td></tr>';
       });
@@ -3414,7 +3421,7 @@ function renderPortalKpiItems(m,year,teamId){
     var score=calcKpiScore(k); var sc=score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
     if(!k._editing) return '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;margin-bottom:5px;">'
       +'<div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+(k.desc||'—')+'</div>'
-      +'<div style="font-size:10px;color:var(--text2);margin-top:2px;"><span style="color:var(--gold);">'+(k.weight||0)+'%</span> &middot; '+(k.startDate||'—')+' &rarr; '+(k.endDate||'—')+'</div></div>'
+      +'<div style="font-size:10px;color:var(--text2);margin-top:2px;"><span style="color:var(--gold);">'+(k.weight||0)+'%</span> &middot; '+fmtKpiDate(k.startDate)+' &rarr; '+fmtKpiDate(k.endDate)+'</div></div>'
       +'<span style="font-size:14px;font-weight:800;color:'+sc+';">'+score+'%</span>'
       +'<button onclick="togglePortalKpiEdit('+m.id+',\''+teamId+'\','+year+','+i+')" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--navy4);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">Edit</button>'
       +'<button onclick="removePortalKpiItem('+m.id+',\''+teamId+'\','+year+','+i+')" style="padding:3px 8px;border-radius:5px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;">&times;</button></div>';
@@ -3512,7 +3519,7 @@ function renderPortalMyTeams(){
   var year=new Date().getFullYear();
   var allTeams=getKpiTeams();
   var totalTeams=allTeams.length;
-  var totalMembers=allTeams.reduce(function(s,t){return s+(t.memberIds||[]).length;},0);
+  var totalMembers=new Set(allTeams.flatMap(function(t){return t.memberIds||[];})).size;
 
   var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
   html+='<div style="display:flex;align-items:center;gap:10px;"><i class="fa fa-users" style="color:var(--gold);font-size:18px;"></i><span style="font-size:16px;font-weight:700;color:var(--gold);">Teams</span></div>';
@@ -3631,7 +3638,7 @@ function showMemberKpiPopup(empId,teamId){
     var score=calcKpiScore(k);
     var sc=score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
     var totalDays=(k.startDate&&k.endDate)?Math.max(0,Math.round((new Date(k.endDate)-new Date(k.startDate))/86400000)+1):null;
-    return '<tr><td style="padding:8px;font-weight:600;">'+(k.desc||'—')+'</td><td style="padding:8px;text-align:center;">'+(k.weight||0)+'%</td><td style="padding:8px;text-align:center;font-size:10px;">'+(k.startDate||'—')+'</td><td style="padding:8px;text-align:center;font-size:10px;">'+(k.endDate||'—')+'</td><td style="padding:8px;text-align:center;">'+(totalDays===null?'—':totalDays)+'</td><td style="padding:8px;text-align:center;font-weight:700;color:'+sc+';">'+score+'%</td></tr>';
+    return '<tr><td style="padding:8px;font-weight:600;">'+(k.desc||'—')+'</td><td style="padding:8px;text-align:center;">'+(k.weight||0)+'%</td><td style="padding:8px;text-align:center;font-size:10px;">'+fmtKpiDate(k.startDate)+'</td><td style="padding:8px;text-align:center;font-size:10px;">'+fmtKpiDate(k.endDate)+'</td><td style="padding:8px;text-align:center;">'+(totalDays===null?'—':totalDays)+'</td><td style="padding:8px;text-align:center;font-weight:700;color:'+sc+';">'+score+'%</td></tr>';
   }).join('');
   c.innerHTML='<div style="background:var(--navy2);border-radius:14px;border:1px solid var(--border);width:100%;max-width:680px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.6);">'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div style="font-size:14px;font-weight:700;color:var(--gold);"><i class="fa fa-chart-bar"></i> KPI Targets — '+emp.name+' ('+year+')</div>'+
@@ -3660,7 +3667,7 @@ function showTeamKpiBoard(teamId){
       var sc=score>=80?'#10b981':score>=60?'#f59e0b':'#ef4444';
       var progress=Math.min(score,100);
       var totalDays=(k.startDate&&k.endDate)?Math.max(0,Math.round((new Date(k.endDate)-new Date(k.startDate))/86400000)+1):null;
-      return '<div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+(k.desc||'—')+'</div><div style="display:flex;gap:10px;align-items:center;">'+(totalDays!==null?'<span style="font-size:10px;color:var(--text3);"><i class="fa fa-clock"></i> '+totalDays+' days</span>':'')+'<span style="font-size:13px;font-weight:800;color:'+sc+';">'+score+'%</span></div></div><div style="background:rgba(255,255,255,0.05);border-radius:4px;height:5px;"><div style="width:'+progress+'%;background:'+sc+';height:5px;border-radius:4px;"></div></div><div style="font-size:9px;color:var(--text3);margin-top:3px;">Weight: '+(k.weight||0)+'% '+(k.startDate?'| '+k.startDate+' \u2192 '+(k.endDate||'?'):'')+'</div></div>';
+      return '<div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+(k.desc||'—')+'</div><div style="display:flex;gap:10px;align-items:center;">'+(totalDays!==null?'<span style="font-size:10px;color:var(--text3);"><i class="fa fa-clock"></i> '+totalDays+' days</span>':'')+'<span style="font-size:13px;font-weight:800;color:'+sc+';">'+score+'%</span></div></div><div style="background:rgba(255,255,255,0.05);border-radius:4px;height:5px;"><div style="width:'+progress+'%;background:'+sc+';height:5px;border-radius:4px;"></div></div><div style="font-size:9px;color:var(--text3);margin-top:3px;">Weight: '+(k.weight||0)+'% '+(k.startDate?'| '+fmtKpiDate(k.startDate)+' \u2192 '+(k.endDate?fmtKpiDate(k.endDate):'?'):'')+'</div></div>';
     }).join('');
     return '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:16px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:15px;flex-shrink:0;">'+(m.name||'?').charAt(0)+'</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--text);">'+m.name+'</div><div style="font-size:10px;color:var(--text3);">'+(m.desig||'')+' '+starHtml(level,'xs')+'</div></div><div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:'+oc+';">'+(overall===null?'—':overall+'%')+'</div><div style="font-size:8px;color:var(--text3);">Overall</div></div></div>'+(kpiRows||'<p style="font-size:11px;color:var(--text3);text-align:center;">No KPIs assigned</p>')+'</div>';
   }).join('');
@@ -3706,8 +3713,8 @@ function showSatRegretForm(type){
   var el=document.getElementById('satRegretFormArea');
   el.innerHTML='<div style="background:rgba(255,255,255,0.02);border:1px solid '+(isOk?'#10b981':'#ef4444')+';border-radius:10px;padding:14px;margin-bottom:10px;">'+
     '<div style="font-size:12px;font-weight:700;color:'+(isOk?'#10b981':'#ef4444')+';margin-bottom:10px;"><i class="fa fa-'+(isOk?'thumbs-up':'thumbs-down')+'"></i> '+(isOk?'Satisfactory':'Regret')+' Letter</div>'+
-    '<div style="margin-bottom:8px;"><label style="font-size:11px;color:var(--text3);">Date</label><input class="form-control" id="srDate" type="date" style="color:#111;" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
-    '<div style="margin-bottom:8px;"><label style="font-size:11px;color:var(--text3);">Note / Details</label><textarea class="form-control" id="srNote" rows="3" style="color:#111;" placeholder="Describe the '+(isOk?'satisfactory feedback':'regret/issue')+'..."></textarea></div>'+
+    '<div style="margin-bottom:8px;"><label style="font-size:11px;color:var(--text3);">Date</label><input id="srDate" type="date" style="width:100%;background:var(--navy4);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
+    '<div style="margin-bottom:8px;"><label style="font-size:11px;color:var(--text3);">Note / Details</label><textarea id="srNote" rows="3" style="width:100%;background:var(--navy4);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;" placeholder="Describe the '+(isOk?'satisfactory feedback':'regret/issue')+'..."></textarea></div>'+
     '<button onclick="saveSatRegretEntry(\''+type+'\')" style="padding:7px 14px;border-radius:7px;border:none;background:'+(isOk?'#10b981':'#ef4444')+';color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-check"></i> Save Entry</button></div>';
 }
 async function saveSatRegretEntry(type){
@@ -3925,7 +3932,7 @@ function renderPortalKpiItemsDOM(m,year,teamId){
     if(!k._editing){
       html+='<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;margin-bottom:5px;">';
       html+='<div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+(k.desc||'—')+'</div>';
-      html+='<div style="font-size:10px;color:var(--text2);margin-top:2px;"><span style="color:var(--gold);">'+(k.weight||0)+'%</span> &middot; '+(k.startDate||'—')+' &rarr; '+(k.endDate||'—')+'</div></div>';
+      html+='<div style="font-size:10px;color:var(--text2);margin-top:2px;"><span style="color:var(--gold);">'+(k.weight||0)+'%</span> &middot; '+fmtKpiDate(k.startDate)+' &rarr; '+fmtKpiDate(k.endDate)+'</div></div>';
       html+='<span style="font-size:14px;font-weight:800;color:'+sc+';">'+score+'%</span>';
       html+='<button data-eid="'+m.id+'" data-tid="'+teamId+'" data-yr="'+year+'" data-idx="'+i+'" onclick="pkiToggleEdit(this)" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--navy4);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">Edit</button>';
       html+='<button data-eid="'+m.id+'" data-tid="'+teamId+'" data-yr="'+year+'" data-idx="'+i+'" onclick="pkiRemove(this)" style="padding:3px 8px;border-radius:5px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;">&times;</button></div>';
