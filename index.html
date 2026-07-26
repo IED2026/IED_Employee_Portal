@@ -2759,7 +2759,7 @@ function renderMyAttendance(){
   const months=month===-1?Array.from({length:12},(_,i)=>i):[month];
   const parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const m=hm.replace('-','').match(/(\d+):(\d+)/);if(!m)return 0;const v=parseInt(m[1])*60+parseInt(m[2]);return neg?-v:v;};
   const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
-  let totWD=0,totP=0,totL=0,totA=0,totLate=0,totActMins=0,totElMins=0,totExpMins=0;
+  let totWD=0,totP=0,totL=0,totA=0,totLate=0,totDelay=0,totExDelay=0,totActMins=0,totElMins=0,totExpMins=0;
   months.forEach(mi=>{
     const md=deriveMonthStats(attData[mi]||{}, year, mi);
     totWD+=parseInt(md.wd)||0;
@@ -2767,6 +2767,11 @@ function renderMyAttendance(){
     totL+=parseInt(md.leave)||0;
     totA+=parseInt(md.absent)||0;
     totLate+=parseInt(md.late)||0;
+    (attData[mi]?.daily||[]).forEach(d=>{
+      const s=typeof d==='object'?(d.s||''):d;
+      if(s==='D') totDelay++;
+      else if(s==='E') totExDelay++;
+    });
     totActMins+=parseHMins(String(parseFloat(md.ot)||0).includes(':')?md.ot:(parseFloat(md.ot)*60+''));
     totElMins+=parseHMins(md.elOt||'');
     // Expected duty from daily[].exp
@@ -2790,7 +2795,8 @@ function renderMyAttendance(){
         ['✅',totP,'Present','#10b981'],
         ['🌴',totL,'Leave','#f59e0b'],
         ['❌',totA,'Absent','#ef4444'],
-        ['⏰',totLate,'Late','#f97316'],
+        ['⏰',totDelay,'Delay','#f59e0b'],
+        ['🔴',totExDelay,'Extreme Delay','#ef4444'],
       ].map(([ic,v,lb,cl])=>`<div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${cl}33;border-top:3px solid ${cl};border-radius:12px;padding:12px 10px;text-align:center;">
         <div style="font-size:16px;margin-bottom:2px;">${ic}</div>
         <div style="font-size:20px;font-weight:800;color:${cl};">${v}</div>
