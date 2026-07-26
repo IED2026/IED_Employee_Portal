@@ -1221,35 +1221,103 @@ function countWorkdays(s,e){
 }
 
 // ── CALENDAR ──
-let calYear=2026, calMonth=5;
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 function renderCalendar(){
   const cont = document.getElementById('calendarWidget');
+  if(!cont) return;
+  const emp=_portalEmployee; if(!emp){ cont.innerHTML=''; return; }
   const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const dayLabels=['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
-  const firstDay = new Date(calYear,calMonth,1).getDay();
-  const offset = (firstDay+1)%7;
-  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
-  const today = new Date();
+  const dayLabels=['S','M','T','W','T','F','S'];
+  const year=calYear, mIdx=calMonth;
+  const attData=(emp.attendance||{})[year]||{};
+  const mData=deriveMonthStats(attData[mIdx]||{}, year, mIdx);
+  const daily=mData.daily||[];
 
-  let html = `
-    <div class="cal-header">
-      <div class="cal-nav" onclick="prevMonth()"><i class="fa fa-chevron-left"></i></div>
-      <div class="cal-title">${monthNames[calMonth]} ${calYear}</div>
-      <div class="cal-nav" onclick="nextMonth()"><i class="fa fa-chevron-right"></i></div>
-    </div>
-    <div class="cal-grid">
-      ${dayLabels.map(d=>`<div class="cal-day-label">${d}</div>`).join('')}
-  `;
+  const nowYear=new Date().getFullYear(), nowM=new Date().getMonth(), nowD=new Date().getDate();
+  const isPastMonth = year<nowYear || (year===nowYear && mIdx<nowM);
+  const isCurrentMonth = year===nowYear && mIdx===nowM;
+  const isFutureMonth = year>nowYear || (year===nowYear && mIdx>nowM);
 
-  for(let i=0;i<offset;i++) html+=`<div class="cal-day other-month"></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const isToday = d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
-    const dayOfWeek = new Date(calYear,calMonth,d).getDay();
-    const isWeekend = dayOfWeek===5||dayOfWeek===6;
-    html+=`<div class="cal-day${isToday?' today':''}${isWeekend&&!isToday?' weekend':''}">${d}</div>`;
+  const firstDay = new Date(year, mIdx, 1).getDay();
+  const daysInMonth = new Date(year, mIdx+1, 0).getDate();
+
+  let calGrid = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;">`;
+  dayLabels.forEach(d=>{
+    calGrid += `<div style="text-align:center;font-size:10px;color:#64748b;padding:3px 0;font-weight:700;">${d}</div>`;
+  });
+  for(let i=0;i<firstDay;i++) calGrid += `<div></div>`;
+
+  for(let d=1; d<=daysInMonth; d++){
+    const _raw = daily[d-1] || '';
+    const _detail = typeof _raw==='object' ? _raw : null;
+    let status = computeDayStatus(year, mIdx, d, _raw);
+    const isDayPast = isPastMonth || (isCurrentMonth && d<nowD);
+    const isDayToday = isCurrentMonth && d===nowD;
+    const isDayFuture = isFutureMonth || (isCurrentMonth && d>nowD);
+    let dayClr, bgDay, fontW;
+    let todayBorder='';
+    if(isDayFuture){
+      dayClr='rgba(255,255,255,0.15)'; bgDay='transparent'; fontW='400';
+    } else if(status==='A'){
+      dayClr='#fff'; bgDay='rgba(239,68,68,0.75)'; fontW='800';
+    } else if(status==='L'){
+      dayClr='#fff'; bgDay='rgba(239,68,68,0.55)'; fontW='800';
+    } else if(status==='P'||status==='D'||status==='E'||status==='P(W)'||status==='P(H)'||status==='P(L)'){
+      if(isDayToday){ dayClr='#fff'; bgDay='rgba(16,185,129,0.7)'; fontW='800'; }
+      else { dayClr='rgba(255,255,255,0.75)'; bgDay='transparent'; fontW='500'; }
+    } else if(status==='H'){
+      dayClr='#ef4444'; bgDay='transparent'; fontW='700';
+    } else if(status==='W'){
+      dayClr='#ef4444'; bgDay='transparent'; fontW='500';
+    } else if(isDayToday){
+      const _hasData=status&&status!=='';
+      dayClr=_hasData?'#fff':'#ef4444';
+      bgDay=_hasData?'rgba(16,185,129,0.6)':'transparent';
+      fontW='800';
+    } else {
+      dayClr='rgba(255,255,255,0.25)'; bgDay='transparent'; fontW='400';
+    }
+    if(isDayToday) todayBorder='box-shadow:0 0 0 1.5px #10b981;';
+    const _ds=`${String(d).padStart(2,'0')}-${String(mIdx+1).padStart(2,'0')}-${year}`;
+    const _di_raw=_detail?(_detail.i||''):'';
+    const _do_raw=_detail?(_detail.o||''):'';
+    const _dt=_detail?(_detail.t||''):'';
+    const _de=_detail?(_detail.e||''):'';
+    const _exp=_detail?(_detail.exp||''):'';
+    const _nowMin=new Date().getHours()*60+new Date().getMinutes();
+    const _diMin=parseTimeToMinutes(_di_raw);
+    const _doMin=parseTimeToMinutes(_do_raw);
+    const _di=(isDayToday&&_diMin!=null&&_diMin>_nowMin)?'':_di_raw;
+    const _do=(isDayToday&&_doMin!=null&&_doMin>_nowMin)?'':_do_raw;
+    const _clickable = isDayPast || isDayToday;
+    const _onclick=_clickable?('showCalDayDetail(event,\''+_ds+'\',\''+status+'\',\''+_di.replace(/'/g,'')+'\',\''+_do.replace(/'/g,'')+'\',\''+_dt.replace(/'/g,'')+'\',\''+_de.replace(/'/g,'')+'\',\''+_exp.replace(/'/g,'')+'\')'):'return false';
+    const _mouse=_clickable?'onmouseover="this.style.filter=\'brightness(1.8)\'" onmouseout="this.style.filter=\'\'"':'';
+    calGrid += '<div onclick="'+_onclick+'" style="text-align:center;font-size:12px;color:'+dayClr+';background:'+bgDay+';border-radius:6px;padding:8px 2px;font-weight:'+fontW+';cursor:'+(_clickable?'pointer':'default')+';transition:filter .1s;'+todayBorder+'" '+_mouse+'>'+d+'</div>';
   }
-  html+=`</div>`;
-  cont.innerHTML=html;
+  calGrid += `</div>`;
+
+  let stats='';
+  if(isPastMonth || isCurrentMonth){
+    const pct = mData.wd>0 ? Math.round((mData.present||0)/mData.wd*100) : 0;
+    const pctClr = pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
+    stats = `<div style="display:flex;justify-content:space-around;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);">
+      <span style="font-size:11px;color:#10b981;font-weight:600;">Present: ${mData.present||0}</span>
+      <span style="font-size:11px;color:#3b82f6;font-weight:600;">Leave: ${mData.leave||0}</span>
+      <span style="font-size:11px;color:#ef4444;font-weight:600;">Absent: ${mData.absent||0}</span>
+      <span style="font-size:11px;color:${pctClr};font-weight:700;">${pct}%</span>
+    </div>`;
+  }
+
+  cont.innerHTML = `
+    <div style="padding:14px 20px;background:linear-gradient(135deg,#0f1e30,#162840);border-radius:12px 12px 0 0;margin:-1px -1px 0 -1px;display:flex;align-items:center;justify-content:space-between;">
+      <div class="cal-nav" onclick="prevMonth()" style="cursor:pointer;color:var(--text2);"><i class="fa fa-chevron-left"></i></div>
+      <span style="font-size:13px;font-weight:700;color:var(--gold);">📅 ${monthNames[mIdx]} ${year}</span>
+      <div class="cal-nav" onclick="nextMonth()" style="cursor:pointer;color:var(--text2);"><i class="fa fa-chevron-right"></i></div>
+    </div>
+    <div style="padding:16px;">
+      ${calGrid}
+      ${stats}
+    </div>`;
 }
 
 function prevMonth(){ if(calMonth===0){calMonth=11;calYear--;} else calMonth--; renderCalendar(); }
