@@ -1086,6 +1086,7 @@ function nav(page){
     if(n.getAttribute('onclick')?.includes("'"+page+"'")) n.classList.add('active');
   });
   document.getElementById('pageTitle').textContent = PAGE_TITLES[page]||page;
+  if(page==='home'){ initHomePage(); refreshHomeAttLabel(); }
   if(page==='dashboard') renderDashboard();
   if(page==='attendance') initMyAttendance();
   if(page==='kpi') renderPortalKpi();
@@ -3115,8 +3116,7 @@ async function doPortalLogin(){
     initPortalUI(emp);
     renderProfile();
     await loadTimePolicy();
-    nav('dashboard');
-    setTimeout(renderDashboard, 100);
+    nav('home');
     errEl.textContent='';
   }catch(e){
     errEl.textContent = e.message||'Login failed. Try again.';
@@ -3161,8 +3161,7 @@ window.addEventListener('load', ()=>{
             initPortalUI(emp);
             renderProfile();
             await loadTimePolicy();
-            nav('dashboard');
-            setTimeout(renderDashboard, 100);
+            nav('home');
                     return;
           }
         }
