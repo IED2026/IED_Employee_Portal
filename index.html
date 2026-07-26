@@ -403,23 +403,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
     </div>
 
     <!-- Stats -->
-    <div class="grid-3" style="margin-bottom:20px;">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(16,185,129,0.12);color:var(--green);"><i class="fa fa-check"></i></div>
-        <div class="stat-value" id="statPresent">22</div>
-        <div class="stat-label">Present This Month</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(239,68,68,0.12);color:var(--red);"><i class="fa fa-xmark"></i></div>
-        <div class="stat-value" id="statAbsent">1</div>
-        <div class="stat-label">Absent</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(37,99,235,0.12);color:var(--blue3);"><i class="fa fa-umbrella-beach"></i></div>
-        <div class="stat-value" id="statLeave">5</div>
-        <div class="stat-label">Leave Remaining</div>
-      </div>
-    </div>
+    <div id="homeStatsBoard" style="margin-bottom:20px;"></div>
 
     <!-- Modules -->
     <div class="section-title">Modules</div>
@@ -2716,17 +2700,59 @@ function initHomePage(){
   if(emp){
     const y=new Date().getFullYear(), m=new Date().getMonth();
     const md=(emp.attendance||{})[y]?.[m]||{};
-    const lb=(emp.leaveBalance||{})[y]||{};
-    const annB=((lb.annualEntitled||0)-(lb.annualTaken||0));
-    const casB=((lb.casualEntitled||0)-(lb.casualTaken||0));
+    const daily=md.daily||[];
+    const parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const mm=hm.replace('-','').match(/(\d+):(\d+)/);if(!mm)return 0;const v=parseInt(mm[1])*60+parseInt(mm[2]);return neg?-v:v;};
+    const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
     const totP=parseInt(md.present)||0, totA=parseInt(md.absent)||0, totWD=parseInt(md.wd)||0;
+    let totDelay=0, totExDelay=0, totExpMins=0, totActMins=0, totElMins=0;
+    daily.forEach(d=>{
+      const s=typeof d==='object'?(d.s||''):d;
+      if(s==='D') totDelay++;
+      else if(s==='E') totExDelay++;
+      if(typeof d==='object'&&d&&s!=='L'){
+        if(d.exp){const p=d.exp.split(':');if(p.length>=2)totExpMins+=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}
+        if(d.t) totActMins+=parseHMins(d.t);
+        if(d.e) totElMins+=parseHMins(d.e);
+      }
+    });
     const pct=totWD>0?Math.round(totP/totWD*100):0;
     const pctClr=pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
-    if(el('statPresent')) el('statPresent').textContent=totP||'—';
-    if(el('statAbsent')) el('statAbsent').textContent=totA||'—';
-    if(el('statLeave')) el('statLeave').textContent=(annB+casB)||'—';
-    if(el('statOT')) el('statOT').textContent=parseFloat(md.ot)||'—';
-    if(el('statAtt')){ el('statAtt').textContent=pct?pct+'%':'—'; el('statAtt').style.color=pctClr; }
+    const elColor=totElMins<0?'#ef4444':'#10b981';
+    const board=el('homeStatsBoard');
+    if(board){
+      board.innerHTML=`
+        <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;">
+          ${[
+            ['✅',totP,'Present','#10b981'],
+            ['❌',totA,'Absent','#ef4444'],
+            ['⏰',totDelay,'Delay','#f59e0b'],
+            ['🔴',totExDelay,'Extreme Delay','#ef4444'],
+          ].map(([ic,v,lb,cl])=>`<div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${cl}33;border-top:3px solid ${cl};border-radius:12px;padding:12px 10px;text-align:center;">
+            <div style="font-size:16px;margin-bottom:2px;">${ic}</div>
+            <div style="font-size:20px;font-weight:800;color:${cl};">${v}</div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">${lb}</div>
+          </div>`).join('')}
+          <div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${pctClr}33;border-top:3px solid ${pctClr};border-radius:12px;padding:12px 10px;text-align:center;">
+            <div style="font-size:16px;margin-bottom:2px;">📊</div>
+            <div style="font-size:20px;font-weight:900;color:${pctClr};">${pct}%</div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Attendance</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;margin-top:10px;">
+          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid rgba(245,158,11,0.2);border-top:3px solid #f59e0b;border-radius:12px;padding:12px 10px;text-align:center;">
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⏱ Expected Duty</div>
+            <div style="font-size:18px;font-weight:800;color:#f59e0b;">${totExpMins>0?fmtHM(totExpMins):'—'}</div>
+          </div>
+          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid rgba(6,182,212,0.2);border-top:3px solid #06b6d4;border-radius:12px;padding:12px 10px;text-align:center;">
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⚡ Actual Duty</div>
+            <div style="font-size:18px;font-weight:800;color:#06b6d4;">${totActMins>0?fmtHM(totActMins):'—'}</div>
+          </div>
+          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid ${elColor}33;border-top:3px solid ${elColor};border-radius:12px;padding:12px 10px;text-align:center;">
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">📈 Extra / Less</div>
+            <div style="font-size:18px;font-weight:800;color:${elColor};">${totActMins>0?(totElMins>=0?'+':'')+fmtHM(totElMins):'—'}</div>
+          </div>
+        </div>`;
+    }
   }
 }
 
