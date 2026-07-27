@@ -92,6 +92,9 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
     height:60px;vertical-align:bottom;padding:4px 1px !important;font-size:8px !important;
     width:20px;text-align:center !important;
   }
+  .att-edit-toggle{display:none !important;}
+  .att-note-input{width:50px !important;font-size:9px !important;}
+  .att-note-cell{padding:4px 3px !important;}
   .att-vhdr{
     writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;
     height:80px;vertical-align:bottom;padding:4px 2px !important;font-size:8px !important;
@@ -2332,9 +2335,9 @@ function renderDashboard(){
       <td style="${tdStyle}">
         <span style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${pct2}%</span>
       </td>
-      <td style="${tdLeft}display:flex;align-items:center;gap:6px;">
-        <input class="form-control" style="${noteStyle}" value="${mData.note||''}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'note',this.value)" placeholder="—">
-        <button onclick="toggleAttEdit(${year},${i})" title="${locked?'Edit':'Save'}" style="width:28px;height:28px;border-radius:7px;border:1px solid ${locked?'rgba(255,255,255,0.1)':'var(--gold)'};background:${locked?'transparent':'rgba(212,175,55,0.12)'};color:${locked?'var(--text3)':'var(--gold)'};cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
+      <td class="att-note-cell" style="${tdLeft}display:flex;align-items:center;gap:6px;">
+        <input class="form-control att-note-input" style="${noteStyle}" value="${mData.note||''}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'note',this.value)" placeholder="—">
+        <button class="att-edit-toggle" onclick="toggleAttEdit(${year},${i})" title="${locked?'Edit':'Save'}" style="width:28px;height:28px;border-radius:7px;border:1px solid ${locked?'rgba(255,255,255,0.1)':'var(--gold)'};background:${locked?'transparent':'rgba(212,175,55,0.12)'};color:${locked?'var(--text3)':'var(--gold)'};cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
           <i class="fa ${locked?'fa-pen':'fa-check'}"></i>
         </button>
       </td>
