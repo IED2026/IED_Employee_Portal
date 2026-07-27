@@ -68,8 +68,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   }
   .sidebar-overlay.active{display:block;}
   .main{width:100%;height:calc(100vh - 62px);overflow-y:auto;}
-  .dash-stat-grid{display:grid !important;grid-template-columns:1fr 1fr;gap:10px !important;}
-  .dash-stat-grid > div{min-width:0 !important;flex:none !important;}
+  .dash-stat-grid{display:grid !important;grid-template-columns:repeat(3,1fr);gap:8px !important;}
+  .dash-stat-grid > div{min-width:0 !important;flex:none !important;padding:10px 8px !important;}
 }
 
 /* ── SIDEBAR ── */
