@@ -68,6 +68,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   }
   .sidebar-overlay.active{display:block;}
   .main{width:100%;height:calc(100vh - 62px);overflow-y:auto;}
+  .dash-stat-grid{display:grid !important;grid-template-columns:1fr 1fr;gap:10px !important;}
+  .dash-stat-grid > div{min-width:0 !important;flex:none !important;}
 }
 
 /* ── SIDEBAR ── */
@@ -2337,7 +2339,7 @@ function renderDashboard(){
   const dutyDiffFmt = fmtMins(diffMins);
   const kpiEl=document.getElementById('attKpi');
   if(kpiEl) kpiEl.innerHTML=`
-    <div style="display:flex;gap:12px;flex-wrap:wrap;width:100%;">
+    <div class="dash-stat-grid" style="display:flex;gap:12px;flex-wrap:wrap;width:100%;">
 
       <!-- Working Days + Present -->
       <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f2a45,#0a1e32);border:1px solid rgba(59,130,246,0.25);border-top:3px solid #3b82f6;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
