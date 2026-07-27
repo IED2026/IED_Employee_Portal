@@ -85,6 +85,9 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   .att-mtable th, .att-mtable td{padding:4px 2px !important;font-size:9px !important;}
   .att-mtable td *{font-size:9px !important;}
   .att-mtable td input[type="number"]{width:16px !important;height:14px !important;padding:0 !important;font-size:9px !important;border:none !important;}
+  .att-mtable td:first-child{font-size:0 !important;padding:4px 3px !important;width:28px;}
+  .att-mtable td:first-child::before{content:attr(data-abbr);font-size:10px;font-weight:700;color:var(--text);}
+  .att-mtable th:first-child{width:28px;}
   .att-vhdr{
     writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;
     height:80px;vertical-align:bottom;padding:4px 2px !important;font-size:8px !important;
@@ -2309,7 +2312,7 @@ function renderDashboard(){
     const tdStyle = 'padding:2px 4px;text-align:center;'+rowBorder+colBorder;
     const tdLeft = 'padding:2px 8px;'+rowBorder+colBorder;
     return `<tr style="${rowBg}transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='${locked?'':'rgba(212,175,55,0.04)'}'">
-      <td style="${tdLeft}font-weight:700;font-size:13px;color:var(--text);">${m}</td>
+      <td data-abbr="${m.slice(0,3)}" style="${tdLeft}font-weight:700;font-size:13px;color:var(--text);">${m}</td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.wd||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'wd',this.value)"></td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.present||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'present',this.value)"></td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.leave||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'leave',this.value)"></td>
