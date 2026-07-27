@@ -68,13 +68,13 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   }
   .sidebar-overlay.active{display:block;}
   .main{width:100%;height:calc(100vh - 62px);overflow-y:auto;}
-  .dash-stat-grid{display:grid !important;grid-template-columns:repeat(3,1fr);gap:8px !important;}
+  .dash-stat-grid{display:grid !important;grid-template-columns:repeat(6,1fr);gap:8px !important;}
   .dash-stat-grid > div{min-width:0 !important;flex:none !important;padding:10px 8px !important;}
-  .card-wd-present{order:1;}
-  .card-leave-absent{order:2;}
-  .card-overall{order:3;padding:8px 6px !important;}
-  .card-status{order:4;}
-  .card-duty{order:5;}
+  .card-wd-present{order:1;grid-column:span 2;}
+  .card-leave-absent{order:2;grid-column:span 2;}
+  .card-overall{order:3;grid-column:span 2;padding:8px 6px !important;}
+  .card-status{order:4;grid-column:span 3;}
+  .card-duty{order:5;grid-column:span 3;}
   .card-overall-pct{font-size:22px !important;}
 }
 
