@@ -2628,13 +2628,16 @@ function renderYearlyAttCalendar(emp, year, attData){
   const nowM = nowYear3===year ? new Date().getMonth() : (isFutureYear3 ? -1 : 11);
   const mNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const dayLabels = ['S','M','T','W','T','F','S'];
+  const _isMobileVP = window.innerWidth <= 768;
+  const _yCalCols = _isMobileVP ? 3 : 4;
+  const _yCalGap = _isMobileVP ? '6px' : '12px';
 
   let html = `
     <div style="border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
       <div style="padding:14px 20px;background:linear-gradient(135deg,#0f1e30,#162840);border-bottom:1px solid rgba(255,255,255,0.08);">
         <span style="font-size:13px;font-weight:700;color:var(--gold);">📅 Yearly Attendance Status: ${emp.name||''}</span>
       </div>
-      <div class="yearly-cal-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px;background:var(--navy2);">`;
+      <div class="yearly-cal-grid" style="display:grid;grid-template-columns:repeat(${_yCalCols},1fr);gap:${_yCalGap};padding:16px;background:var(--navy2);">`;
 
   mNames.forEach((mName, mIdx) => {
     const isPast = isFutureYear3 ? false : (year < new Date().getFullYear() ? true : mIdx < nowM);
