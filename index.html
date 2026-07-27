@@ -70,6 +70,12 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   .main{width:100%;height:calc(100vh - 62px);overflow-y:auto;}
   .dash-stat-grid{display:grid !important;grid-template-columns:repeat(3,1fr);gap:8px !important;}
   .dash-stat-grid > div{min-width:0 !important;flex:none !important;padding:10px 8px !important;}
+  .card-wd-present{order:1;}
+  .card-leave-absent{order:2;}
+  .card-overall{order:3;padding:8px 6px !important;}
+  .card-status{order:4;}
+  .card-duty{order:5;}
+  .card-overall-pct{font-size:22px !important;}
 }
 
 /* ── SIDEBAR ── */
@@ -2342,7 +2348,7 @@ function renderDashboard(){
     <div class="dash-stat-grid" style="display:flex;gap:12px;flex-wrap:wrap;width:100%;">
 
       <!-- Working Days + Present -->
-      <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f2a45,#0a1e32);border:1px solid rgba(59,130,246,0.25);border-top:3px solid #3b82f6;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+      <div class="card-wd-present" style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f2a45,#0a1e32);border:1px solid rgba(59,130,246,0.25);border-top:3px solid #3b82f6;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:40px;height:40px;background:rgba(59,130,246,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📅</div>
           <div>
@@ -2360,7 +2366,7 @@ function renderDashboard(){
       </div>
 
       <!-- Leave + Absent -->
-      <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#2a0f0f,#1e0a0a);border:1px solid rgba(239,68,68,0.25);border-top:3px solid #ef4444;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+      <div class="card-leave-absent" style="flex:1;min-width:160px;background:linear-gradient(135deg,#2a0f0f,#1e0a0a);border:1px solid rgba(239,68,68,0.25);border-top:3px solid #ef4444;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:40px;height:40px;background:rgba(245,158,11,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🌴</div>
           <div>
@@ -2378,7 +2384,7 @@ function renderDashboard(){
       </div>
 
       <!-- Duty Hours -->
-      <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f1f2a,#0a1520);border:1px solid rgba(6,182,212,0.25);border-top:3px solid #06b6d4;border-radius:14px;padding:16px 18px;">
+      <div class="card-duty" style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f1f2a,#0a1520);border:1px solid rgba(6,182,212,0.25);border-top:3px solid #06b6d4;border-radius:14px;padding:16px 18px;">
         <div style="font-size:11px;font-weight:700;color:#06b6d4;letter-spacing:.5px;margin-bottom:12px;"><i class="fa fa-clock"></i> DUTY HOURS</div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -2398,7 +2404,7 @@ function renderDashboard(){
       </div>
 
       <!-- Present Status -->
-      <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f1a2a,#0a1020);border:1px solid rgba(139,92,246,0.25);border-top:3px solid #8b5cf6;border-radius:14px;padding:16px 18px;">
+      <div class="card-status" style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f1a2a,#0a1020);border:1px solid rgba(139,92,246,0.25);border-top:3px solid #8b5cf6;border-radius:14px;padding:16px 18px;">
         <div style="font-size:11px;font-weight:700;color:#8b5cf6;letter-spacing:.5px;margin-bottom:12px;">PRESENT STATUS</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -2426,8 +2432,8 @@ function renderDashboard(){
       </div>
 
       <!-- Overall Attendance -->
-      <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#0f2a1a,#0a1e10);border:1px solid rgba(16,185,129,0.25);border-top:3px solid ${overallClr};border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-        <div style="font-size:42px;font-weight:900;color:${overallClr};line-height:1;">${overallPct}%</div>
+      <div class="card-overall" style="flex:1;min-width:140px;background:linear-gradient(135deg,#0f2a1a,#0a1e10);border:1px solid rgba(16,185,129,0.25);border-top:3px solid ${overallClr};border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div class="card-overall-pct" style="font-size:42px;font-weight:900;color:${overallClr};line-height:1;">${overallPct}%</div>
         <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:6px;">Overall Attendance</div>
         <div style="margin-top:12px;width:100%;background:rgba(255,255,255,0.06);border-radius:999px;height:5px;">
           <div style="width:${overallPct}%;background:${overallClr};height:5px;border-radius:999px;transition:width .5s;"></div>
