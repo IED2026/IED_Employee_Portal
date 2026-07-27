@@ -76,10 +76,11 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   .card-status{order:4;grid-column:span 3;}
   .card-duty{order:5;grid-column:span 3;}
   .card-overall-pct{font-size:22px !important;}
-  .chart-grid-2col{gap:8px !important;}
-  .chart-card-1,.chart-card-2{min-width:0 !important;padding:10px !important;}
+  .chart-grid-2col{grid-template-columns:1fr !important;gap:12px !important;}
+  .chart-card-1,.chart-card-2{min-width:0 !important;padding:12px !important;}
   .chart-card-1 canvas,.chart-card-2 canvas{max-width:100%;}
-  .chart-card-1 > div[style*="height:200px"],.chart-card-2 > div[style*="height:200px"]{height:150px !important;}
+  .chart-card-1 > div[style*="height:200px"]{height:220px !important;}
+  .chart-card-2 > div[style*="height:200px"]{height:180px !important;}
 }
 
 /* ── SIDEBAR ── */
