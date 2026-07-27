@@ -81,6 +81,13 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   .chart-card-1 canvas,.chart-card-2 canvas{max-width:100%;}
   .chart-card-1 > div[style*="height:200px"]{height:220px !important;}
   .chart-card-2 > div[style*="height:200px"]{height:180px !important;}
+  .att-mtable{min-width:0 !important;width:100% !important;table-layout:auto;}
+  .att-mtable th, .att-mtable td{padding:4px 2px !important;font-size:9px !important;}
+  .att-mtable td *{font-size:9px !important;}
+  .att-vhdr{
+    writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;
+    height:80px;vertical-align:bottom;padding:4px 2px !important;font-size:8px !important;
+  }
 }
 
 /* ── SIDEBAR ── */
@@ -515,23 +522,23 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
         <span style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.04em;"><i class="fa fa-calendar-check" style="margin-right:8px;"></i>Monthly Attendance Record</span>
       </div>
       <div style="overflow-x:auto;">
-        <table style="width:100%;min-width:1100px;border-collapse:collapse;font-size:12px;">
+        <table class="att-mtable" style="width:100%;min-width:1100px;border-collapse:collapse;font-size:12px;">
           <thead>
             <tr style="background:rgba(255,255,255,0.03);">
               <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);">Month</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#5b8fa6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(37,99,235,.4);">Working Days</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#10b981;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(16,185,129,.5);">Present</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#3b82f6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(59,130,246,.5);">Leave</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#ef4444;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(239,68,68,.5);">Absent</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#818cf8;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(129,140,248,.5);">Holiday</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);">Delay</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#ef4444;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(239,68,68,.5);">Extreme Delay</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(167,139,250,.5);">Half Day</th>
-              <th title="Expected Duty Hours — Total expected working hours for the month" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);cursor:help;">Exp.D(H)</th>
-              <th title="Actual Duty Hours — Total hours actually worked this month" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(6,182,212,.5);cursor:help;">Act.D(H)</th>
-              <th title="Extra / Less Duty Hours — Difference between Actual and Expected" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#8b5cf6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(139,92,246,.5);cursor:help;">E/L D(H)</th>
-              <th title="Average Actual Duty per Working Day" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(34,211,238,.5);cursor:help;">Avg.D/Day(H)</th>
-              <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(212,175,55,.5);">Att %</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#5b8fa6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(37,99,235,.4);">Working Days</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#10b981;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(16,185,129,.5);">Present</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#3b82f6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(59,130,246,.5);">Leave</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#ef4444;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(239,68,68,.5);">Absent</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#818cf8;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(129,140,248,.5);">Holiday</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);">Delay</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#ef4444;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(239,68,68,.5);">Extreme Delay</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(167,139,250,.5);">Half Day</th>
+              <th class="att-vhdr" title="Expected Duty Hours — Total expected working hours for the month" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(245,158,11,.5);cursor:help;">Exp.D(H)</th>
+              <th class="att-vhdr" title="Actual Duty Hours — Total hours actually worked this month" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(6,182,212,.5);cursor:help;">Act.D(H)</th>
+              <th class="att-vhdr" title="Extra / Less Duty Hours — Difference between Actual and Expected" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#8b5cf6;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(139,92,246,.5);cursor:help;">E/L D(H)</th>
+              <th class="att-vhdr" title="Average Actual Duty per Working Day" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(34,211,238,.5);cursor:help;">Avg.D/Day(H)</th>
+              <th class="att-vhdr" style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.07em;text-transform:uppercase;border-bottom:2px solid rgba(212,175,55,.5);">Att %</th>
               <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);">Notes</th>
             </tr>
           </thead>
