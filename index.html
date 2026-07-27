@@ -2832,21 +2832,24 @@ function initHomePage(){
     const pct=totWD>0?Math.round(totP/totWD*100):0;
     const pctClr=pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
     const elColor=totElMins<0?'#ef4444':'#10b981';
+    const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const monthLabel=monthNames[m]+' '+y;
     const board=el('homeStatsBoard');
     if(board){
       board.innerHTML=`
         <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;">
           ${[
-            ['📅',totWD,'Working Days','#3b82f6'],
+            ['📅',totWD,'Working Days','#3b82f6',monthLabel],
             ['✅',totP,'Present','#10b981'],
             ['❌',totA,'Absent','#ef4444'],
             ['🌴',totL,'Leave','#f59e0b'],
             ['⏰',totDelay,'Delay','#f59e0b'],
             ['🔴',totExDelay,'Extreme Delay','#ef4444'],
-          ].map(([ic,v,lb,cl])=>`<div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${cl}33;border-top:3px solid ${cl};border-radius:12px;padding:12px 10px;text-align:center;">
+          ].map(([ic,v,lb,cl,sub])=>`<div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${cl}33;border-top:3px solid ${cl};border-radius:12px;padding:12px 10px;text-align:center;">
             <div style="font-size:16px;margin-bottom:2px;">${ic}</div>
             <div style="font-size:20px;font-weight:800;color:${cl};">${v}</div>
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">${lb}</div>
+            ${sub?`<div style="font-size:9px;color:${cl};font-weight:700;margin-top:3px;">${sub}</div>`:''}
           </div>`).join('')}
           <div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${pctClr}33;border-top:3px solid ${pctClr};border-radius:12px;padding:12px 10px;text-align:center;">
             <div style="font-size:16px;margin-bottom:2px;">📊</div>
