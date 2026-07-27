@@ -76,6 +76,10 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   .card-status{order:4;grid-column:span 3;}
   .card-duty{order:5;grid-column:span 3;}
   .card-overall-pct{font-size:22px !important;}
+  .chart-grid-2col{gap:8px !important;}
+  .chart-card-1,.chart-card-2{min-width:0 !important;padding:10px !important;}
+  .chart-card-1 canvas,.chart-card-2 canvas{max-width:100%;}
+  .chart-card-1 > div[style*="height:200px"],.chart-card-2 > div[style*="height:200px"]{height:150px !important;}
 }
 
 /* ── SIDEBAR ── */
@@ -2446,12 +2450,12 @@ function renderDashboard(){
   const attChartWrap = document.getElementById('attChartSection');
   if(attChartWrap){
     attChartWrap.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-card);">
+      <div class="chart-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="chart-card-1" style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-card);">
           <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px;"><i class="fa fa-chart-bar"></i> Monthly Overview ${year}</div>
           <div style="position:relative;height:200px;"><canvas id="attBarChart"></canvas></div>
         </div>
-        <div style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-card);">
+        <div class="chart-card-2" style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-card);">
           <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px;"><i class="fa fa-chart-pie"></i> Attendance Breakdown</div>
           <div style="position:relative;height:200px;"><canvas id="attPieChart"></canvas></div>
         </div>
