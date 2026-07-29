@@ -100,6 +100,10 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
     writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;
     height:80px;vertical-align:bottom;padding:4px 2px !important;font-size:8px !important;
   }
+  .topbar{flex-wrap:wrap;gap:4px 10px;padding:14px 16px !important;}
+  .topbar-title{font-size:17px !important;}
+  .topbar-actions{margin-left:auto;}
+  .topbar-date{font-size:10px !important;white-space:nowrap;}
 }
 
 /* ── SIDEBAR ── */
@@ -2555,7 +2559,7 @@ function renderLeaveBalanceCards(emp, year, targetId){
   const totE = annE+casE, totT = annT+casT, totB = totE-totT;
 
   const card = (label,color,total,taken,left) => `
-    <div style="background:var(--navy3);border:1px solid ${color}44;border-top:3px solid ${color};border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+    <div style="min-width:0;background:var(--navy3);border:1px solid ${color}44;border-top:3px solid ${color};border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
       <div style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">${label}</div>
       <div style="display:flex;justify-content:center;gap:20px;align-items:center;">
         <div><div style="font-size:26px;font-weight:800;color:var(--text);">${total}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:3px;">Total</div></div>
@@ -2564,14 +2568,16 @@ function renderLeaveBalanceCards(emp, year, targetId){
       </div>
     </div>`;
 
+  const _isMobileLB = window.innerWidth <= 768;
+
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;align-items:stretch;">
+    <div style="display:grid;grid-template-columns:${_isMobileLB?'1fr 1fr 1fr':'1fr 1fr 1fr 1fr'};gap:${_isMobileLB?'8px':'12px'};align-items:stretch;">
       ${card('Total Leave','#c9a44d',totE,totT,totB)}
       ${card('Annual Leave','#3b82f6',annE,annT,annB)}
       ${card('Casual Leave','#8b5cf6',casE,casT,casB)}
-      <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="grid-column:${_isMobileLB?'1 / -1':'auto'};min-width:0;background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;">
         <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;">Leave Overview</div>
-        <div style="position:relative;flex:1;min-height:140px;"><canvas id="leaveDonutPortal"></canvas></div>
+        <div style="position:relative;flex:1;min-height:140px;"><canvas id="leaveDonutPortal" style="max-width:100%;"></canvas></div>
       </div>
     </div>`;
 
