@@ -2990,7 +2990,8 @@ function renderMyAttendance(){
   const sub=document.getElementById('myAttSubtitle');
   if(sub) sub.textContent=month===-1?`Year ${year} — Full Overview`:`${_MA_MONTHS[month]} ${year}`;
 
-  // KPI — derive from daily[] (HR System is source of truth)
+  // KPI — derive from daily[] (HR System is source of truth). KPI cards reflect ONLY the selected month
+  // (or all 12 for Full Year) — the 3-month lookback below is for the scrollable row list only.
   function getLast3MonthEntriesFrom(baseY, baseM){
     const arr=[];
     for(let i=0;i<3;i++){
@@ -3002,7 +3003,7 @@ function renderMyAttendance(){
   }
   let statEntries;
   if(month===-1){ statEntries=Array.from({length:12},(_,i)=>({y:year,m:i,data:attData[i]||{}})); }
-  else { statEntries=getLast3MonthEntriesFrom(year, month); }
+  else { statEntries=[{y:year,m:month,data:attData[month]||{}}]; }
 
   const parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const m=hm.replace('-','').match(/(\d+):(\d+)/);if(!m)return 0;const v=parseInt(m[1])*60+parseInt(m[2]);return neg?-v:v;};
   const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
@@ -3116,7 +3117,8 @@ function renderMyAttendance(){
     const canGoNext=(nextY<nowY)||(nextY===nowY&&nextM<=nowM);
 
     const rows=[];
-    statEntries.forEach(({y:sy,m:sm,data:sdata},entryIdx)=>{
+    const listEntries=getLast3MonthEntriesFrom(year, month);
+    listEntries.forEach(({y:sy,m:sm,data:sdata},entryIdx)=>{
       const sdaily=sdata?.daily||[];
       const sdim=new Date(sy,sm+1,0).getDate();
       if(entryIdx>0){
