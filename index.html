@@ -104,6 +104,15 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
     writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;
     display:inline-block;font-size:8px !important;font-weight:700 !important;
   }
+  .att-pct-badge{padding:2px 6px !important;font-size:9px !important;}
+  .att-note-input{display:none !important;}
+  .att-note-mobile-btn{
+    display:flex !important;align-items:center;justify-content:center;
+    width:22px;height:22px;border-radius:5px;border:1px solid var(--border);
+    background:rgba(255,255,255,0.04);color:var(--gold);font-size:10px;
+    cursor:pointer;padding:0;
+  }
+  .att-note-cell{gap:4px !important;}
   .topbar{flex-wrap:wrap;gap:4px 10px;padding:14px 16px !important;}
   .topbar-title{font-size:17px !important;}
   .topbar-actions{margin-left:auto;}
@@ -2342,10 +2351,13 @@ function renderDashboard(){
       <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#8b5cf6;">${mData.elOt||'—'}</span></td>
       <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#22d3ee;">${(()=>{if(!present||!mData.ot||mData.ot==='—')return '—';const totalMins=parseFloat(mData.ot)*60;const avgMins=totalMins/present;const h=Math.floor(avgMins/60);const m=Math.round(avgMins%60);return h+':'+String(m).padStart(2,'0');})()}</span></td>
       <td style="${tdStyle}">
-        <span style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${pct2}%</span>
+        <span class="att-pct-badge" style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${pct2}%</span>
       </td>
       <td class="att-note-cell" style="${tdLeft}display:flex;align-items:center;gap:6px;">
         <input class="form-control att-note-input" style="${noteStyle}" value="${mData.note||''}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'note',this.value)" placeholder="—">
+        <button class="att-note-mobile-btn" data-note="${(mData.note||'').replace(/"/g,'&quot;')}" data-month="${m}" onclick="showAttNotePopup(this)" style="display:none;">
+          <i class="fa ${mData.note?'fa-note-sticky':'fa-note-sticky'}"></i>
+        </button>
         <button class="att-edit-toggle" onclick="toggleAttEdit(${year},${i})" title="${locked?'Edit':'Save'}" style="width:28px;height:28px;border-radius:7px;border:1px solid ${locked?'rgba(255,255,255,0.1)':'var(--gold)'};background:${locked?'transparent':'rgba(212,175,55,0.12)'};color:${locked?'var(--text3)':'var(--gold)'};cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
           <i class="fa ${locked?'fa-pen':'fa-check'}"></i>
         </button>
@@ -2751,6 +2763,21 @@ function renderYearlyAttCalendar(emp, year, attData){
   section.innerHTML = html;
 }
 
+function showAttNotePopup(btn){
+  document.getElementById('attNotePopupDiv')?.remove();
+  const note = btn.getAttribute('data-note') || '';
+  const month = btn.getAttribute('data-month') || '';
+  const c = document.createElement('div');
+  c.id = 'attNotePopupDiv';
+  c.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  c.onclick = function(e){ if(e.target===c) c.remove(); };
+  c.innerHTML = '<div style="background:var(--navy2);border:1px solid var(--border);border-radius:14px;max-width:320px;width:100%;padding:20px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+    '<span style="font-size:13px;font-weight:700;color:var(--gold);"><i class="fa fa-note-sticky"></i> Note — ' + month + '</span>' +
+    '<button onclick="document.getElementById(\'attNotePopupDiv\').remove()" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;">&times;</button>' +
+    '</div><div style="font-size:13px;color:var(--text);line-height:1.5;">' + (note || '<span style="color:var(--text3);font-style:italic;">No note for this month.</span>') + '</div></div>';
+  document.body.appendChild(c);
+}
 function toggleAttEdit(year, month){
   const key = `${year}_${month}`;
   if(attPageEditRow === key){
