@@ -104,7 +104,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
     writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;
     display:inline-block;font-size:8px !important;font-weight:700 !important;
   }
-  .att-pct-badge{padding:2px 6px !important;font-size:9px !important;}
+  .att-pct-badge{padding:1px 3px !important;font-size:7px !important;border-radius:6px !important;}
+  .att-pct-cell{padding:4px 1px !important;}
   .att-note-input{display:none !important;}
   .att-note-mobile-btn{
     display:flex !important;align-items:center;justify-content:center;
@@ -2350,7 +2351,7 @@ function renderDashboard(){
       <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#06b6d4;">${(()=>{if(mData.ot===undefined||mData.ot===null||mData.ot==='—')return '—';const totalMins=Math.round(parseFloat(mData.ot)*60);if(isNaN(totalMins))return '—';const h=Math.floor(totalMins/60),m=totalMins%60;return h+':'+String(m).padStart(2,'0');})()}</span></td>
       <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#8b5cf6;">${mData.elOt||'—'}</span></td>
       <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#22d3ee;">${(()=>{if(!present||!mData.ot||mData.ot==='—')return '—';const totalMins=parseFloat(mData.ot)*60;const avgMins=totalMins/present;const h=Math.floor(avgMins/60);const m=Math.round(avgMins%60);return h+':'+String(m).padStart(2,'0');})()}</span></td>
-      <td style="${tdStyle}">
+      <td class="att-pct-cell" style="${tdStyle}">
         <span class="att-pct-badge" style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${pct2}%</span>
       </td>
       <td class="att-note-cell" style="${tdLeft}display:flex;align-items:center;gap:6px;">
