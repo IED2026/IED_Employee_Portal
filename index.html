@@ -84,12 +84,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   .myatt-date-td{min-width:78px !important;max-width:82px !important;padding:4px 5px !important;}
   .myatt-date-th{padding:4px 5px !important;}
   .myatt-date-td div{font-size:8px !important;}
-  .myatt-date-inner{flex-direction:column !important;align-items:flex-start !important;gap:2px !important;}
   .myatt-date-td span{font-size:7px !important;padding:1px 4px !important;}
   .myatt-table button{padding:2px 4px !important;font-size:8px !important;}
-  .myatt-date-th{padding:6px 6px !important;}
-  .myatt-date-td div{font-size:8px !important;}
-  .myatt-date-td span{font-size:8px !important;padding:2px 5px !important;}
   .chart-grid-2col{grid-template-columns:1fr !important;gap:12px !important;}
   .chart-card-1,.chart-card-2{min-width:0 !important;padding:12px !important;}
   .chart-card-1 canvas,.chart-card-2 canvas{max-width:100%;}
@@ -3127,11 +3123,11 @@ function renderMyAttendance(){
       const bg=S_BG[st]||'rgba(255,255,255,0.03)';
       rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}">
         <td class="myatt-date-td" style="padding:10px 14px;min-width:180px;">
-          <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${DAY_FULL[dowIdx]}</div>
-          <div class="myatt-date-inner" style="display:flex;align-items:center;gap:8px;margin-top:3px;">
-            <div style="font-size:13px;font-weight:700;color:${isToday?'var(--gold)':'var(--text)'};">${d} ${MONTH_S[month]} ${year}</div>
-            ${st?`<span style="display:inline-block;background:${bg};color:${clr};border:1px solid ${clr}55;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.3px;">${st}</span>`:''}
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${DAY_FULL[dowIdx]}</span>
+            ${st?`<span style="display:inline-block;background:${bg};color:${clr};border:1px solid ${clr}55;padding:2px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.3px;">${st}</span>`:''}
           </div>
+          <div style="font-size:13px;font-weight:700;color:${isToday?'var(--gold)':'var(--text)'};margin-top:3px;">${d} ${MONTH_S[month]} ${year}</div>
         </td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#06b6d4;">${dayObj.i||dayObj.in||'—'}</td>
         <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#8b5cf6;">${dayObj.o||dayObj.out||'—'}</td>
