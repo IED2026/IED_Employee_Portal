@@ -76,6 +76,9 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   .card-status{order:4;grid-column:span 3;}
   .card-duty{order:5;grid-column:span 3;}
   .card-overall-pct{font-size:22px !important;}
+  .dash-kpi-icon{width:26px !important;height:26px !important;font-size:12px !important;border-radius:7px !important;}
+  .dash-kpi-num{font-size:17px !important;}
+  .dash-kpi-label{font-size:8px !important;}
   .chart-grid-2col{grid-template-columns:1fr !important;gap:12px !important;}
   .chart-card-1,.chart-card-2{min-width:0 !important;padding:12px !important;}
   .chart-card-1 canvas,.chart-card-2 canvas{max-width:100%;}
@@ -2396,17 +2399,17 @@ function renderDashboard(){
       <!-- Working Days + Present -->
       <div class="card-wd-present" style="flex:1;min-width:160px;background:linear-gradient(135deg,#0f2a45,#0a1e32);border:1px solid rgba(59,130,246,0.25);border-top:3px solid #3b82f6;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:40px;height:40px;background:rgba(59,130,246,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📅</div>
+          <div class="dash-kpi-icon" style="width:40px;height:40px;background:rgba(59,130,246,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📅</div>
           <div>
-            <div style="font-size:26px;font-weight:800;color:#fff;line-height:1;">${totalWDSoFar}</div>
-            <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Working Days</div>
+            <div class="dash-kpi-num" style="font-size:26px;font-weight:800;color:#fff;line-height:1;">${totalWDSoFar}</div>
+            <div class="dash-kpi-label" style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Working Days</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
-          <div style="width:40px;height:40px;background:rgba(16,185,129,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">✅</div>
+          <div class="dash-kpi-icon" style="width:40px;height:40px;background:rgba(16,185,129,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">✅</div>
           <div>
-            <div style="font-size:26px;font-weight:800;color:#10b981;line-height:1;">${totalPresent}</div>
-            <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Present</div>
+            <div class="dash-kpi-num" style="font-size:26px;font-weight:800;color:#10b981;line-height:1;">${totalPresent}</div>
+            <div class="dash-kpi-label" style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Present</div>
           </div>
         </div>
       </div>
@@ -2414,17 +2417,17 @@ function renderDashboard(){
       <!-- Leave + Absent -->
       <div class="card-leave-absent" style="flex:1;min-width:160px;background:linear-gradient(135deg,#2a0f0f,#1e0a0a);border:1px solid rgba(239,68,68,0.25);border-top:3px solid #ef4444;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:40px;height:40px;background:rgba(245,158,11,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🌴</div>
+          <div class="dash-kpi-icon" style="width:40px;height:40px;background:rgba(245,158,11,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🌴</div>
           <div>
-            <div style="font-size:26px;font-weight:800;color:#f59e0b;line-height:1;">${totalLeave}</div>
-            <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Leave</div>
+            <div class="dash-kpi-num" style="font-size:26px;font-weight:800;color:#f59e0b;line-height:1;">${totalLeave}</div>
+            <div class="dash-kpi-label" style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Leave</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
-          <div style="width:40px;height:40px;background:rgba(239,68,68,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">❌</div>
+          <div class="dash-kpi-icon" style="width:40px;height:40px;background:rgba(239,68,68,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">❌</div>
           <div>
-            <div style="font-size:26px;font-weight:800;color:#ef4444;line-height:1;">${totalAbsent}</div>
-            <div style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Absent</div>
+            <div class="dash-kpi-num" style="font-size:26px;font-weight:800;color:#ef4444;line-height:1;">${totalAbsent}</div>
+            <div class="dash-kpi-label" style="font-size:10px;color:#5b8fa6;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">Days Absent</div>
           </div>
         </div>
       </div>
