@@ -79,8 +79,14 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
   .dash-kpi-icon{width:26px !important;height:26px !important;font-size:12px !important;border-radius:7px !important;}
   .dash-kpi-num{font-size:17px !important;}
   .dash-kpi-label{font-size:8px !important;}
-  .myatt-table td, .myatt-table th{padding:6px 4px !important;font-size:9px !important;}
-  .myatt-date-td{min-width:70px !important;padding:6px 6px !important;}
+  .myatt-table{min-width:0 !important;width:100% !important;table-layout:auto;}
+  .myatt-table td, .myatt-table th{padding:3px 2px !important;font-size:7px !important;}
+  .myatt-date-td{min-width:38px !important;max-width:40px !important;padding:3px 3px !important;}
+  .myatt-date-th{padding:3px 3px !important;}
+  .myatt-date-td div{font-size:6px !important;}
+  .myatt-date-inner{flex-direction:column !important;align-items:flex-start !important;gap:2px !important;}
+  .myatt-date-td span{font-size:6px !important;padding:1px 3px !important;}
+  .myatt-table button{padding:2px 4px !important;font-size:8px !important;}
   .myatt-date-th{padding:6px 6px !important;}
   .myatt-date-td div{font-size:8px !important;}
   .myatt-date-td span{font-size:8px !important;padding:2px 5px !important;}
@@ -3095,6 +3101,8 @@ function renderMyAttendance(){
     const daily=md.daily||[];
     const dim=new Date(year,month+1,0).getDate();
     const DAY_FULL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const DAY_SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const _isMobMyAtt = window.innerWidth <= 768;
     const MONTH_LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
     const MONTH_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const S_CLR={'P':'#10b981','D':'#f59e0b','E':'#ef4444','A':'#ef4444','L':'#3b82f6','H':'#818cf8','W':'#4b5563','PW':'#10b981','PH':'#10b981','':''};
@@ -3121,9 +3129,9 @@ function renderMyAttendance(){
       const bg=S_BG[st]||'rgba(255,255,255,0.03)';
       rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}">
         <td class="myatt-date-td" style="padding:10px 14px;min-width:180px;">
-          <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${DAY_FULL[dowIdx]}</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:3px;">
-            <div style="font-size:13px;font-weight:700;color:${isToday?'var(--gold)':'var(--text)'};">${d} ${MONTH_S[month]} ${year}</div>
+          <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${_isMobMyAtt?DAY_SHORT[dowIdx]:DAY_FULL[dowIdx]}</div>
+          <div class="myatt-date-inner" style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+            <div style="font-size:13px;font-weight:700;color:${isToday?'var(--gold)':'var(--text)'};">${_isMobMyAtt?d:(d+' '+MONTH_S[month]+' '+year)}</div>
             ${st?`<span style="display:inline-block;background:${bg};color:${clr};border:1px solid ${clr}55;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.3px;">${st}</span>`:''}
           </div>
         </td>
