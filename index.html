@@ -2636,6 +2636,7 @@ function renderYearlyAttCalendar(emp, year, attData){
     <div style="border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
       <div style="padding:14px 20px;background:linear-gradient(135deg,#0f1e30,#162840);border-bottom:1px solid rgba(255,255,255,0.08);">
         <span style="font-size:13px;font-weight:700;color:var(--gold);">📅 Yearly Attendance Status: ${emp.name||''}</span>
+        <span style="font-size:10px;font-weight:700;color:#ff00ff;background:#000;padding:2px 6px;border-radius:4px;margin-left:8px;">DEBUG vw:${window.innerWidth}px cols:${_yCalCols}</span>
       </div>
       <div class="yearly-cal-grid" style="display:grid;grid-template-columns:repeat(${_yCalCols},1fr);gap:${_yCalGap};padding:16px;background:var(--navy2);">`;
 
