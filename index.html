@@ -2636,7 +2636,6 @@ function renderYearlyAttCalendar(emp, year, attData){
     <div style="border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
       <div style="padding:14px 20px;background:linear-gradient(135deg,#0f1e30,#162840);border-bottom:1px solid rgba(255,255,255,0.08);">
         <span style="font-size:13px;font-weight:700;color:var(--gold);">📅 Yearly Attendance Status: ${emp.name||''}</span>
-        <span style="font-size:10px;font-weight:700;color:#ff00ff;background:#000;padding:2px 6px;border-radius:4px;margin-left:8px;">DEBUG vw:${window.innerWidth}px cols:${_yCalCols}</span>
       </div>
       <div class="yearly-cal-grid" style="display:grid;grid-template-columns:repeat(${_yCalCols},1fr);gap:${_yCalGap};padding:16px;background:var(--navy2);">`;
 
@@ -2655,9 +2654,9 @@ function renderYearlyAttCalendar(emp, year, attData){
     const daysInMonth = new Date(year, mIdx+1, 0).getDate();
     const daily = mData.daily || [];
 
-    let calGrid = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:6px;">`;
+    let calGrid = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:${_isMobileVP?'1px':'2px'};margin-top:6px;">`;
     dayLabels.forEach(d => {
-      calGrid += `<div style="text-align:center;font-size:8px;color:${isPast?'#64748b':'#334155'};padding:1px 0;font-weight:600;">${d}</div>`;
+      calGrid += `<div style="text-align:center;font-size:${_isMobileVP?'6px':'8px'};color:${isPast?'#64748b':'#334155'};padding:1px 0;font-weight:600;">${d}</div>`;
     });
 
     for(let i=0; i<firstDay; i++){
@@ -2712,7 +2711,7 @@ function renderYearlyAttCalendar(emp, year, attData){
       const _clickable = isDayPast || isDayToday;
       var _onclick=_clickable?('showCalDayDetail(event,\''+_ds+'\',\''+status+'\',\''+_di.replace(/'/g,'')+'\',\''+_do.replace(/'/g,'')+'\',\''+_dt.replace(/'/g,'')+'\',\''+_de.replace(/'/g,'')+'\',\''+_exp.replace(/'/g,'')+'\')'):'return false';
       var _mouse=_clickable?'onmouseover="this.style.filter=\'brightness(1.8)\'" onmouseout="this.style.filter=\'\'"':'';
-      calGrid += '<div onclick="'+_onclick+'" style="text-align:center;font-size:8px;color:'+dayClr+';background:'+bgDay+';border-radius:3px;padding:2px 1px;font-weight:'+fontW+';cursor:'+(_clickable?'pointer':'default')+';transition:filter .1s;'+todayBorder+'" '+_mouse+'>'+d+'</div>';
+      calGrid += '<div onclick="'+_onclick+'" style="text-align:center;font-size:'+(_isMobileVP?'6px':'8px')+';color:'+dayClr+';background:'+bgDay+';border-radius:3px;padding:'+(_isMobileVP?'1px 0':'2px 1px')+';font-weight:'+fontW+';cursor:'+(_clickable?'pointer':'default')+';transition:filter .1s;'+todayBorder+'" '+_mouse+'>'+d+'</div>';
     }
     calGrid += `</div>`;
 
@@ -2722,16 +2721,16 @@ function renderYearlyAttCalendar(emp, year, attData){
       const pct = mData.wd>0 ? Math.round((mData.present||0)/mData.wd*100) : 0;
       const pctClr = pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
       stats = `<div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);">
-        <span style="font-size:9px;color:#10b981;">P:${mData.present||0}</span>
-        <span style="font-size:9px;color:#3b82f6;">L:${mData.leave||0}</span>
-        <span style="font-size:9px;color:#ef4444;">A:${mData.absent||0}</span>
-        <span style="font-size:9px;color:${pctClr};font-weight:700;">${pct}%</span>
+        <span style="font-size:${_isMobileVP?'7px':'9px'};color:#10b981;">P:${mData.present||0}</span>
+        <span style="font-size:${_isMobileVP?'7px':'9px'};color:#3b82f6;">L:${mData.leave||0}</span>
+        <span style="font-size:${_isMobileVP?'7px':'9px'};color:#ef4444;">A:${mData.absent||0}</span>
+        <span style="font-size:${_isMobileVP?'7px':'9px'};color:${pctClr};font-weight:700;">${pct}%</span>
       </div>`;
     }
 
     html += `
-      <div style="border:${isFuture?'1.5px dashed':'1.5px solid'} ${borderClr};border-radius:10px;padding:10px;background:${bgClr};opacity:${isFuture?'0.55':'1'};">
-        <div style="font-size:11px;font-weight:700;color:${titleClr};margin-bottom:2px;">${mName} ${year}</div>
+      <div style="border:${isFuture?'1.5px dashed':'1.5px solid'} ${borderClr};border-radius:10px;padding:${_isMobileVP?'5px':'10px'};background:${bgClr};opacity:${isFuture?'0.55':'1'};">
+        <div style="font-size:${_isMobileVP?'9px':'11px'};font-weight:700;color:${titleClr};margin-bottom:2px;">${_isMobileVP?mName.slice(0,3):mName} ${year}</div>
         ${calGrid}
         ${stats}
       </div>`;
