@@ -2991,33 +2991,41 @@ function renderMyAttendance(){
   if(sub) sub.textContent=month===-1?`Year ${year} — Full Overview`:`${_MA_MONTHS[month]} ${year}`;
 
   // KPI — derive from daily[] (HR System is source of truth)
-  const months=month===-1?Array.from({length:12},(_,i)=>i):[month];
+  function getLast3MonthEntriesFrom(baseY, baseM){
+    const arr=[];
+    for(let i=0;i<3;i++){
+      const dt=new Date(baseY, baseM-i, 1);
+      const yy=dt.getFullYear(), mm=dt.getMonth();
+      arr.push({y:yy,m:mm,data:((emp.attendance||{})[yy]||{})[mm]||{}});
+    }
+    return arr; // most recent (selected month) first
+  }
+  let statEntries;
+  if(month===-1){ statEntries=Array.from({length:12},(_,i)=>({y:year,m:i,data:attData[i]||{}})); }
+  else { statEntries=getLast3MonthEntriesFrom(year, month); }
+
   const parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const m=hm.replace('-','').match(/(\d+):(\d+)/);if(!m)return 0;const v=parseInt(m[1])*60+parseInt(m[2]);return neg?-v:v;};
   const fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);return (neg?'-':'')+(String(Math.floor(abs/60)).padStart(2,'0'))+':'+(String(abs%60).padStart(2,'0'));};
   let totWD=0,totP=0,totL=0,totA=0,totLate=0,totDelay=0,totExDelay=0,totActMins=0,totElMins=0,totExpMins=0;
-  months.forEach(mi=>{
-    const md=deriveMonthStats(attData[mi]||{}, year, mi);
+  statEntries.forEach(({y:sy,m:sm,data:sdata})=>{
+    const md=deriveMonthStats(sdata||{}, sy, sm);
     totWD+=parseInt(md.wd)||0;
     totP+=parseInt(md.present)||0;
     totL+=parseInt(md.leave)||0;
     totA+=parseInt(md.absent)||0;
     totLate+=parseInt(md.late)||0;
-    (attData[mi]?.daily||[]).forEach(d=>{
+    (sdata?.daily||[]).forEach(d=>{
       const s=typeof d==='object'?(d.s||''):d;
       if(s==='D') totDelay++;
       else if(s==='E') totExDelay++;
     });
-    totActMins+=parseHMins(String(parseFloat(md.ot)||0).includes(':')?md.ot:(parseFloat(md.ot)*60+''));
-    totElMins+=parseHMins(md.elOt||'');
-    // Expected duty from daily[].exp
-    (attData[mi]?.daily||[]).forEach(d=>{if(typeof d==='object'&&d&&d.exp&&d.s!=='L'){const p=d.exp.split(':');if(p.length>=2)totExpMins+=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}});
   });
-  // Re-derive act from daily[].t directly
-  totActMins=0; totElMins=0;
-  months.forEach(mi=>{
-    (attData[mi]?.daily||[]).forEach(d=>{
+  // Derive act/exp from daily[].t / .exp directly
+  statEntries.forEach(({data:sdata})=>{
+    (sdata?.daily||[]).forEach(d=>{
       if(typeof d==='object'&&d&&d.s!=='L'){if(d.t)totActMins+=parseHMins(d.t);if(d.e)totElMins+=parseHMins(d.e);}
     });
+    (sdata?.daily||[]).forEach(d=>{if(typeof d==='object'&&d&&d.exp&&d.s!=='L'){const p=d.exp.split(':');if(p.length>=2)totExpMins+=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}});
   });
   const pct=totWD>0?Math.round(totP/totWD*100):0;
   const pctClr=pct>=90?'#10b981':pct>=75?'#f59e0b':'#ef4444';
@@ -3097,9 +3105,6 @@ function renderMyAttendance(){
         </table></div>
       </div>`;
   } else {
-    const md=attData[month]||{};
-    const daily=md.daily||[];
-    const dim=new Date(year,month+1,0).getDate();
     const DAY_FULL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const MONTH_LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
     const MONTH_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -3111,38 +3116,44 @@ function renderMyAttendance(){
     const canGoNext=(nextY<nowY)||(nextY===nowY&&nextM<=nowM);
 
     const rows=[];
-    for(let d=dim;d>=1;d--){
-      const dt=new Date(year,month,d);
-      const dowIdx=dt.getDay();
-      const isPast=(year<nowY)||(year===nowY&&month<nowM)||(year===nowY&&month===nowM&&d<nowD);
-      const isToday=(year===nowY&&month===nowM&&d===nowD);
-      if(!isPast&&!isToday) continue;
-      const isWknd=dowIdx===5||dowIdx===6;
-      const dayRaw=daily[d-1];
-      const dayObj=typeof dayRaw==='object'?{...dayRaw}:{s:typeof dayRaw==='string'?dayRaw:''};
-      if(typeof dayRaw==='string') dayObj.s=dayRaw;
-      // Use computeDayStatus same as HR System calendar
-      const st=computeDayStatus(year, month, d, dayRaw)||dayObj.s||'';
-      const clr=S_CLR[st]||'var(--text3)';
-      const bg=S_BG[st]||'rgba(255,255,255,0.03)';
-      rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}">
-        <td class="myatt-date-td" style="padding:10px 14px;min-width:180px;">
-          <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${DAY_FULL[dowIdx]}</div>
-          <div class="myatt-date-inner" style="display:flex;align-items:center;gap:8px;margin-top:3px;">
-            <div style="font-size:13px;font-weight:700;color:${isToday?'var(--gold)':'var(--text)'};">${d} ${MONTH_S[month]} ${year}</div>
-            ${st?`<span style="display:inline-block;background:${bg};color:${clr};border:1px solid ${clr}55;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.3px;">${st}</span>`:''}
-          </div>
-        </td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#06b6d4;">${dayObj.i||dayObj.in||'—'}</td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#8b5cf6;">${dayObj.o||dayObj.out||'—'}</td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#f59e0b;">${(()=>{const iso=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');const pol=typeof findPolicyForDate==='function'?findPolicyForDate(iso):null;if(pol){const wh=pol.workHours;return String(Math.floor(wh)).padStart(2,'0')+':'+String(Math.round((wh%1)*60)).padStart(2,'0');}return dayObj.exp||'—';})()}</td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#22d3ee;">${dayObj.t||dayObj.ot||'—'}</td>
-        <td style="padding:10px 8px;text-align:center;font-size:12px;color:#a78bfa;">${dayObj.e||dayObj.elOt||'—'}</td>
-        <td style="padding:10px 14px;text-align:center;">
-          <button onclick="openReconModal(${year},${month},${d})" style="background:rgba(201,162,77,0.08);border:1px solid rgba(201,162,77,0.25);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--gold);font-size:11px;font-family:inherit;" onmouseover="this.style.background='rgba(201,162,77,0.18)'" onmouseout="this.style.background='rgba(201,162,77,0.08)'" title="Attendance Reconciliation"><i class="fa fa-file-signature"></i></button>
-        </td>
-      </tr>`);
-    }
+    statEntries.forEach(({y:sy,m:sm,data:sdata},entryIdx)=>{
+      const sdaily=sdata?.daily||[];
+      const sdim=new Date(sy,sm+1,0).getDate();
+      if(entryIdx>0){
+        rows.push(`<tr><td colspan="7" style="padding:10px 14px;background:rgba(212,175,55,0.06);border-bottom:1px solid var(--border);border-top:1px solid var(--border);font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.05em;text-transform:uppercase;">${MONTH_LONG[sm]} ${sy}</td></tr>`);
+      }
+      for(let d=sdim;d>=1;d--){
+        const dt=new Date(sy,sm,d);
+        const dowIdx=dt.getDay();
+        const isPast=(sy<nowY)||(sy===nowY&&sm<nowM)||(sy===nowY&&sm===nowM&&d<nowD);
+        const isToday=(sy===nowY&&sm===nowM&&d===nowD);
+        if(!isPast&&!isToday) continue;
+        const dayRaw=sdaily[d-1];
+        const dayObj=typeof dayRaw==='object'?{...dayRaw}:{s:typeof dayRaw==='string'?dayRaw:''};
+        if(typeof dayRaw==='string') dayObj.s=dayRaw;
+        // Use computeDayStatus same as HR System calendar
+        const st=computeDayStatus(sy, sm, d, dayRaw)||dayObj.s||'';
+        const clr=S_CLR[st]||'var(--text3)';
+        const bg=S_BG[st]||'rgba(255,255,255,0.03)';
+        rows.push(`<tr style="border-bottom:1px solid rgba(255,255,255,0.035);${isToday?'background:rgba(201,162,77,0.04);':''}">
+          <td class="myatt-date-td" style="padding:10px 14px;min-width:180px;">
+            <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">${DAY_FULL[dowIdx]}</div>
+            <div class="myatt-date-inner" style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+              <div style="font-size:13px;font-weight:700;color:${isToday?'var(--gold)':'var(--text)'};">${d} ${MONTH_S[sm]} ${sy}</div>
+              ${st?`<span style="display:inline-block;background:${bg};color:${clr};border:1px solid ${clr}55;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.3px;">${st}</span>`:''}
+            </div>
+          </td>
+          <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#06b6d4;">${dayObj.i||dayObj.in||'—'}</td>
+          <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:#8b5cf6;">${dayObj.o||dayObj.out||'—'}</td>
+          <td style="padding:10px 8px;text-align:center;font-size:12px;color:#f59e0b;">${(()=>{const iso=sy+'-'+String(sm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');const pol=typeof findPolicyForDate==='function'?findPolicyForDate(iso):null;if(pol){const wh=pol.workHours;return String(Math.floor(wh)).padStart(2,'0')+':'+String(Math.round((wh%1)*60)).padStart(2,'0');}return dayObj.exp||'—';})()}</td>
+          <td style="padding:10px 8px;text-align:center;font-size:12px;color:#22d3ee;">${dayObj.t||dayObj.ot||'—'}</td>
+          <td style="padding:10px 8px;text-align:center;font-size:12px;color:#a78bfa;">${dayObj.e||dayObj.elOt||'—'}</td>
+          <td style="padding:10px 14px;text-align:center;">
+            <button onclick="openReconModal(${sy},${sm},${d})" style="background:rgba(201,162,77,0.08);border:1px solid rgba(201,162,77,0.25);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--gold);font-size:11px;font-family:inherit;" onmouseover="this.style.background='rgba(201,162,77,0.18)'" onmouseout="this.style.background='rgba(201,162,77,0.08)'" title="Attendance Reconciliation"><i class="fa fa-file-signature"></i></button>
+          </td>
+        </tr>`);
+      }
+    });
 
     content.innerHTML=`
       <div style="background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%),var(--navy2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);">
