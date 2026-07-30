@@ -2406,7 +2406,7 @@ function renderDashboard(){
   const _ys = emp?.yearSummary?.[year];
   const dutyExpected = _ys?.expectedDuty || '—';
   const dutyActual = _ys?.actualDuty || '—';
-  const dutyDiff = _ys?.elMins || 0;
+  const dutyDiff = (typeof _ys?.elMins === 'number') ? _ys.elMins : ((_ys?.elOtTotal||'').startsWith('-') ? -1 : 0);
   const dutyDiffFmt = _ys?.elOtTotal || '—';
   const kpiEl=document.getElementById('attKpi');
   if(kpiEl) kpiEl.innerHTML=`
@@ -2463,7 +2463,7 @@ function renderDashboard(){
           <div style="height:1px;background:rgba(255,255,255,0.06);margin:4px 0;"></div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:clamp(8px,2.5vw,10px);color:#5b8fa6;">Extra / Less</span>
-            <span style="font-size:clamp(11px,3.5vw,13px);font-weight:700;color:${dutyDiff>=0?'#10b981':'#ef4444'};">${dutyDiff>=0?'+':''}${dutyDiffFmt}</span>
+            <span style="font-size:clamp(11px,3.5vw,13px);font-weight:700;color:${dutyDiff>=0?'#10b981':'#ef4444'};">${dutyDiffFmt}</span>
           </div>
         </div>
       </div>
