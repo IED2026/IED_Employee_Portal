@@ -1102,7 +1102,7 @@ function generateRecentAttendance(){
 
 // ── PERSISTENT ATTENDANCE LOG (localStorage) ──
 const ATT_LOG_KEY = 'ied_attendance_log';
-function getAttLogKey(){ return ATT_LOG_KEY+'_'+(_portalEmployee?.id||'guest'); }
+function getAttLogKey(){ const _eid=(typeof _portalEmployee!=='undefined'&&_portalEmployee)?_portalEmployee.id:'guest'; return ATT_LOG_KEY+'_'+_eid; }
 function getAttLog(){
   try{ return JSON.parse(localStorage.getItem(getAttLogKey())||'{}'); }
   catch(e){ return {}; }
@@ -1334,6 +1334,7 @@ let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 function renderCalendar(){
   const cont = document.getElementById('calendarWidget');
   if(!cont) return;
+  if(typeof _portalEmployee === 'undefined'){ cont.innerHTML=''; return; }
   const emp=_portalEmployee; if(!emp){ cont.innerHTML=''; return; }
   const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const dayLabels=['S','M','T','W','T','F','S'];
@@ -1563,6 +1564,8 @@ function renderLeaveChart(){
 // ── RECON LIST ──
 function renderReconList(){
   const cont = document.getElementById('reconListContainer');
+  if(!cont) return;
+  if(typeof _portalEmployee === 'undefined'){ cont.innerHTML=''; return; }
   reconData = (_portalEmployee?.reconRequests||[]).slice().reverse();
   if(!reconData.length){ cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No reconciliation applications yet.</div>'; return; }
   cont.innerHTML = reconData.map(r=>{
