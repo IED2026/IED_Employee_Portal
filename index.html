@@ -2291,6 +2291,9 @@ function renderDashboard(){
   const nowM = nowYear2===year ? new Date().getMonth() : (isFutureYear ? -1 : 11);
   let totalPresent=0,totalLeave=0,totalAbsent=0,totalLate=0,totalOT=0,totalWDSoFar=0;
   let totalOnTime=0,totalDelay=0,totalExDelay=0;
+  let _totalExpMins=0,_totalActualMins=0,_totalElMins=0;
+  const _parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const mm=hm.replace('-','').match(/(\d+):(\d+)/);if(!mm)return 0;const v=parseInt(mm[1])*60+parseInt(mm[2]);return neg?-v:v;};
+  const _fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);const h=Math.floor(abs/60);const m2=abs%60;return (neg?'-':'')+(String(h).padStart(2,'0'))+':'+(String(m2).padStart(2,'0'));};
   const barLabels=[],barWD=[],barPresent=[],barLeaveAbsent=[];
   const rows=MONTHS.map((m,i)=>{
     const nowYear=new Date().getFullYear(), nowMonth=new Date().getMonth(), nowDay=new Date().getDate();
@@ -2322,6 +2325,11 @@ function renderDashboard(){
       if(s==='P'||s==='P(W)'||s==='P(H)'||s==='P(L)') mOnTime++;
       else if(s==='D') mDelay++;
       else if(s==='E') mExDelay++;
+      if(typeof d==='object'&&d){
+        if(d.t) _totalActualMins+=_parseHMins(d.t);
+        if(d.e) _totalElMins+=_parseHMins(d.e);
+        if(d.exp && d.s!=='L') _totalExpMins+=_parseHMins(d.exp);
+      }
     });
     totalPresent+=present;
     totalLeave+=leave;
@@ -2394,15 +2402,11 @@ function renderDashboard(){
   const overallPct = monthPctCount>0 ? Math.round(monthPctSum/monthPctCount) : 0;
   const overallClr = overallPct>=90?'#10b981':overallPct>=75?'#f59e0b':'#ef4444';
 
-  // Duty hours calc (8h per working day)
-  const expMins = totalWDSoFar * 8 * 60;
-  const actMins = Math.round(totalOT * 60) + totalPresent * 8 * 60;
-  const diffMins = actMins - expMins;
-  const fmtMins = m => { const h=Math.floor(Math.abs(m)/60); const mm=Math.abs(m)%60; return h+':'+(mm<10?'0':'')+mm; };
-  const dutyExpected = fmtMins(expMins);
-  const dutyActual = fmtMins(actMins);
-  const dutyDiff = diffMins;
-  const dutyDiffFmt = fmtMins(diffMins);
+  // Duty hours calc — from daily calendar (matches HR System exactly)
+  const dutyExpected = _totalExpMins>0?_fmtHM(_totalExpMins):'—';
+  const dutyActual = _totalActualMins>0?_fmtHM(_totalActualMins):'—';
+  const dutyDiff = _totalElMins;
+  const dutyDiffFmt = _totalActualMins>0?_fmtHM(_totalElMins):'—';
   const kpiEl=document.getElementById('attKpi');
   if(kpiEl) kpiEl.innerHTML=`
     <div class="dash-stat-grid" style="display:flex;gap:12px;flex-wrap:wrap;width:100%;">
