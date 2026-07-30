@@ -37,6 +37,7 @@
   --shadow-sm:0 1px 3px rgba(0,0,0,.3);
   --shadow-gold:0 10px 28px -8px rgba(201,164,77,.3);
 }
+html{font-size:clamp(14px, 3.7vw, 16px);}
 html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:radial-gradient(900px 600px at 8% -8%,rgba(201,164,77,0.08),transparent 60%),radial-gradient(800px 600px at 105% 105%,rgba(37,99,235,0.10),transparent 55%),var(--navy);background-attachment:fixed;}
 
 /* ── LAYOUT ── */
@@ -184,13 +185,13 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 .stat-label{font-size:12px;color:var(--text3);letter-spacing:.01em;}
 
 /* ── ATTENDANCE STATUS CARD ── */
-.att-card{background:linear-gradient(135deg,#1d4ed8 0%,var(--blue) 55%,#1e3a8a 100%);border-radius:var(--radius);padding:26px;position:relative;overflow:hidden;box-shadow:0 20px 40px -14px rgba(13,33,79,.65);}
+.att-card{background:linear-gradient(135deg,#1d4ed8 0%,var(--blue) 55%,#1e3a8a 100%);border-radius:var(--radius);padding:clamp(16px,5vw,26px);position:relative;overflow:hidden;box-shadow:0 20px 40px -14px rgba(13,33,79,.65);}
 .att-card::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(236,212,154,.16),transparent 70%);}
 .att-card::after{content:'';position:absolute;bottom:-70px;right:10px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.05);}
-.att-time{font-family:var(--font-display);font-size:34px;font-weight:600;letter-spacing:-0.5px;}
+.att-time{font-family:var(--font-display);font-size:clamp(24px,8vw,34px);font-weight:600;letter-spacing:-0.5px;}
 .att-label{font-size:12px;color:rgba(255,255,255,0.72);margin-bottom:18px;letter-spacing:.01em;}
 .att-btns{display:flex;gap:10px;position:relative;z-index:1;}
-.att-btn{flex:1;padding:13px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .2s;}
+.att-btn{flex:1;padding:clamp(10px,3vw,13px);border-radius:10px;font-size:clamp(11px,3vw,13px);font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .2s;}
 .att-btn-in{background:#fff;color:var(--blue);box-shadow:0 6px 16px -4px rgba(0,0,0,.3);}
 .att-btn-in:hover{background:#f7f3ea;transform:translateY(-1px);}
 .att-btn-out{background:rgba(255,255,255,0.14);color:#fff;border:1px solid rgba(255,255,255,0.28);}
@@ -198,11 +199,11 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tex
 
 /* ── MODULE GRID ── */
 .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.module-item{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0) 45%),var(--navy2);border:1px solid var(--border);border-radius:14px;padding:18px 16px;text-align:center;cursor:pointer;transition:all .25s ease;box-shadow:var(--shadow-sm);}
+.module-item{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0) 45%),var(--navy2);border:1px solid var(--border);border-radius:14px;padding:clamp(12px,4vw,18px) clamp(10px,3vw,16px);text-align:center;cursor:pointer;transition:all .25s ease;box-shadow:var(--shadow-sm);}
 .module-item:hover{border-color:rgba(201,164,77,.4);background:rgba(201,164,77,0.06);transform:translateY(-3px);box-shadow:var(--shadow-gold);}
-.module-icon{width:48px;height:48px;border-radius:14px;background:rgba(37,99,235,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:20px;color:var(--blue3);transition:transform .25s ease;}
+.module-icon{width:clamp(38px,10vw,48px);height:clamp(38px,10vw,48px);border-radius:14px;background:rgba(37,99,235,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:clamp(16px,4.5vw,20px);color:var(--blue3);transition:transform .25s ease;}
 .module-item:hover .module-icon{transform:scale(1.08);}
-.module-label{font-size:12px;font-weight:600;color:var(--text2);}
+.module-label{font-size:clamp(10px,3vw,12px);font-weight:600;color:var(--text2);}
 
 /* ── ATTENDANCE LIST ── */
 .att-list-item{display:flex;align-items:center;padding:14px 6px;border-bottom:1px solid var(--border);border-radius:8px;transition:background .15s;}
@@ -2934,30 +2935,30 @@ function initHomePage(){
             ['🌴',totL,'Leave','#f59e0b'],
             ['⏰',totDelay,'Delay','#f59e0b'],
             ['🔴',totExDelay,'Extreme Delay','#ef4444'],
-          ].map(([ic,v,lb,cl,sub])=>`<div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${cl}33;border-top:3px solid ${cl};border-radius:12px;padding:12px 10px;text-align:center;">
-            <div style="font-size:16px;margin-bottom:2px;">${ic}</div>
-            <div style="font-size:20px;font-weight:800;color:${cl};">${v}</div>
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">${lb}</div>
-            ${sub?`<div style="font-size:9px;color:${cl};font-weight:700;margin-top:3px;">${sub}</div>`:''}
+          ].map(([ic,v,lb,cl,sub])=>`<div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${cl}33;border-top:3px solid ${cl};border-radius:12px;padding:clamp(8px,3vw,12px) clamp(6px,2vw,10px);text-align:center;">
+            <div style="font-size:clamp(12px,4vw,16px);margin-bottom:2px;">${ic}</div>
+            <div style="font-size:clamp(15px,5vw,20px);font-weight:800;color:${cl};">${v}</div>
+            <div style="font-size:clamp(7px,2.2vw,9px);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">${lb}</div>
+            ${sub?`<div style="font-size:clamp(7px,2.2vw,9px);color:${cl};font-weight:700;margin-top:3px;">${sub}</div>`:''}
           </div>`).join('')}
-          <div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${pctClr}33;border-top:3px solid ${pctClr};border-radius:12px;padding:12px 10px;text-align:center;">
-            <div style="font-size:16px;margin-bottom:2px;">📊</div>
-            <div style="font-size:20px;font-weight:900;color:${pctClr};">${pct}%</div>
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Attendance</div>
+          <div style="flex:1;min-width:90px;background:var(--navy3);border:1px solid ${pctClr}33;border-top:3px solid ${pctClr};border-radius:12px;padding:clamp(8px,3vw,12px) clamp(6px,2vw,10px);text-align:center;">
+            <div style="font-size:clamp(12px,4vw,16px);margin-bottom:2px;">📊</div>
+            <div style="font-size:clamp(15px,5vw,20px);font-weight:900;color:${pctClr};">${pct}%</div>
+            <div style="font-size:clamp(7px,2.2vw,9px);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Attendance</div>
           </div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;margin-top:10px;">
-          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid rgba(245,158,11,0.2);border-top:3px solid #f59e0b;border-radius:12px;padding:12px 10px;text-align:center;">
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⏱ Expected Duty</div>
-            <div style="font-size:18px;font-weight:800;color:#f59e0b;">${totExpMins>0?fmtHM(totExpMins):'—'}</div>
+          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid rgba(245,158,11,0.2);border-top:3px solid #f59e0b;border-radius:12px;padding:clamp(8px,3vw,12px) clamp(6px,2vw,10px);text-align:center;">
+            <div style="font-size:clamp(7px,2.2vw,9px);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⏱ Expected Duty</div>
+            <div style="font-size:clamp(13px,4.5vw,18px);font-weight:800;color:#f59e0b;">${totExpMins>0?fmtHM(totExpMins):'—'}</div>
           </div>
-          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid rgba(6,182,212,0.2);border-top:3px solid #06b6d4;border-radius:12px;padding:12px 10px;text-align:center;">
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⚡ Actual Duty</div>
-            <div style="font-size:18px;font-weight:800;color:#06b6d4;">${totActMins>0?fmtHM(totActMins):'—'}</div>
+          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid rgba(6,182,212,0.2);border-top:3px solid #06b6d4;border-radius:12px;padding:clamp(8px,3vw,12px) clamp(6px,2vw,10px);text-align:center;">
+            <div style="font-size:clamp(7px,2.2vw,9px);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⚡ Actual Duty</div>
+            <div style="font-size:clamp(13px,4.5vw,18px);font-weight:800;color:#06b6d4;">${totActMins>0?fmtHM(totActMins):'—'}</div>
           </div>
-          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid ${elColor}33;border-top:3px solid ${elColor};border-radius:12px;padding:12px 10px;text-align:center;">
-            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">📈 Extra / Less</div>
-            <div style="font-size:18px;font-weight:800;color:${elColor};">${totActMins>0?(totElMins>=0?'+':'')+fmtHM(totElMins):'—'}</div>
+          <div style="flex:1;min-width:120px;background:var(--navy3);border:1px solid ${elColor}33;border-top:3px solid ${elColor};border-radius:12px;padding:clamp(8px,3vw,12px) clamp(6px,2vw,10px);text-align:center;">
+            <div style="font-size:clamp(7px,2.2vw,9px);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">📈 Extra / Less</div>
+            <div style="font-size:clamp(13px,4.5vw,18px);font-weight:800;color:${elColor};">${totActMins>0?(totElMins>=0?'+':'')+fmtHM(totElMins):'—'}</div>
           </div>
         </div>`;
     }
