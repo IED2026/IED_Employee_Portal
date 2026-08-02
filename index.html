@@ -3332,8 +3332,9 @@ function computeDayStatus(yr, mo, dy, dayObj){
     if(storedS==='L') return 'L';
     return 'A';
   }
-  if(isToday && !inTime) return '';
+  if(storedS==='L') return 'L';
   if(inTime && (!storedS||storedS==='A')) return 'P';
+  if(!inTime && !storedS) return 'A';
   return storedS;
 }
 
