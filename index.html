@@ -2291,9 +2291,6 @@ function renderDashboard(){
   const nowM = nowYear2===year ? new Date().getMonth() : (isFutureYear ? -1 : 11);
   let totalPresent=0,totalLeave=0,totalAbsent=0,totalLate=0,totalOT=0,totalWDSoFar=0;
   let totalOnTime=0,totalDelay=0,totalExDelay=0;
-  let _totalExpMins=0,_totalActualMins=0,_totalElMins=0;
-  const _parseHMins=hm=>{if(!hm)return 0;const neg=hm.startsWith('-');const mm=hm.replace('-','').match(/(\d+):(\d+)/);if(!mm)return 0;const v=parseInt(mm[1])*60+parseInt(mm[2]);return neg?-v:v;};
-  const _fmtHM=mins=>{const neg=mins<0;const abs=Math.abs(mins);const h=Math.floor(abs/60);const m2=abs%60;return (neg?'-':'')+(String(h).padStart(2,'0'))+':'+(String(m2).padStart(2,'0'));};
   const barLabels=[],barWD=[],barPresent=[],barLeaveAbsent=[];
   const rows=MONTHS.map((m,i)=>{
     const nowYear=new Date().getFullYear(), nowMonth=new Date().getMonth(), nowDay=new Date().getDate();
@@ -2301,41 +2298,25 @@ function renderDashboard(){
     const isCurMonth = year===nowYear && i===nowMonth;
     const isFutureOrCurrent = isFuture; // used for locked state
     const rawData = attData[i]||{};
-    let mData;
-    if(isFuture){
-      mData={wd:0,present:0,leave:0,absent:0,holiday:0,late:0,half:0,ot:0,elOt:'',note:rawData.note||'',daily:rawData.daily||[]};
-    } else {
-      mData = deriveMonthStats(rawData, year, i);
-    }
-    const present=parseInt(mData.present)||0;
-    const leave=parseInt(mData.leave)||0;
-    const half=parseInt(mData.half)||0;
-    const absent=parseInt(mData.absent)||0;
-    const wd=parseInt(mData.wd)||0;
+    // No local calculation — every field here is read directly from what HR System already
+    // computed and stored (recomputeAttendanceSummaries). Portal is pure display only.
+    const present=parseInt(rawData.present)||0;
+    const leave=parseInt(rawData.leave)||0;
+    const half=parseInt(rawData.half)||0;
+    const absent=parseInt(rawData.absent)||0;
+    const wd=parseInt(rawData.wd)||0;
     const leaveEquiv = leave + (half/2);
     const effectiveWD = wd > 0 ? wd : 0;
     const pct2 = effectiveWD>0 ? Math.round(present/effectiveWD*100) : 0;
     const pctColor2 = isFuture?'var(--text3)':(pct2>=90?'#10b981':pct2>=75?'#f59e0b':'#ef4444');
     const pctBg = isFuture?'rgba(255,255,255,0.04)':(pct2>=90?'rgba(16,185,129,0.1)':pct2>=75?'rgba(245,158,11,0.1)':'rgba(239,68,68,0.1)');
-    // Count P/D/E from daily array
-    const daily=mData.daily||[];
-    let mOnTime=0,mDelay=0,mExDelay=0;
-    daily.forEach(d=>{
-      const s=typeof d==='object'?(d.s||''):d;
-      if(s==='P'||s==='P(W)'||s==='P(H)'||s==='P(L)') mOnTime++;
-      else if(s==='D') mDelay++;
-      else if(s==='E') mExDelay++;
-      if(typeof d==='object'&&d){
-        if(d.t) _totalActualMins+=_parseHMins(d.t);
-        if(d.e) _totalElMins+=_parseHMins(d.e);
-        if(d.exp && d.s!=='L') _totalExpMins+=_parseHMins(d.exp);
-      }
-    });
+    const daily=rawData.daily||[];
+    const mOnTime=rawData.onTime||0, mDelay=rawData.delay||0, mExDelay=rawData.exDelay||0;
     totalPresent+=present;
     totalLeave+=leave;
     totalAbsent+=absent;
-    totalLate+=parseInt(mData.late)||0;
-    totalOT+=parseFloat(mData.ot)||0;
+    totalLate+=parseInt(rawData.late)||0;
+    totalOT+=parseFloat(rawData.ot)||0;
     totalOnTime+=mOnTime;
     totalDelay+=mDelay;
     totalExDelay+=mExDelay;
@@ -2362,25 +2343,25 @@ function renderDashboard(){
     const tdLeft = 'padding:2px 8px;'+rowBorder+colBorder;
     return `<tr style="${rowBg}transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='${locked?'':'rgba(212,175,55,0.04)'}'">
       <td data-abbr="${m.slice(0,3)}" style="${tdLeft}font-weight:700;font-size:13px;color:var(--text);">${m}</td>
-      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.wd||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'wd',this.value)"></td>
-      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.present||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'present',this.value)"></td>
-      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.leave||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'leave',this.value)"></td>
-      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.absent||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'absent',this.value)"></td>
-      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.holiday||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'holiday',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${rawData.wd||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'wd',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${rawData.present||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'present',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${rawData.leave||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'leave',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${rawData.absent||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'absent',this.value)"></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${rawData.holiday||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'holiday',this.value)"></td>
       <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#f59e0b;">${mDelay||0}</span></td>
       <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#ef4444;">${mExDelay||0}</span></td>
-      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.half||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'half',this.value)"></td>
-      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#f59e0b;">${(()=>{const daily=(attData[i]||{}).daily||[];let mins=0;daily.forEach(d=>{if(typeof d==='object'&&d&&d.exp&&d.s!=='L'){const p=d.exp.split(':');if(p.length>=2)mins+=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}});return mins>0?(Math.floor(mins/60)+':'+String(mins%60).padStart(2,'0')):'—';})()}</span></td>
-      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#06b6d4;">${(()=>{if(isFuture||mData.ot===undefined||mData.ot===null||mData.ot==='—')return '—';const totalMins=Math.round(parseFloat(mData.ot)*60);if(isNaN(totalMins))return '—';const h=Math.floor(totalMins/60),m=totalMins%60;return h+':'+String(m).padStart(2,'0');})()}</span></td>
-      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#8b5cf6;">${mData.elOt||'—'}</span></td>
-      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#22d3ee;">${(()=>{if(!present||!mData.ot||mData.ot==='—')return '—';const totalMins=parseFloat(mData.ot)*60;const avgMins=totalMins/present;const h=Math.floor(avgMins/60);const m=Math.round(avgMins%60);return h+':'+String(m).padStart(2,'0');})()}</span></td>
+      <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${rawData.half||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'half',this.value)"></td>
+      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#f59e0b;">${isFuture?'—':(rawData.exp||'—')}</span></td>
+      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#06b6d4;">${(()=>{if(isFuture||rawData.ot===undefined||rawData.ot===null||rawData.ot==='—')return '—';const totalMins=Math.round(parseFloat(rawData.ot)*60);if(isNaN(totalMins))return '—';const h=Math.floor(totalMins/60),m=totalMins%60;return h+':'+String(m).padStart(2,'0');})()}</span></td>
+      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#8b5cf6;">${rawData.elOt||'—'}</span></td>
+      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#22d3ee;">${(()=>{if(!present||!rawData.ot||rawData.ot==='—')return '—';const totalMins=parseFloat(rawData.ot)*60;const avgMins=totalMins/present;const h=Math.floor(avgMins/60);const m=Math.round(avgMins%60);return h+':'+String(m).padStart(2,'0');})()}</span></td>
       <td class="att-pct-cell" style="${tdStyle}">
         <span class="att-pct-badge" style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${isFuture?'—':pct2+'%'}</span>
       </td>
       <td class="att-note-cell" style="${tdLeft}display:flex;align-items:center;gap:6px;">
-        <input class="form-control att-note-input" style="${noteStyle}" value="${mData.note||''}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'note',this.value)" placeholder="—">
-        <button class="att-note-mobile-btn" data-note="${(mData.note||'').replace(/"/g,'&quot;')}" data-month="${m}" onclick="showAttNotePopup(this)" style="display:none;">
-          <i class="fa ${mData.note?'fa-note-sticky':'fa-note-sticky'}"></i>
+        <input class="form-control att-note-input" style="${noteStyle}" value="${rawData.note||''}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'note',this.value)" placeholder="—">
+        <button class="att-note-mobile-btn" data-note="${(rawData.note||'').replace(/"/g,'&quot;')}" data-month="${m}" onclick="showAttNotePopup(this)" style="display:none;">
+          <i class="fa ${rawData.note?'fa-note-sticky':'fa-note-sticky'}"></i>
         </button>
         <button class="att-edit-toggle" onclick="toggleAttEdit(${year},${i})" title="${locked?'Edit':'Save'}" style="width:28px;height:28px;border-radius:7px;border:1px solid ${locked?'rgba(255,255,255,0.1)':'var(--gold)'};background:${locked?'transparent':'rgba(212,175,55,0.12)'};color:${locked?'var(--text3)':'var(--gold)'};cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
           <i class="fa ${locked?'fa-pen':'fa-check'}"></i>
