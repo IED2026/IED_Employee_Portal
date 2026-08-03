@@ -2315,8 +2315,8 @@ function renderDashboard(){
     const leaveEquiv = leave + (half/2);
     const effectiveWD = wd > 0 ? wd : 0;
     const pct2 = effectiveWD>0 ? Math.round(present/effectiveWD*100) : 0;
-    const pctColor2 = pct2>=90?'#10b981':pct2>=75?'#f59e0b':'#ef4444';
-    const pctBg = pct2>=90?'rgba(16,185,129,0.1)':pct2>=75?'rgba(245,158,11,0.1)':'rgba(239,68,68,0.1)';
+    const pctColor2 = isFuture?'var(--text3)':(pct2>=90?'#10b981':pct2>=75?'#f59e0b':'#ef4444');
+    const pctBg = isFuture?'rgba(255,255,255,0.04)':(pct2>=90?'rgba(16,185,129,0.1)':pct2>=75?'rgba(245,158,11,0.1)':'rgba(239,68,68,0.1)');
     // Count P/D/E from daily array
     const daily=mData.daily||[];
     let mOnTime=0,mDelay=0,mExDelay=0;
@@ -2371,11 +2371,11 @@ function renderDashboard(){
       <td style="${tdStyle}"><span style="font-size:12px;font-weight:600;color:#ef4444;">${mExDelay||0}</span></td>
       <td style="${tdStyle}"><input class="form-control" type="number" style="${inputStyle}" value="${mData.half||0}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'half',this.value)"></td>
       <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#f59e0b;">${(()=>{const daily=(attData[i]||{}).daily||[];let mins=0;daily.forEach(d=>{if(typeof d==='object'&&d&&d.exp&&d.s!=='L'){const p=d.exp.split(':');if(p.length>=2)mins+=(parseInt(p[0])||0)*60+(parseInt(p[1])||0);}});return mins>0?(Math.floor(mins/60)+':'+String(mins%60).padStart(2,'0')):'—';})()}</span></td>
-      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#06b6d4;">${(()=>{if(mData.ot===undefined||mData.ot===null||mData.ot==='—')return '—';const totalMins=Math.round(parseFloat(mData.ot)*60);if(isNaN(totalMins))return '—';const h=Math.floor(totalMins/60),m=totalMins%60;return h+':'+String(m).padStart(2,'0');})()}</span></td>
+      <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#06b6d4;">${(()=>{if(isFuture||mData.ot===undefined||mData.ot===null||mData.ot==='—')return '—';const totalMins=Math.round(parseFloat(mData.ot)*60);if(isNaN(totalMins))return '—';const h=Math.floor(totalMins/60),m=totalMins%60;return h+':'+String(m).padStart(2,'0');})()}</span></td>
       <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#8b5cf6;">${mData.elOt||'—'}</span></td>
       <td style="${tdStyle}"><span class="att-vdata" style="font-size:12px;font-weight:600;color:#22d3ee;">${(()=>{if(!present||!mData.ot||mData.ot==='—')return '—';const totalMins=parseFloat(mData.ot)*60;const avgMins=totalMins/present;const h=Math.floor(avgMins/60);const m=Math.round(avgMins%60);return h+':'+String(m).padStart(2,'0');})()}</span></td>
       <td class="att-pct-cell" style="${tdStyle}">
-        <span class="att-pct-badge" style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${pct2}%</span>
+        <span class="att-pct-badge" style="display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;color:${pctColor2};background:${pctBg};">${isFuture?'—':pct2+'%'}</span>
       </td>
       <td class="att-note-cell" style="${tdLeft}display:flex;align-items:center;gap:6px;">
         <input class="form-control att-note-input" style="${noteStyle}" value="${mData.note||''}" ${locked?'readonly':''} onchange="updateAttPage(${year},${i},'note',this.value)" placeholder="—">
