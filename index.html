@@ -3304,12 +3304,12 @@ function computeDayStatus(yr, mo, dy, dayObj){
         else if(dCut!=null && inMin<=dCut) s='D';
         else s='E';
       }
-      if(isHoliday) s = s==='P'?'P(H)':s;
-      else if(isWeekend) s = s==='P'?'P(W)':s;
+      if(isHoliday||storedS==='H') s = s==='P'?'P(H)':s;
+      else if(isWeekend||storedS==='W') s = s==='P'?'P(W)':s;
       return s;
     }
-    if(isHoliday) return 'H';
-    if(isWeekend) return 'W';
+    if(isHoliday||storedS==='H') return 'H';
+    if(isWeekend||storedS==='W') return 'W';
     if(storedS==='L') return 'L';
     return 'A';
   }
